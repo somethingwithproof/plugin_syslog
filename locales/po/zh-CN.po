@@ -4,7 +4,7 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 msgid ""
-msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: developers@cacti.net\nPOT-Creation-Date: 2022-03-26 11:33-0400\nPO-Revision-Date: 2024-03-04 00:20+0000\nLast-Translator: Junhua Huang <junhuahuang1218@gmail.com>\nLanguage-Team: Chinese (Simplified) <http://translate.cacti.net/projects/cacti/syslog/zh_Hans/>\nLanguage: zh-CN\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=1; plural=0;\nX-Generator: Weblate 4.8.1\n"
+msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: developers@cacti.net\nPOT-Creation-Date: 2022-03-26 11:33-0400\nPO-Revision-Date: 2024-06-20 15:11+0000\nLast-Translator: tql <fttx31@126.com>\nLanguage-Team: Chinese (Simplified) <http://translate.cacti.net/projects/cacti/syslog/zh_Hans/>\nLanguage: zh-CN\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=1; plural=0;\nX-Generator: Weblate 4.8.1\n"
 
 #: functions.php:72
 msgid "Save Failed.  Remote Data Collectors in Sync Mode are not allowed to Save Rules.  Save from the Main Cacti Server instead."
@@ -1294,7 +1294,7 @@ msgstr "触发警报时，请运行以下命令。以下替换变量可用于<b>
 
 #: syslog_alerts.php:703 syslog_reports.php:568
 msgid "Rows"
-msgstr "行数:"
+msgstr "行数"
 
 #: syslog_alerts.php:721 syslog_alerts.php:1013 syslog_removal.php:572
 #: syslog_removal.php:859 syslog_reports.php:586 syslog_reports.php:877
