@@ -4,7 +4,7 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 msgid ""
-msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: developers@cacti.net\nPOT-Creation-Date: 2022-03-26 11:33-0400\nPO-Revision-Date: 2024-06-21 08:51+0000\nLast-Translator: tql <fttx31@126.com>\nLanguage-Team: Chinese (Simplified) <http://translate.cacti.net/projects/cacti/syslog/zh_Hans/>\nLanguage: zh-CN\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=1; plural=0;\nX-Generator: Weblate 4.8.1\n"
+msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: developers@cacti.net\nPOT-Creation-Date: 2022-03-26 11:33-0400\nPO-Revision-Date: 2024-06-23 04:09+0000\nLast-Translator: tql <fttx31@126.com>\nLanguage-Team: Chinese (Simplified) <http://translate.cacti.net/projects/cacti/syslog/zh_Hans/>\nLanguage: zh-CN\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=1; plural=0;\nX-Generator: Weblate 4.8.1\n"
 
 #: functions.php:72
 msgid "Save Failed.  Remote Data Collectors in Sync Mode are not allowed to Save Rules.  Save from the Main Cacti Server instead."
@@ -1119,7 +1119,7 @@ msgstr "新警报规则"
 
 #: syslog_alerts.php:450 syslog_alerts.php:874 syslog_reports.php:383
 msgid "N/A"
-msgstr "N/A"
+msgstr "不可用"
 
 #: syslog_alerts.php:458 syslog_reports.php:389
 msgid "Details"
@@ -1196,7 +1196,7 @@ msgstr "如果使用SQL表达式匹配类型，请输入syslog消息，设施或
 #: syslog_removal.php:698 syslog_reports.php:403 syslog_reports.php:558
 #: syslog_reports.php:712
 msgid "Enabled"
-msgstr "启用"
+msgstr "已启用"
 
 #: syslog_alerts.php:523
 #, fuzzy
@@ -1271,7 +1271,6 @@ msgstr "是否应为此警报打开帮助台工单。注意：为方便起见，
 #: syslog_alerts.php:588 syslog_alerts.php:699 syslog_alerts.php:875
 #: syslog_removal.php:550 syslog_removal.php:720 syslog_reports.php:564
 #: syslog_reports.php:736
-#, fuzzy
 msgid "No"
 msgstr "否"
 
