@@ -142,7 +142,7 @@ For CentOS/RHEL systems you will all need to install the rsyslog-mysql package
 
 ```
 yum install rsyslog-mysql
-systemctl resatrt rsyslog
+systemctl restart rsyslog
 ```
 
 If you are upgrading to version 2.5 from an earlier version, make sure that you
