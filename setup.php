@@ -58,8 +58,8 @@ function plugin_syslog_install() {
 	/* hook for table replication */
 	api_plugin_register_hook('syslog', 'replicate_out',         'syslog_replicate_out',        'setup.php');
 
-	api_plugin_register_realm('syslog', 'syslog.php', 'Plugin -> Syslog User', 1);
-	api_plugin_register_realm('syslog', 'syslog_alerts.php,syslog_removal.php,syslog_reports.php', 'Plugin -> Syslog Administration', 1);
+	api_plugin_register_realm('syslog', 'syslog.php', 'Syslog User', 1);
+	api_plugin_register_realm('syslog', 'syslog_alerts.php,syslog_removal.php,syslog_reports.php', 'Syslog Administration', 1);
 
 	if (isset_request_var('install')) {
 		if (!$bg_inprocess) {
@@ -102,9 +102,7 @@ function syslog_execute_update($syslog_exists, $options) {
 		syslog_setup_table_new($options);
 	}
 
-	db_execute_prepared('REPLACE INTO settings
-		SET name="syslog_retention", value = ?',
-		array($options['days']));
+	set_config_option('syslog_retention', $options['days']);
 }
 
 function plugin_syslog_uninstall() {
@@ -137,7 +135,7 @@ function plugin_syslog_uninstall() {
 			syslog_db_execute('DROP TABLE IF EXISTS `' . $syslogdb_default . '`.`syslog`');
 			syslog_db_execute('DROP TABLE IF EXISTS `' . $syslogdb_default . '`.`syslog_removed`');
 		}
-	} else {
+	} elseif (function_exists('syslog_uninstall_advisor')) {
 		syslog_uninstall_advisor();
 		exit;
 	}
@@ -967,14 +965,16 @@ function syslog_install_advisor($syslog_exists) {
 	/* remove Aria as a storage enging if this is mysql */
 	if (stripos($database['Value'], 'mariadb') == false) {
 		unset($fields_syslog_update['engine']['array']['aria']);
+	} else {
+		$fields_syslog_update['engine']['value'] = 'aria';
 	}
 
-	print "<table align='center' width='80%'><tr><td>\n";
+	print "<table align='center' width='80%'><tr><td>";
 	html_start_box(__('Syslog %s Advisor', $type, 'syslog') . '<', '100%', '', '3', 'center', '');
-	print "<tr><td>\n";
+	print "<tr><td>";
 
 	if ($syslog_exists) {
-		print "<h2 style='color:red;'>" . __('WARNING: Syslog Upgrade is Time Consuming!!!', 'syslog') . "</h2>\n";
+		print "<h2 style='color:red;'>" . __('WARNING: Syslog Upgrade is Time Consuming!!!', 'syslog') . "</h2>";
 		print "<p>" . __('The upgrade of the \'main\' syslog table can be a very time consuming process.  As such, it is recommended that you either reduce the size of your syslog table prior to upgrading, or choose the background option</p> <p>If you choose the background option, your legacy syslog table will be renamed, and a new syslog table will be created.  Then, an upgrade process will be launched in the background.  Again, this background process can quite a bit of time to complete.  However, your data will be preserved</p> <p>Regardless of your choice, all existing removal and alert rules will be maintained during the upgrade process.</p> <p>Press <b>\'Upgrade\'</b> to proceed with the upgrade, or <b>\'Cancel\'</b> to return to the Plugins menu.', 'syslog') . "</p></td></tr>";
 	} else {
 		unset($fields_syslog_update['upgrade_type']);
@@ -982,7 +982,7 @@ function syslog_install_advisor($syslog_exists) {
 	}
 	html_end_box();
 
-	print "<form action='plugins.php' method='get'>\n";
+	print "<form id='syslog_install' action='plugins.php' method='get'>";
 
 	html_start_box(__('Syslog %s Settings', $type, 'syslog'), '100%', '', '3', 'center', '');
 
@@ -993,7 +993,7 @@ function syslog_install_advisor($syslog_exists) {
 
 	html_end_box();
 	syslog_confirm_button('install', 'plugins.php', $syslog_exists);
-	print "</td></tr></table>\n";
+	print "</td></tr></table>";
 
 	bottom_footer();
 	exit;
@@ -1032,7 +1032,7 @@ function syslog_uninstall_advisor() {
 
 	form_start('plugins.php');
 
-	print "<table align='center' width='80%'><tr><td>\n";
+	print "<table align='center' width='80%'><tr><td>";
 
 	html_start_box(__('Syslog Uninstall Preferences', 'syslog'), '100%', '', '3', 'center', '');
 
@@ -1045,7 +1045,7 @@ function syslog_uninstall_advisor() {
 
 	syslog_confirm_button('uninstall', 'plugins.php', $syslog_exists);
 
-	print "</td></tr></table>\n";
+	print "</td></tr></table>";
 
 	bottom_footer();
 	exit;
@@ -1070,16 +1070,22 @@ function syslog_confirm_button($action, $cancel_url, $syslog_exists) {
 				<input id='<?php print $action;?>' type='submit' value='<?php print $value;?>'>
 				<script type='text/javascript'>
 				$(function() {
-					$('form').submit(function(event) {
+					$('#syslog_install').submit(function(event) {
 						event.preventDefault();
-						strURL = $(this).attr('action');
+
+						/* set the URL */
+						var strURL = $(this).attr('action');
 						strURL += (strURL.indexOf('?') >= 0 ? '&':'?') + 'header=false';
-						json = $(this).serializeObject();
-						$.post(strURL, json).done(function(data) {
-							$('#main').html(data);
-							applySkin();
-							window.scrollTo(0, 0);
-						});
+
+						/* ensure that the csrf magic is appended */
+						var json = $(this).serializeObject();
+						json.__csrf_magic = csrfMagicToken;
+
+						if (typeof postUrl == 'funciton') {
+							postUrl({url: strURL}, json);
+						} else {
+							loadPageUsingPost(strURL, json);
+						}
 					});
 
 					$('#cancel, #return').click(function() {

@@ -4,6 +4,7 @@
 
 * issue: Making changes to support Cacti 1.3
 * issue: Don't use MyISAM for non-analytical tables
+* issue: The install advisor for Syslog was broken in current Cacti releases
 * feature: Allow the use of Aria Storage Engine for MariaDB databases
 
 --- 4.2 ---
