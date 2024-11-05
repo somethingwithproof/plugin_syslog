@@ -26,8 +26,6 @@ include(dirname(__FILE__) . '/../../include/cli_check.php');
 include_once(dirname(__FILE__) . '/functions.php');
 include_once(dirname(__FILE__) . '/database.php');
 
-syslog_determine_config();
-include(SYSLOG_CONFIG);
 syslog_connect();
 
 /**

@@ -35,9 +35,7 @@ function syslog_allow_edits() {
 }
 
 function syslog_sync_save($data, $table, $primary = '') {
-	global $config;
-
-	include(SYSLOG_CONFIG);
+	global $config, $syslogdb_default;
 
 	if (read_config_option('syslog_remote_enabled') == 'on' && read_config_option('syslog_remote_sync_rules') == 'on') {
 		if ($config['poller_id'] == 1) {
@@ -279,8 +277,7 @@ function syslog_check_changed($request, $session) {
 
 function syslog_remove_items($table, $uniqueID) {
 	global $config, $syslog_cnn, $syslog_incoming_config;
-
-	include(SYSLOG_CONFIG);
+	global $syslogdb_default;
 
 	syslog_debug('-------------------------------------------------------------------------------------');
 	syslog_debug('Processing Removal Rules...');
@@ -688,12 +685,11 @@ function syslog_row_color($priority, $message) {
 
 function sql_hosts_where($tab) {
 	global $hostfilter, $hostfilter_log, $syslog_incoming_config;
+	global $syslogdb_default;
 
 	$hostfilter     = '';
 	$hostfilter_log = '';
 	$hosts_array    = array();
-
-	include(SYSLOG_CONFIG);
 
 	if (!isempty_request_var('host') && get_nfilter_request_var('host') != 'null') {
 		$hostarray = explode(',', trim(get_nfilter_request_var('host')));
@@ -724,8 +720,7 @@ function sql_hosts_where($tab) {
 
 function syslog_export($tab) {
 	global $syslog_incoming_config, $severities;
-
-	include(SYSLOG_CONFIG);
+	global $syslogdb_default;
 
 	if ($tab == 'syslog') {
 		header('Content-type: application/excel');
@@ -838,8 +833,7 @@ function syslog_debug($message) {
 
 function syslog_log_alert($alert_id, $alert_name, $severity, $msg, $count = 1, $html = '', $hosts = array()) {
 	global $config, $severities;
-
-	include(SYSLOG_CONFIG);
+	global $syslogdb_default;
 
 	if ($count <= 1) {
 		$save['seq']         = '';
@@ -896,8 +890,7 @@ function syslog_log_alert($alert_id, $alert_name, $severity, $msg, $count = 1, $
 
 function syslog_manage_items($from_table, $to_table) {
 	global $config, $syslog_cnn, $syslog_incoming_config;
-
-	include(SYSLOG_CONFIG);
+	global $syslogdb_default;
 
 	/* Select filters to work on */
 	$rows = syslog_db_fetch_assoc('SELECT * FROM `' . $syslogdb_default . "`.`syslog_remove` WHERE enabled='on'");
@@ -1094,8 +1087,7 @@ function syslog_array2xml($array, $tag = 'template') {
  */
 function syslog_process_alerts($uniqueID) {
 	global $syslogdb_default;
-
-	include(SYSLOG_CONFIG);
+	global $syslogdb_default;
 
 	$syslog_alarms = 0;
 	$syslog_alerts = 0;

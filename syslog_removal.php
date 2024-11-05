@@ -28,8 +28,6 @@ include_once('./lib/xml.php');
 include_once('./plugins/syslog/functions.php');
 include_once('./plugins/syslog/database.php');
 
-syslog_determine_config();
-include(SYSLOG_CONFIG);
 syslog_connect();
 
 /* redefine the syslog actions for removal rules */
@@ -112,8 +110,7 @@ function form_save() {
 
 function form_actions() {
 	global $config, $syslog_actions, $fields_syslog_action_edit;
-
-	include(SYSLOG_CONFIG);
+	global $syslogdb_default;
 
 	get_filter_request_var('drp_action', FILTER_VALIDATE_REGEXP,
 		 array('options' => array('regexp' => '/^([a-zA-Z0-9_]+)$/')));
@@ -251,7 +248,7 @@ function form_actions() {
 }
 
 function removal_export() {
-	include(SYSLOG_CONFIG);
+	global $syslogdb_default;
 
 	/* if we are to save this form, instead of display it */
 	if (isset_request_var('selected_items')) {
@@ -283,8 +280,7 @@ function removal_export() {
 
 function api_syslog_removal_save($id, $name, $type, $message, $rmethod, $notes, $enabled) {
 	global $config;
-
-	include(SYSLOG_CONFIG);
+	global $syslogdb_default;
 
 	/* get the username */
 	$username = db_fetch_cell('SELECT username FROM user_auth WHERE id=' . $_SESSION['sess_user_id']);
@@ -314,17 +310,17 @@ function api_syslog_removal_save($id, $name, $type, $message, $rmethod, $notes, 
 }
 
 function api_syslog_removal_remove($id) {
-	include(SYSLOG_CONFIG);
+	global $syslogdb_default;
 	syslog_db_execute("DELETE FROM `" . $syslogdb_default . "`.`syslog_remove` WHERE id='" . $id . "'");
 }
 
 function api_syslog_removal_disable($id) {
-	include(SYSLOG_CONFIG);
+	global $syslogdb_default;
 	syslog_db_execute("UPDATE `" . $syslogdb_default . "`.`syslog_remove` SET enabled='' WHERE id='" . $id . "'");
 }
 
 function api_syslog_removal_enable($id) {
-	include(SYSLOG_CONFIG);
+	global $syslogdb_default;
 	syslog_db_execute("UPDATE `" . $syslogdb_default . "`.`syslog_remove` SET enabled='on' WHERE id='" . $id . "'");
 }
 
@@ -347,7 +343,7 @@ function api_syslog_removal_reprocess($id) {
    --------------------- */
 
 function syslog_get_removal_records(&$sql_where, $rows) {
-	include(SYSLOG_CONFIG);
+	global $syslogdb_default;
 
 	if (get_request_var('filter') != '') {
 		$sql_where .= (strlen($sql_where) ? ' AND ':'WHERE ') .
@@ -380,8 +376,7 @@ function syslog_get_removal_records(&$sql_where, $rows) {
 
 function syslog_action_edit() {
 	global $message_types;
-
-	include(SYSLOG_CONFIG);
+	global $syslogdb_default;
 
 	/* ================= input validation ================= */
 	get_filter_request_var('id');
@@ -624,8 +619,7 @@ function syslog_filter() {
 
 function syslog_removal() {
 	global $syslog_actions, $message_types, $config;
-
-	include(SYSLOG_CONFIG);
+	global $syslogdb_default;
 
     /* ================= input validation and session storage ================= */
     $filters = array(

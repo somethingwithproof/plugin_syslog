@@ -35,10 +35,6 @@ include_once('./lib/html_tree.php');
 include_once('./plugins/syslog/functions.php');
 include_once('./plugins/syslog/database.php');
 
-syslog_determine_config();
-
-include(SYSLOG_CONFIG);
-
 syslog_connect();
 
 set_default_action();
@@ -112,7 +108,7 @@ if (isset_request_var('export')) {
 $_SESSION['sess_nav_level_cache'] = array();
 
 function get_ajax_hosts() {
-	include(SYSLOG_CONFIG);
+	global $syslogdb_default;
 
 	$ac_rows = read_config_option('autocomplete_rows');
 	if ($ac_rows <= 0) {
@@ -200,8 +196,7 @@ function syslog_display_tabs($current_tab) {
 
 function syslog_view_alarm() {
 	global $config;
-
-	include(SYSLOG_CONFIG);
+	global $syslogdb_default;
 
 	print "<table class='cactiTable'>";
 	print "<tr class='tableHeader'><td class='textHeaderDark'>" . __('Syslog Alert View', 'syslog') . "</td></tr>";
@@ -221,8 +216,7 @@ function syslog_view_alarm() {
 */
 function syslog_statistics() {
 	global $title, $rows, $config;
-
-	include(SYSLOG_CONFIG);
+	global $syslogdb_default;
 
     /* ================= input validation and session storage ================= */
     $filters = array(
@@ -392,7 +386,7 @@ function syslog_statistics() {
 }
 
 function get_stats_records(&$sql_where, &$sql_groupby, $rows) {
-	include(SYSLOG_CONFIG);
+	global $syslogdb_default;
 
 	/* form the 'where' clause for our main sql query */
 	if (!isempty_request_var('rfilter')) {
@@ -479,8 +473,7 @@ function get_stats_records(&$sql_where, &$sql_groupby, $rows) {
 
 function syslog_stats_filter() {
 	global $config, $item_rows;
-
-	include(SYSLOG_CONFIG);
+	global $syslogdb_default;
 
 	?>
 	<tr class='even'>
@@ -867,8 +860,7 @@ function set_shift_span($shift_span, $session_prefix) {
 
 function get_syslog_messages(&$sql_where, $rows, $tab) {
 	global $sql_where, $hostfilter, $hostfilter_log, $current_tab, $syslog_incoming_config;
-
-	include(SYSLOG_CONFIG);
+	global $syslogdb_default;
 
 	$sql_where = '';
 
@@ -1057,8 +1049,7 @@ function get_syslog_messages(&$sql_where, $rows, $tab) {
 
 function syslog_filter($sql_where, $tab) {
 	global $config, $graph_timespans, $graph_timeshifts, $reset_multi, $page_refresh_interval, $item_rows, $trimvals;
-
-	include(SYSLOG_CONFIG);
+	global $syslogdb_default;
 
 	$unprocessed = syslog_db_fetch_cell("SELECT COUNT(*) FROM `" . $syslogdb_default . "`.`syslog_incoming`");
 
@@ -1724,8 +1715,8 @@ function syslog_log_legend() {
 function syslog_messages($tab = 'syslog') {
 	global $sql_where, $hostfilter, $severities;
 	global $config, $syslog_incoming_config, $reset_multi, $syslog_levels;
+	global $syslogdb_default;
 
-	include(SYSLOG_CONFIG);
 	include('./include/global_arrays.php');
 
 	/* force the initial timespan to be 30 minutes for performance reasons */
