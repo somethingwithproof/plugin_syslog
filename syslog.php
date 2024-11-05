@@ -1717,6 +1717,10 @@ function syslog_messages($tab = 'syslog') {
 	global $config, $syslog_incoming_config, $reset_multi, $syslog_levels;
 	global $syslogdb_default;
 
+	if (defined('SYSLOG_CONFIG')) {
+		include_once(SYSLOG_CONFIG);
+	}
+
 	include('./include/global_arrays.php');
 
 	/* force the initial timespan to be 30 minutes for performance reasons */

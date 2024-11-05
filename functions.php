@@ -250,6 +250,10 @@ function syslog_partition_remove($table) {
 function syslog_partition_check($table) {
 	global $syslogdb_default;
 
+	if (defined('SYSLOG_CONFIG')) {
+		include_once(SYSLOG_CONFIG);
+	}
+
 	/* find date of last partition */
 	$last_part = syslog_db_fetch_cell("SELECT PARTITION_NAME
 		FROM `information_schema`.`partitions`
@@ -721,6 +725,10 @@ function sql_hosts_where($tab) {
 function syslog_export($tab) {
 	global $syslog_incoming_config, $severities;
 	global $syslogdb_default;
+
+	if (defined('SYSLOG_CONFIG')) {
+		include_once(SYSLOG_CONFIG);
+	}
 
 	if ($tab == 'syslog') {
 		header('Content-type: application/excel');
@@ -1603,6 +1611,10 @@ function syslog_process_alert($alert, $sql, $params, $count, $hostname = '') {
  */
 function syslog_get_alert_sql(&$alert, $uniqueID) {
 	global $syslogdb_default, $syslog_incoming_config;
+
+	if (defined('SYSLOG_CONFIG')) {
+		include_once(SYSLOG_CONFIG);
+	}
 
 	if (!isset($syslog_incoming_config['programField'])) {
 		$syslog_incoming_config['programField'] = 'program';
