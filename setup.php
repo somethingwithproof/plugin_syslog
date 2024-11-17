@@ -1081,7 +1081,7 @@ function syslog_confirm_button($action, $cancel_url, $syslog_exists) {
 						var json = $(this).serializeObject();
 						json.__csrf_magic = csrfMagicToken;
 
-						if (typeof postUrl == 'funciton') {
+						if (typeof postUrl == 'function') {
 							postUrl({url: strURL}, json);
 						} else {
 							loadPageUsingPost(strURL, json);
