@@ -4,7 +4,7 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 msgid ""
-msgstr "Project-Id-Version: Cacti\nReport-Msgid-Bugs-To: developers@cacti.net\nPOT-Creation-Date: 2025-03-07 14:31-0500\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: Automatically generated\nLanguage-Team: none\nLanguage: ka\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\n"
+msgstr "Project-Id-Version: Cacti\nReport-Msgid-Bugs-To: developers@cacti.net\nPOT-Creation-Date: 2025-03-07 14:31-0500\nPO-Revision-Date: 2025-07-01 15:52+0000\nLast-Translator: Ekaterine papava <papava.e@gtu.ge>\nLanguage-Team: Georgian <https://translate.cacti.net/projects/cacti/syslog/ka/>\nLanguage: ka-GE\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=n != 1;\nX-Generator: Weblate 5.11.4\n"
 
 #: functions.php:72
 msgid "Save Failed.  Remote Data Collectors in Sync Mode are not allowed to Save Rules.  Save from the Main Cacti Server instead."
@@ -31,20 +31,20 @@ msgstr ""
 #: functions.php:1315 functions.php:1342 syslog.php:1897 syslog_alerts.php:498
 #: syslog_alerts.php:875
 msgid "Severity"
-msgstr ""
+msgstr "სიმძიმე"
 
 #: functions.php:1316 syslog_alerts.php:517 syslog_alerts.php:522
 #: syslog_alerts.php:901
 msgid "Threshold"
-msgstr ""
+msgstr "ზღვარი"
 
 #: functions.php:1317 syslog.php:1900
 msgid "Count"
-msgstr ""
+msgstr "რაოდენობა"
 
 #: functions.php:1318
 msgid "Match String"
-msgstr ""
+msgstr "ემთხვევა სტრიქონს"
 
 #: functions.php:1329 functions.php:1368
 #, php-format
@@ -58,21 +58,21 @@ msgstr ""
 
 #: functions.php:1340
 msgid "Hostname"
-msgstr ""
+msgstr "ჰოსტის სახელი"
 
 #: functions.php:1341 functions.php:2092 syslog.php:342 syslog.php:1792
 #: syslog.php:1800 syslog.php:1898
 msgid "Date"
-msgstr ""
+msgstr "თარიღი"
 
 #: functions.php:1343
 msgid "Level"
-msgstr ""
+msgstr "დონე"
 
 #: functions.php:1344 functions.php:2093 syslog.php:1795 syslog.php:1803
 #: syslog.php:1899
 msgid "Message"
-msgstr ""
+msgstr "შეტყობინება"
 
 #: functions.php:1351
 #, php-format
@@ -85,19 +85,19 @@ msgstr ""
 
 #: functions.php:1360
 msgid "Name:"
-msgstr ""
+msgstr "სახელი:"
 
 #: functions.php:1361 functions.php:1417
 msgid "Severity:"
-msgstr ""
+msgstr "სიმძიმე:"
 
 #: functions.php:1362
 msgid "Threshold:"
-msgstr ""
+msgstr "ზღვარი:"
 
 #: functions.php:1363
 msgid "Count:"
-msgstr ""
+msgstr "რაოდენობა:"
 
 #: functions.php:1364
 msgid "Message String:"
@@ -105,19 +105,19 @@ msgstr ""
 
 #: functions.php:1415
 msgid "Hostname:"
-msgstr ""
+msgstr "ჰოსტის სახელი:"
 
 #: functions.php:1416
 msgid "Date:"
-msgstr ""
+msgstr "თარიღი:"
 
 #: functions.php:1418
 msgid "Level:"
-msgstr ""
+msgstr "დონე:"
 
 #: functions.php:1419
 msgid "Message:"
-msgstr ""
+msgstr "შეტყობინება:"
 
 #: functions.php:1484
 msgid ", Host:"
@@ -125,11 +125,11 @@ msgstr ""
 
 #: functions.php:1484 functions.php:1548
 msgid ", URL:"
-msgstr ""
+msgstr ", URL:"
 
 #: functions.php:1484 functions.php:1548
 msgid "Sev:"
-msgstr ""
+msgstr "სიმძ:"
 
 #: functions.php:1490 functions.php:1544
 #, php-format
@@ -142,7 +142,7 @@ msgstr ""
 
 #: functions.php:2091
 msgid "Host"
-msgstr ""
+msgstr "ჰოსტი"
 
 #: functions.php:2116
 #, php-format
@@ -232,11 +232,11 @@ msgstr ""
 
 #: setup.php:927 setup.php:1015
 msgid "Upgrade"
-msgstr ""
+msgstr "ვერსიის აწევა"
 
 #: setup.php:929 setup.php:1017
 msgid "Install"
-msgstr ""
+msgstr "დაყენება"
 
 #: setup.php:933
 #, php-format
@@ -290,16 +290,16 @@ msgstr ""
 
 #: setup.php:1020
 msgid "Uninstall"
-msgstr ""
+msgstr "წაშლა"
 
 #: setup.php:1027 syslog_alerts.php:208 syslog_removal.php:230
 #: syslog_reports.php:208
 msgid "Cancel"
-msgstr ""
+msgstr "გაუქმება"
 
 #: setup.php:1066 setup.php:1202 setup.php:1204 setup.php:1410 setup.php:1424
 msgid "Syslog"
-msgstr ""
+msgstr "სისტ. ჟურნალი"
 
 #: setup.php:1070
 msgid "General Settings"
@@ -307,7 +307,7 @@ msgstr ""
 
 #: setup.php:1074
 msgid "Syslog Enabled"
-msgstr ""
+msgstr "Syslog ჩართულია"
 
 #: setup.php:1075
 msgid "If this checkbox is set, records will be transferred from the Syslog Incoming table to the main syslog table and Alerts and Reports will be enabled.  Please keep in mind that if the system is disabled log entries will still accumulate into the Syslog Incoming table as this is defined by the rsyslog or syslog-ng process."
@@ -357,7 +357,7 @@ msgstr ""
 #: setup.php:1117
 #, php-format
 msgid "%d Records"
-msgstr ""
+msgstr "%d ჩანაწერი"
 
 #: setup.php:1121
 msgid "Command for Opening Tickets"
@@ -393,7 +393,7 @@ msgstr ""
 
 #: setup.php:1151
 msgid "Syslog Retention"
-msgstr ""
+msgstr "Syslog-ის შენარჩუნება"
 
 #: setup.php:1152
 msgid "This is the number of days to keep events."
@@ -429,23 +429,23 @@ msgstr ""
 
 #: setup.php:1249 syslog_removal.php:37
 msgid "Delete"
-msgstr ""
+msgstr "წაშლა"
 
 #: setup.php:1250 syslog_removal.php:38
 msgid "Disable"
-msgstr ""
+msgstr "გათიშვა"
 
 #: setup.php:1251 syslog_removal.php:39
 msgid "Enable"
-msgstr ""
+msgstr "ჩართვა"
 
 #: setup.php:1252 syslog.php:1404 syslog_removal.php:41
 msgid "Export"
-msgstr ""
+msgstr "გატანa"
 
 #: setup.php:1295 setup.php:1314
 msgid "Indefinite"
-msgstr ""
+msgstr "შეუზღუდავი"
 
 #: setup.php:1296 setup.php:1315 syslog.php:608 syslog_alerts.php:409
 #, php-format
@@ -462,17 +462,17 @@ msgstr ""
 #: setup.php:1302 setup.php:1321 syslog_alerts.php:411
 #, php-format
 msgid "%d Week"
-msgstr ""
+msgstr "%d კვირა"
 
 #: setup.php:1303 setup.php:1322 syslog_alerts.php:412
 #, php-format
 msgid "%d Weeks"
-msgstr ""
+msgstr "%d კვირა"
 
 #: setup.php:1304 setup.php:1323
 #, php-format
 msgid "%d Month"
-msgstr ""
+msgstr "%d თვე"
 
 #: setup.php:1305 setup.php:1306 setup.php:1307 setup.php:1308 setup.php:1309
 #: setup.php:1324 setup.php:1325 setup.php:1326 setup.php:1327 setup.php:1328
@@ -483,16 +483,16 @@ msgstr ""
 #: setup.php:1310 setup.php:1329
 #, php-format
 msgid "%d Year"
-msgstr ""
+msgstr "%d წელი"
 
 #: setup.php:1333 syslog_reports.php:769
 msgid "Never"
-msgstr ""
+msgstr "არასდროს"
 
 #: setup.php:1334 syslog.php:599
 #, php-format
 msgid "%d Minute"
-msgstr ""
+msgstr "%d წუთი"
 
 #: setup.php:1335 setup.php:1336 setup.php:1337 syslog.php:600 syslog.php:601
 #: syslog.php:602 syslog.php:603 syslog_alerts.php:396 syslog_alerts.php:397
@@ -500,19 +500,19 @@ msgstr ""
 #: syslog_alerts.php:401
 #, php-format
 msgid "%d Minutes"
-msgstr ""
+msgstr "%d წუთი"
 
 #: setup.php:1341 syslog.php:1630 syslog.php:1697 syslog.php:1714
 msgid "Notice"
-msgstr ""
+msgstr "ცნობა"
 
 #: setup.php:1342 syslog.php:1628 syslog.php:1696 syslog.php:1713
 msgid "Warning"
-msgstr ""
+msgstr "გაფრთხილება"
 
 #: setup.php:1343 syslog.php:1624 syslog.php:1693 syslog.php:1712
 msgid "Critical"
-msgstr ""
+msgstr "კრიტიკული"
 
 #: setup.php:1347
 msgid "Begins with"
@@ -520,7 +520,7 @@ msgstr ""
 
 #: setup.php:1348
 msgid "Contains"
-msgstr ""
+msgstr "შეიცავს"
 
 #: setup.php:1349
 msgid "Ends with"
@@ -528,7 +528,7 @@ msgstr ""
 
 #: setup.php:1350
 msgid "Hostname is"
-msgstr ""
+msgstr "ჰოსტის სახელია"
 
 #: setup.php:1351
 msgid "Program is"
@@ -544,19 +544,19 @@ msgstr ""
 
 #: setup.php:1357
 msgid "Daily"
-msgstr ""
+msgstr "ყოველდღიური"
 
 #: setup.php:1358
 msgid "Weekly"
-msgstr ""
+msgstr "კვირაში ერთხელ"
 
 #: setup.php:1382
 msgid "Import/Export"
-msgstr ""
+msgstr "შეტანა / გატანა"
 
 #: setup.php:1383
 msgid "Alert Rules"
-msgstr ""
+msgstr "განგაშის წესები"
 
 #: setup.php:1383 setup.php:1384 setup.php:1385 setup.php:1390
 msgid "Syslog Settings"
@@ -576,7 +576,7 @@ msgstr ""
 
 #: setup.php:1395
 msgid "System Administration"
-msgstr ""
+msgstr "სისტემის ადმინისტრირება"
 
 #: setup.php:1411
 msgid "Syslog Removals"
@@ -584,15 +584,15 @@ msgstr ""
 
 #: setup.php:1412 setup.php:1413 setup.php:1417 setup.php:1418 setup.php:1422
 msgid "(Edit)"
-msgstr ""
+msgstr "(ჩასწორება)"
 
 #: setup.php:1414 setup.php:1419 setup.php:1423
 msgid "(Actions)"
-msgstr ""
+msgstr "(ქმედებები)"
 
 #: setup.php:1416
 msgid "Syslog Alerts"
-msgstr ""
+msgstr "Syslog-ის განგაშები"
 
 #: setup.php:1421
 msgid "Syslog Reports"
@@ -609,7 +609,7 @@ msgstr ""
 
 #: setup.php:1564
 msgid "Syslog Utilities"
-msgstr ""
+msgstr "Syslog-ის ხელსაწყოები"
 
 #: setup.php:1568
 msgid "Purge Syslog Devices"
@@ -631,7 +631,7 @@ msgstr ""
 #: syslog.php:67
 #, php-format
 msgid "%d Chars"
-msgstr ""
+msgstr "%d სიმბოლო"
 
 #: syslog.php:171
 msgid "System Logs"
@@ -639,7 +639,7 @@ msgstr ""
 
 #: syslog.php:173
 msgid "Statistics"
-msgstr ""
+msgstr "სტატისტიკა"
 
 #: syslog.php:175
 msgid "Alert Logs"
@@ -659,7 +659,7 @@ msgstr ""
 
 #: syslog.php:314 syslog.php:1550 syslog.php:1808
 msgid "Messages"
-msgstr ""
+msgstr "შეტყობინებები"
 
 #: syslog.php:322
 msgid "Device Name"
@@ -668,20 +668,20 @@ msgstr ""
 #: syslog.php:327 syslog.php:536 syslog.php:1593 syslog.php:1796
 #: syslog.php:1804 syslog.php:1902
 msgid "Facility"
-msgstr ""
+msgstr "ობიექტი"
 
 #: syslog.php:332 syslog.php:556 syslog.php:1615 syslog.php:1797
 #: syslog.php:1805 syslog.php:1903
 msgid "Priority"
-msgstr ""
+msgstr "პრიორიტეტი"
 
 #: syslog.php:337 syslog.php:1794 syslog.php:1802 syslog.php:1995
 msgid "Program"
-msgstr ""
+msgstr "პროგრამა"
 
 #: syslog.php:347
 msgid "Records"
-msgstr ""
+msgstr "ჩანაწერები"
 
 #: syslog.php:384
 msgid "No Syslog Statistics Found"
@@ -690,32 +690,32 @@ msgstr ""
 #: syslog.php:492 syslog.php:1793 syslog.php:1801 syslog.php:1901
 #: syslog_alerts.php:509
 msgid "Device"
-msgstr ""
+msgstr "მოწყობილობა"
 
 #: syslog.php:496 syslog.php:540 syslog.php:560 syslog_alerts.php:725
 #: syslog_removal.php:552 syslog_reports.php:590
 msgid "All"
-msgstr ""
+msgstr "ყველა"
 
 #: syslog.php:497 syslog.php:541 syslog.php:561 syslog.php:1989 syslog.php:2000
 #: syslog.php:2041 syslog.php:2042 syslog_alerts.php:584 syslog_reports.php:494
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #: syslog.php:578 syslog.php:1402 syslog_alerts.php:747 syslog_removal.php:574
 #: syslog_reports.php:612
 msgid "Go"
-msgstr ""
+msgstr "მიდი"
 
 #: syslog.php:579 syslog.php:1403 syslog_alerts.php:748 syslog_removal.php:575
 #: syslog_reports.php:613
 msgid "Clear"
-msgstr ""
+msgstr "გასუფთავება"
 
 #: syslog.php:587 syslog.php:1427 syslog_alerts.php:715 syslog_removal.php:542
 #: syslog_reports.php:580
 msgid "Search"
-msgstr ""
+msgstr "ძებნა"
 
 #: syslog.php:593
 msgid "Time Range"
@@ -724,23 +724,23 @@ msgstr ""
 #: syslog.php:604 syslog_alerts.php:402
 #, php-format
 msgid "%d Hour"
-msgstr ""
+msgstr "%d საათი"
 
 #: syslog.php:605 syslog.php:606 syslog.php:607 syslog_alerts.php:403
 #: syslog_alerts.php:404 syslog_alerts.php:405 syslog_alerts.php:406
 #: syslog_alerts.php:407 syslog_alerts.php:408
 #, php-format
 msgid "%d Hours"
-msgstr ""
+msgstr "%d საათი"
 
 #: syslog.php:618
 msgid "Entries"
-msgstr ""
+msgstr "ჩანაწერები"
 
 #: syslog.php:622 syslog.php:1554 syslog_alerts.php:735 syslog_removal.php:562
 #: syslog_reports.php:600
 msgid "Default"
-msgstr ""
+msgstr "ნაგულისხმევი"
 
 #: syslog.php:1066
 #, php-format
@@ -758,7 +758,7 @@ msgstr ""
 
 #: syslog.php:1090
 msgid "Select Device(s)"
-msgstr ""
+msgstr "აირჩიეთ მოწყობილობები"
 
 #: syslog.php:1092
 msgid "Devices Selected"
@@ -775,15 +775,15 @@ msgstr ""
 
 #: syslog.php:1336
 msgid "Timespan"
-msgstr ""
+msgstr "ხანგრძლივობა"
 
 #: syslog.php:1342
 msgid "Custom"
-msgstr ""
+msgstr "მომხმარებლის"
 
 #: syslog.php:1364
 msgid "From"
-msgstr ""
+msgstr "ვისგან"
 
 #: syslog.php:1370
 msgid "Start Date Selector"
@@ -791,7 +791,7 @@ msgstr ""
 
 #: syslog.php:1373
 msgid "To"
-msgstr ""
+msgstr "სადამდე"
 
 #: syslog.php:1379
 msgid "End Date Selector"
@@ -819,7 +819,7 @@ msgstr ""
 
 #: syslog.php:1405
 msgid "Save"
-msgstr ""
+msgstr "შენახვა"
 
 #: syslog.php:1405
 msgid "Save Default Settings"
@@ -827,7 +827,7 @@ msgstr ""
 
 #: syslog.php:1411 syslog_alerts.php:886
 msgid "Alerts"
-msgstr ""
+msgstr "განგაშები"
 
 #: syslog.php:1411
 msgid "View Syslog Alert Rules"
@@ -835,7 +835,7 @@ msgstr ""
 
 #: syslog.php:1412
 msgid "Removals"
-msgstr ""
+msgstr "წაშლები"
 
 #: syslog.php:1412
 msgid "View Syslog Removal Rules"
@@ -843,7 +843,7 @@ msgstr ""
 
 #: syslog.php:1413 syslog_reports.php:750
 msgid "Reports"
-msgstr ""
+msgstr "ანგარიშები"
 
 #: syslog.php:1413
 msgid "View Syslog Reports"
@@ -851,7 +851,7 @@ msgstr ""
 
 #: syslog.php:1433
 msgid "Devices"
-msgstr ""
+msgstr "მოწყობილობები"
 
 #: syslog.php:1441
 msgid "Show All Devices"
@@ -863,7 +863,7 @@ msgstr ""
 
 #: syslog.php:1444
 msgid "Threshold Logs"
-msgstr ""
+msgstr "ზღვრის ჟურნალი"
 
 #: syslog.php:1553
 msgid "Display Rows"
@@ -871,15 +871,15 @@ msgstr ""
 
 #: syslog.php:1563
 msgid "Trim"
-msgstr ""
+msgstr "წაკვეთა"
 
 #: syslog.php:1566
 msgid "Message Trim"
-msgstr ""
+msgstr "შეტყობინების წაკვეთა"
 
 #: syslog.php:1575
 msgid "Refresh"
-msgstr ""
+msgstr "განახლება"
 
 #: syslog.php:1596
 msgid "Facilities to filter on"
@@ -899,51 +899,51 @@ msgstr ""
 
 #: syslog.php:1620 syslog.php:1692
 msgid "Emergency"
-msgstr ""
+msgstr "სასწრაფო"
 
 #: syslog.php:1621
 msgid "Alert++"
-msgstr ""
+msgstr "განგაში++"
 
 #: syslog.php:1622 syslog.php:1694
 msgid "Alert"
-msgstr ""
+msgstr "განგაში"
 
 #: syslog.php:1623
 msgid "Critical++"
-msgstr ""
+msgstr "კრიტიკული++"
 
 #: syslog.php:1625
 msgid "Error++"
-msgstr ""
+msgstr "შეცდომა++"
 
 #: syslog.php:1626 syslog.php:1695
 msgid "Error"
-msgstr ""
+msgstr "შეცდომა"
 
 #: syslog.php:1627
 msgid "Warning++"
-msgstr ""
+msgstr "გაფრთხილება++"
 
 #: syslog.php:1629
 msgid "Notice++"
-msgstr ""
+msgstr "შენიშვნა++"
 
 #: syslog.php:1631
 msgid "Info++"
-msgstr ""
+msgstr "ინფო++"
 
 #: syslog.php:1632 syslog.php:1698
 msgid "Info"
-msgstr ""
+msgstr "ინფორმაცია"
 
 #: syslog.php:1633 syslog.php:1699
 msgid "Debug"
-msgstr ""
+msgstr "გამართვა"
 
 #: syslog.php:1638
 msgid "Record Type"
-msgstr ""
+msgstr "ჩანაწერის ტიპი"
 
 #: syslog.php:1641
 msgid "Removal Handling"
@@ -963,15 +963,15 @@ msgstr ""
 
 #: syslog.php:1715
 msgid "Informational"
-msgstr ""
+msgstr "საინფორმაციო"
 
 #: syslog.php:1791 syslog_alerts.php:609
 msgid "Actions"
-msgstr ""
+msgstr "ქმედებები"
 
 #: syslog.php:1851 syslog.php:1854 syslog.php:1855 syslog.php:1922
 msgid "Unknown"
-msgstr ""
+msgstr "უცნობი"
 
 #: syslog.php:1860
 msgid "No Syslog Messages"
@@ -1027,7 +1027,7 @@ msgstr ""
 
 #: syslog_alerts.php:208 syslog_removal.php:230 syslog_reports.php:208
 msgid "Continue"
-msgstr ""
+msgstr "გაგრძელება"
 
 #: syslog_alerts.php:309 syslog_reports.php:304
 msgid "The SQL Syntax Entered is invalid.  Please correct your SQL.<br>"
@@ -1044,7 +1044,7 @@ msgstr ""
 
 #: syslog_alerts.php:386
 msgid "Not Set"
-msgstr ""
+msgstr "დაყენებული არაა"
 
 #: syslog_alerts.php:391
 msgid "1 Minute"
@@ -1069,15 +1069,15 @@ msgstr ""
 
 #: syslog_alerts.php:478 syslog_alerts.php:902 syslog_reports.php:411
 msgid "N/A"
-msgstr ""
+msgstr "N/A"
 
 #: syslog_alerts.php:486 syslog_reports.php:417
 msgid "Details"
-msgstr ""
+msgstr "დეტალები"
 
 #: syslog_alerts.php:490 syslog_reports.php:421
 msgid "Name"
-msgstr ""
+msgstr "სახელი"
 
 #: syslog_alerts.php:491
 msgid "Please describe this Alert."
@@ -1089,7 +1089,7 @@ msgstr ""
 
 #: syslog_alerts.php:506
 msgid "Reporting Level"
-msgstr ""
+msgstr "ანგარიშის დონე"
 
 #: syslog_alerts.php:507
 msgid "For recording Re-Alert Cycles, should the Alert be tracked at the System or Device level."
@@ -1097,7 +1097,7 @@ msgstr ""
 
 #: syslog_alerts.php:509
 msgid "System"
-msgstr ""
+msgstr "სისტემა"
 
 #: syslog_alerts.php:514
 msgid "Reporting Method"
@@ -1109,7 +1109,7 @@ msgstr ""
 
 #: syslog_alerts.php:517 syslog_alerts.php:901
 msgid "Individual"
-msgstr ""
+msgstr "ინდივიდუალური"
 
 #: syslog_alerts.php:523
 msgid "For the 'Threshold' method, If the number seen is above this value an Alert will be triggered."
@@ -1137,7 +1137,7 @@ msgstr ""
 #: syslog_removal.php:702 syslog_reports.php:431 syslog_reports.php:586
 #: syslog_reports.php:740
 msgid "Enabled"
-msgstr ""
+msgstr "ჩართულია"
 
 #: syslog_alerts.php:551
 msgid "Is this Alert Enabled?"
@@ -1145,7 +1145,7 @@ msgstr ""
 
 #: syslog_alerts.php:553 syslog_removal.php:436 syslog_reports.php:431
 msgid "Disabled"
-msgstr ""
+msgstr "გათიშულია"
 
 #: syslog_alerts.php:557
 msgid "Re-Alert Cycle"
@@ -1157,7 +1157,7 @@ msgstr ""
 
 #: syslog_alerts.php:565 syslog_reports.php:508
 msgid "Notes"
-msgstr ""
+msgstr "შენიშვნები"
 
 #: syslog_alerts.php:568
 msgid "Space for Notes on the Alert"
@@ -1169,7 +1169,7 @@ msgstr ""
 
 #: syslog_alerts.php:580 syslog_reports.php:490
 msgid "Notification List"
-msgstr ""
+msgstr "გაფრთხილებების სია"
 
 #: syslog_alerts.php:581 syslog_reports.php:491
 msgid "Use the contents of this Notification List to dictate who should be notified and how."
@@ -1203,17 +1203,17 @@ msgstr ""
 #: syslog_removal.php:554 syslog_removal.php:724 syslog_reports.php:592
 #: syslog_reports.php:764
 msgid "No"
-msgstr ""
+msgstr "არა"
 
 #: syslog_alerts.php:616 syslog_alerts.php:726 syslog_alerts.php:903
 #: syslog_removal.php:553 syslog_removal.php:724 syslog_reports.php:591
 #: syslog_reports.php:764
 msgid "Yes"
-msgstr ""
+msgstr "კი"
 
 #: syslog_alerts.php:620
 msgid "Command"
-msgstr ""
+msgstr "ბრძანება"
 
 #: syslog_alerts.php:623
 msgid "When an Alert is triggered, run the following command.  The following replacement variables are available <b>'&lt;HOSTNAME&gt;'</b>, <b>'&lt;ALERTID&gt;'</b>, <b>'&lt;MESSAGE&gt;'</b>, <b>'&lt;FACILITY&gt;'</b>, <b>'&lt;PRIORITY&gt;'</b>, <b>'&lt;SEVERITY&gt;'</b>.  Please note that <b>'&lt;HOSTNAME&gt;'</b> is only available on individual thresholds.  These replacement values can appear on the command line, or be gathered from the environment of the script.  When used from the environment, those variables will be prefixed with 'ALERT_'."
@@ -1221,12 +1221,12 @@ msgstr ""
 
 #: syslog_alerts.php:731 syslog_reports.php:596
 msgid "Rows"
-msgstr ""
+msgstr "მწკრივები"
 
 #: syslog_alerts.php:749 syslog_alerts.php:1041 syslog_removal.php:576
 #: syslog_removal.php:863 syslog_reports.php:614 syslog_reports.php:905
 msgid "Import"
-msgstr ""
+msgstr "შემოტანა"
 
 #: syslog_alerts.php:849
 msgid "Syslog Alert Filters"
@@ -1234,7 +1234,7 @@ msgstr ""
 
 #: syslog_alerts.php:876 syslog_removal.php:705
 msgid "Method"
-msgstr ""
+msgstr "მეთოდი"
 
 #: syslog_alerts.php:877
 msgid "Threshold Count"
@@ -1242,7 +1242,7 @@ msgstr ""
 
 #: syslog_alerts.php:880 syslog_removal.php:704 syslog_reports.php:742
 msgid "Search String"
-msgstr ""
+msgstr "ძებნის სტრიქონი"
 
 #: syslog_alerts.php:881 syslog_reports.php:498
 msgid "Email Addresses"
@@ -1258,7 +1258,7 @@ msgstr ""
 
 #: syslog_alerts.php:906
 msgid "Multiple"
-msgstr ""
+msgstr "მრავალი"
 
 #: syslog_alerts.php:913
 msgid "No Syslog Alerts Defined"
@@ -1286,7 +1286,7 @@ msgstr ""
 
 #: syslog_alerts.php:1039 syslog_removal.php:861 syslog_reports.php:903
 msgid "Imported"
-msgstr ""
+msgstr "შემოტანილია"
 
 #: syslog_alerts.php:1039
 #, php-format
@@ -1295,7 +1295,7 @@ msgstr ""
 
 #: syslog_alerts.php:1039 syslog_removal.php:861 syslog_reports.php:903
 msgid "Updated"
-msgstr ""
+msgstr "განახლებულია"
 
 #: syslog_alerts.php:1041
 #, php-format
@@ -1304,11 +1304,11 @@ msgstr ""
 
 #: syslog_alerts.php:1041 syslog_removal.php:863 syslog_reports.php:905
 msgid "Update"
-msgstr ""
+msgstr "განახლება"
 
 #: syslog_removal.php:40
 msgid "Reprocess"
-msgstr ""
+msgstr "თავიდან დამუშავება"
 
 #: syslog_removal.php:181
 msgid "Click 'Continue' to Delete the following Syslog Removal Rule(s)."
@@ -1386,7 +1386,7 @@ msgstr ""
 
 #: syslog_removal.php:433 syslog_reports.php:428
 msgid "Enabled?"
-msgstr ""
+msgstr "ჩართულია?"
 
 #: syslog_removal.php:434
 msgid "Is this Removal Rule Enabled?"
@@ -1406,11 +1406,11 @@ msgstr ""
 
 #: syslog_removal.php:462 syslog_removal.php:727
 msgid "Deletion"
-msgstr ""
+msgstr "წაშლა"
 
 #: syslog_removal.php:462
 msgid "Transferal"
-msgstr ""
+msgstr "გადაცემის მიმდინარეობა"
 
 #: syslog_removal.php:466
 msgid "Removal Rule Notes"
@@ -1422,7 +1422,7 @@ msgstr ""
 
 #: syslog_removal.php:558 syslog_removal.php:712
 msgid "Rules"
-msgstr ""
+msgstr "წესები"
 
 #: syslog_removal.php:676
 msgid "Syslog Removal Rule Filters"
@@ -1434,7 +1434,7 @@ msgstr ""
 
 #: syslog_removal.php:727
 msgid "Transfer"
-msgstr ""
+msgstr "გადაყვანა"
 
 #: syslog_removal.php:734
 msgid "No Syslog Removal Rules Defined"
@@ -1508,7 +1508,7 @@ msgstr ""
 
 #: syslog_reports.php:211
 msgid "Return"
-msgstr ""
+msgstr "დაბრუნება"
 
 #: syslog_reports.php:391
 #, php-format
@@ -1541,7 +1541,7 @@ msgstr ""
 
 #: syslog_reports.php:452 syslog_reports.php:743
 msgid "Frequency"
-msgstr ""
+msgstr "სიხშირე"
 
 #: syslog_reports.php:453
 msgid "How often should this Report be sent to the distribution list?"
@@ -1577,11 +1577,11 @@ msgstr ""
 
 #: syslog_reports.php:739
 msgid "Report Name"
-msgstr ""
+msgstr "ანგარიშის სახელი"
 
 #: syslog_reports.php:745
 msgid "Last Sent"
-msgstr ""
+msgstr "ბოლო გაგზავნილი"
 
 #: syslog_reports.php:776
 msgid "No Syslog Reports Defined"
