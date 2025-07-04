@@ -4,7 +4,7 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 msgid ""
-msgstr "Project-Id-Version: Cacti\nReport-Msgid-Bugs-To: developers@cacti.net\nPOT-Creation-Date: 2025-03-07 14:31-0500\nPO-Revision-Date: 2025-07-02 19:26+0000\nLast-Translator: Ekaterine papava <papava.e@gtu.ge>\nLanguage-Team: Georgian <https://translate.cacti.net/projects/cacti/syslog/ka/>\nLanguage: ka-GE\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=n != 1;\nX-Generator: Weblate 5.11.4\n"
+msgstr "Project-Id-Version: Cacti\nReport-Msgid-Bugs-To: developers@cacti.net\nPOT-Creation-Date: 2025-03-07 14:31-0500\nPO-Revision-Date: 2025-07-04 04:26+0000\nLast-Translator: Ekaterine papava <papava.e@gtu.ge>\nLanguage-Team: Georgian <https://translate.cacti.net/projects/cacti/syslog/ka/>\nLanguage: ka-GE\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=n != 1;\nX-Generator: Weblate 5.11.4\n"
 
 #: functions.php:72
 msgid "Save Failed.  Remote Data Collectors in Sync Mode are not allowed to Save Rules.  Save from the Main Cacti Server instead."
@@ -191,7 +191,7 @@ msgstr ""
 
 #: setup.php:878
 msgid "InnoDB Storage"
-msgstr ""
+msgstr "InnoDB-ის საცავი"
 
 #: setup.php:883
 msgid "Database Architecture"
@@ -207,7 +207,7 @@ msgstr "ტრადიციული ცხრილი"
 
 #: setup.php:888
 msgid "Partitioned Table"
-msgstr ""
+msgstr "დაყოფილი ცხრილი"
 
 #: setup.php:893
 msgid "Retention Policy"
@@ -331,7 +331,7 @@ msgstr ""
 
 #: setup.php:1094
 msgid "Validate Hostnames"
-msgstr ""
+msgstr "ჰოსტის სახელების გადამოწმება"
 
 #: setup.php:1095
 msgid "If this checkbox is set, all hostnames are validated.  If the hostname is not valid. All records are assigned to a special host called 'invalidhost'.  This setting can impact syslog processing time on large systems.  Therefore, use of this setting should only be used when other means are not in place to prevent this from happening."
@@ -647,7 +647,7 @@ msgstr "განგაშის ჟურნალი"
 
 #: syslog.php:184
 msgid "Selected Alert"
-msgstr ""
+msgstr "არჩეული განგაში"
 
 #: syslog.php:207
 msgid "Syslog Alert View"
@@ -762,7 +762,7 @@ msgstr "აირჩიეთ მოწყობილობები"
 
 #: syslog.php:1092
 msgid "Devices Selected"
-msgstr ""
+msgstr "მონიშნული მოწყობილობები"
 
 #: syslog.php:1095
 msgid "All Devices Selected"
@@ -867,7 +867,7 @@ msgstr "ზღვრის ჟურნალი"
 
 #: syslog.php:1553
 msgid "Display Rows"
-msgstr ""
+msgstr "მწკრივების ჩვენება"
 
 #: syslog.php:1563
 msgid "Trim"
@@ -891,7 +891,7 @@ msgstr ""
 
 #: syslog.php:1618
 msgid "Priority Levels"
-msgstr ""
+msgstr "პრიორიტეტის დონეები"
 
 #: syslog.php:1619
 msgid "All Priorities"
@@ -1254,7 +1254,7 @@ msgstr "ბოლო ცვლილება"
 
 #: syslog_alerts.php:883 syslog_removal.php:707 syslog_reports.php:747
 msgid "By User"
-msgstr ""
+msgstr "მომხმარებლისგან"
 
 #: syslog_alerts.php:906
 msgid "Multiple"
@@ -1430,7 +1430,7 @@ msgstr ""
 
 #: syslog_removal.php:701
 msgid "Removal Name"
-msgstr ""
+msgstr "სახელის წაშლა"
 
 #: syslog_removal.php:727
 msgid "Transfer"
@@ -1557,7 +1557,7 @@ msgstr ""
 
 #: syslog_reports.php:468
 msgid "Report Format"
-msgstr ""
+msgstr "ანგარიშის ფორმატი"
 
 #: syslog_reports.php:482
 msgid "The information that will be contained in the body of the Report."
