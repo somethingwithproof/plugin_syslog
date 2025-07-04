@@ -4,7 +4,7 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 msgid ""
-msgstr "Project-Id-Version: Cacti\nReport-Msgid-Bugs-To: developers@cacti.net\nPOT-Creation-Date: 2025-03-07 14:31-0500\nPO-Revision-Date: 2025-07-04 04:26+0000\nLast-Translator: Ekaterine papava <papava.e@gtu.ge>\nLanguage-Team: Georgian <https://translate.cacti.net/projects/cacti/syslog/ka/>\nLanguage: ka-GE\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=n != 1;\nX-Generator: Weblate 5.11.4\n"
+msgstr "Project-Id-Version: Cacti\nReport-Msgid-Bugs-To: developers@cacti.net\nPOT-Creation-Date: 2025-03-07 14:31-0500\nPO-Revision-Date: 2025-07-04 17:16+0000\nLast-Translator: Ekaterine papava <papava.e@gtu.ge>\nLanguage-Team: Georgian <https://translate.cacti.net/projects/cacti/syslog/ka/>\nLanguage: ka-GE\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=n != 1;\nX-Generator: Weblate 5.11.4\n"
 
 #: functions.php:72
 msgid "Save Failed.  Remote Data Collectors in Sync Mode are not allowed to Save Rules.  Save from the Main Cacti Server instead."
@@ -524,7 +524,7 @@ msgstr "შეიცავს"
 
 #: setup.php:1349
 msgid "Ends with"
-msgstr ""
+msgstr "მთავრდება"
 
 #: setup.php:1350
 msgid "Hostname is"
@@ -532,7 +532,7 @@ msgstr "ჰოსტის სახელია"
 
 #: setup.php:1351
 msgid "Program is"
-msgstr ""
+msgstr "პროგრამა არის"
 
 #: setup.php:1352
 msgid "Facility is"
@@ -596,7 +596,7 @@ msgstr "Syslog-ის განგაშები"
 
 #: setup.php:1421
 msgid "Syslog Reports"
-msgstr ""
+msgstr "Syslog-ის ანგარიშები"
 
 #: setup.php:1500
 msgid "Display Syslog in Range"
@@ -635,7 +635,7 @@ msgstr "%d სიმბოლო"
 
 #: syslog.php:171
 msgid "System Logs"
-msgstr ""
+msgstr "სისტემური ჟურნალი"
 
 #: syslog.php:173
 msgid "Statistics"
@@ -1165,7 +1165,7 @@ msgstr ""
 
 #: syslog_alerts.php:576
 msgid "Email Options"
-msgstr ""
+msgstr "ელფოსტის მორგება"
 
 #: syslog_alerts.php:580 syslog_reports.php:490
 msgid "Notification List"
