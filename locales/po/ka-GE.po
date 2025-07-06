@@ -4,7 +4,7 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 msgid ""
-msgstr "Project-Id-Version: Cacti\nReport-Msgid-Bugs-To: developers@cacti.net\nPOT-Creation-Date: 2025-03-07 14:31-0500\nPO-Revision-Date: 2025-07-04 17:16+0000\nLast-Translator: Ekaterine papava <papava.e@gtu.ge>\nLanguage-Team: Georgian <https://translate.cacti.net/projects/cacti/syslog/ka/>\nLanguage: ka-GE\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=n != 1;\nX-Generator: Weblate 5.11.4\n"
+msgstr "Project-Id-Version: Cacti\nReport-Msgid-Bugs-To: developers@cacti.net\nPOT-Creation-Date: 2025-03-07 14:31-0500\nPO-Revision-Date: 2025-07-06 03:26+0000\nLast-Translator: Ekaterine papava <papava.e@gtu.ge>\nLanguage-Team: Georgian <https://translate.cacti.net/projects/cacti/syslog/ka/>\nLanguage: ka-GE\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=n != 1;\nX-Generator: Weblate 5.11.4\n"
 
 #: functions.php:72
 msgid "Save Failed.  Remote Data Collectors in Sync Mode are not allowed to Save Rules.  Save from the Main Cacti Server instead."
@@ -179,7 +179,7 @@ msgstr "ფონური გაუმჯობესება"
 
 #: setup.php:873
 msgid "Database Storage Engine"
-msgstr ""
+msgstr "მონაცემთა ბაზის საცავის ძრავა"
 
 #: setup.php:874
 msgid "You have the option to make this a partitioned table by days."
@@ -187,7 +187,7 @@ msgstr ""
 
 #: setup.php:877
 msgid "MyISAM Storage"
-msgstr ""
+msgstr "MyISAM-ის საცავი"
 
 #: setup.php:878
 msgid "InnoDB Storage"
@@ -219,7 +219,7 @@ msgstr ""
 
 #: setup.php:914
 msgid "Partitions per Day"
-msgstr ""
+msgstr "დანაყოფი დღეში"
 
 #: setup.php:915
 msgid "Select the number of partitions per day that you wish to create."
@@ -228,7 +228,7 @@ msgstr ""
 #: setup.php:918 setup.php:919 setup.php:920 setup.php:921 setup.php:922
 #, php-format
 msgid "%d Per Day"
-msgstr ""
+msgstr "%d დღეში"
 
 #: setup.php:927 setup.php:1015
 msgid "Upgrade"
@@ -241,7 +241,7 @@ msgstr "დაყენება"
 #: setup.php:933
 #, php-format
 msgid "Syslog %s Advisor"
-msgstr ""
+msgstr "Syslog %s მრჩეველი"
 
 #: setup.php:937
 msgid "WARNING: Syslog Upgrade is Time Consuming!!!"
@@ -347,7 +347,7 @@ msgstr ""
 
 #: setup.php:1107
 msgid "Max Report Records"
-msgstr ""
+msgstr "მაქს. ანგარიშის ჩანაწერები"
 
 #: setup.php:1108
 msgid "For Threshold based Alerts, what is the maximum number that you wish to show in the report.  This is used to limit the size of the html log and Email."
@@ -389,7 +389,7 @@ msgstr ""
 
 #: setup.php:1146
 msgid "Data Retention Settings"
-msgstr ""
+msgstr "მონაცემთა შენარჩუნების მორგება"
 
 #: setup.php:1151
 msgid "Syslog Retention"
@@ -536,7 +536,7 @@ msgstr "პროგრამა არის"
 
 #: setup.php:1352
 msgid "Facility is"
-msgstr ""
+msgstr "ობიექტი არის"
 
 #: setup.php:1353
 msgid "SQL Expression"
@@ -787,7 +787,7 @@ msgstr "ვისგან"
 
 #: syslog.php:1370
 msgid "Start Date Selector"
-msgstr ""
+msgstr "დაწყების თარიღის ამრჩევი"
 
 #: syslog.php:1373
 msgid "To"
@@ -799,7 +799,7 @@ msgstr ""
 
 #: syslog.php:1382
 msgid "Shift Time Backward"
-msgstr ""
+msgstr "დროის წანაცვლება უკან"
 
 #: syslog.php:1385
 msgid "Define Shifting Interval"
@@ -807,7 +807,7 @@ msgstr ""
 
 #: syslog.php:1398
 msgid "Shift Time Forward"
-msgstr ""
+msgstr "დროის წანაცვლება წინ"
 
 #: syslog.php:1403
 msgid "Return filter values to their user defined defaults"
@@ -859,7 +859,7 @@ msgstr ""
 
 #: syslog.php:1443
 msgid "Show All Logs"
-msgstr ""
+msgstr "ყველა ჟურნალის ჩვენება"
 
 #: syslog.php:1444
 msgid "Threshold Logs"
@@ -887,7 +887,7 @@ msgstr ""
 
 #: syslog.php:1597
 msgid "All Facilities"
-msgstr ""
+msgstr "ყველა ობიექტი"
 
 #: syslog.php:1618
 msgid "Priority Levels"
@@ -895,7 +895,7 @@ msgstr "პრიორიტეტის დონეები"
 
 #: syslog.php:1619
 msgid "All Priorities"
-msgstr ""
+msgstr "ყველა პრიორიტეტი"
 
 #: syslog.php:1620 syslog.php:1692
 msgid "Emergency"
@@ -975,11 +975,11 @@ msgstr "უცნობი"
 
 #: syslog.php:1860
 msgid "No Syslog Messages"
-msgstr ""
+msgstr "Syslog-ის შეტყობინებების გარეშე"
 
 #: syslog.php:1906
 msgid "Alert Log Rows"
-msgstr ""
+msgstr "განგასის ჟურნალის მწკრივები"
 
 #: syslog.php:1920
 msgid "Alert Removed"
@@ -1061,7 +1061,7 @@ msgstr ""
 
 #: syslog_alerts.php:451 syslog_alerts.php:458 syslog_alerts.php:465
 msgid "Alert Edit [new]"
-msgstr ""
+msgstr "განგაშის ჩასწორება [ახალი]"
 
 #: syslog_alerts.php:463 syslog_alerts.php:467
 msgid "New Alert Rule"
@@ -1177,7 +1177,7 @@ msgstr ""
 
 #: syslog_alerts.php:589
 msgid "Emails to Notify"
-msgstr ""
+msgstr "ელფოსტები გაფრთხილებისთვის"
 
 #: syslog_alerts.php:592
 msgid "Please enter a comma delimited list of Email addresses to inform.  If you wish to send out Email to a recipient in SMS format, please prefix that recipient's Email address with <b>'sms@'</b>.  For example, if the recipients SMS address is <b>'2485551212@mycarrier.net'</b>, you would enter it as <b>'sms@2485551212@mycarrier.net'</b> and it will be formatted as an SMS message."
@@ -1185,7 +1185,7 @@ msgstr ""
 
 #: syslog_alerts.php:598 syslog_reports.php:479
 msgid "Email Body Text"
-msgstr ""
+msgstr "ელფოსტის სხეულის ტექსტი"
 
 #: syslog_alerts.php:601
 msgid "This information will appear in the body of the Alert just before the Alert details."
@@ -1366,7 +1366,7 @@ msgstr ""
 
 #: syslog_removal.php:402 syslog_removal.php:415
 msgid "New Removal Record"
-msgstr ""
+msgstr "ახალი წაშლის ჩანაწერი"
 
 #: syslog_removal.php:411
 msgid "New Removal Rule"
@@ -1374,7 +1374,7 @@ msgstr ""
 
 #: syslog_removal.php:421
 msgid "Removal Rule Details"
-msgstr ""
+msgstr "წაშლის წესის დეტალები"
 
 #: syslog_removal.php:425
 msgid "Removal Rule Name"
@@ -1394,7 +1394,7 @@ msgstr ""
 
 #: syslog_removal.php:441 syslog_reports.php:436
 msgid "String Match Type"
-msgstr ""
+msgstr "სტრიქონის დამთხვევის ტიპი"
 
 #: syslog_removal.php:449
 msgid "Syslog Message Match String"
@@ -1402,7 +1402,7 @@ msgstr ""
 
 #: syslog_removal.php:460
 msgid "Method of Removal"
-msgstr ""
+msgstr "წაშლის მეთოდი"
 
 #: syslog_removal.php:462 syslog_removal.php:727
 msgid "Deletion"
@@ -1414,7 +1414,7 @@ msgstr "გადაცემის მიმდინარეობა"
 
 #: syslog_removal.php:466
 msgid "Removal Rule Notes"
-msgstr ""
+msgstr "წაშლის წესის შენიშვნები"
 
 #: syslog_removal.php:469
 msgid "Space for Notes on the Removal rule"
@@ -1476,7 +1476,7 @@ msgstr ""
 
 #: syslog_reports.php:175
 msgid "Delete Syslog Report(s)"
-msgstr ""
+msgstr "Syslog-ის ანგარიშების წაშლა"
 
 #: syslog_reports.php:179
 msgid "Click 'Continue' to Disable the following Syslog Report(s)."
@@ -1484,7 +1484,7 @@ msgstr ""
 
 #: syslog_reports.php:185
 msgid "Disable Syslog Report(s)"
-msgstr ""
+msgstr "Syslog-ის ანგარიშების გათიშვა"
 
 #: syslog_reports.php:189
 msgid "Click 'Continue' to Enable the following Syslog Report(s)."
@@ -1492,7 +1492,7 @@ msgstr ""
 
 #: syslog_reports.php:195
 msgid "Enable Syslog Report(s)"
-msgstr ""
+msgstr "Syslog-ის ანგარიშების ჩართვა"
 
 #: syslog_reports.php:199
 msgid "Click 'Continue' to Export the following Syslog Report Rule(s)."
@@ -1521,7 +1521,7 @@ msgstr ""
 
 #: syslog_reports.php:395 syslog_reports.php:400
 msgid "New Report Record"
-msgstr ""
+msgstr "ახალი ანგარიშის ჩანაწერი"
 
 #: syslog_reports.php:422
 msgid "Please describe this Report."
@@ -1549,7 +1549,7 @@ msgstr ""
 
 #: syslog_reports.php:460 syslog_reports.php:744
 msgid "Send Time"
-msgstr ""
+msgstr "გაგზავნის დრო"
 
 #: syslog_reports.php:461
 msgid "What time of day should this report be sent?"
@@ -1573,7 +1573,7 @@ msgstr ""
 
 #: syslog_reports.php:714
 msgid "Syslog Report Filters"
-msgstr ""
+msgstr "Syslog-ის ანგარიშის ფილტრები"
 
 #: syslog_reports.php:739
 msgid "Report Name"
@@ -1605,7 +1605,7 @@ msgstr ""
 
 #: syslog_reports.php:825
 msgid "Import Report Data"
-msgstr ""
+msgstr "ანგარიშის მონაცემების შემოტანა"
 
 #: syslog_reports.php:903
 #, php-format
