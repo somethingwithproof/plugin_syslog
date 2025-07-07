@@ -4,7 +4,7 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 msgid ""
-msgstr "Project-Id-Version: Cacti\nReport-Msgid-Bugs-To: developers@cacti.net\nPOT-Creation-Date: 2025-03-07 14:31-0500\nPO-Revision-Date: 2025-07-06 03:26+0000\nLast-Translator: Ekaterine papava <papava.e@gtu.ge>\nLanguage-Team: Georgian <https://translate.cacti.net/projects/cacti/syslog/ka/>\nLanguage: ka-GE\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=n != 1;\nX-Generator: Weblate 5.11.4\n"
+msgstr "Project-Id-Version: Cacti\nReport-Msgid-Bugs-To: developers@cacti.net\nPOT-Creation-Date: 2025-03-07 14:31-0500\nPO-Revision-Date: 2025-07-07 04:26+0000\nLast-Translator: Ekaterine papava <papava.e@gtu.ge>\nLanguage-Team: Georgian <https://translate.cacti.net/projects/cacti/syslog/ka/>\nLanguage: ka-GE\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=n != 1;\nX-Generator: Weblate 5.11.4\n"
 
 #: functions.php:72
 msgid "Save Failed.  Remote Data Collectors in Sync Mode are not allowed to Save Rules.  Save from the Main Cacti Server instead."
@@ -167,7 +167,7 @@ msgstr ""
 
 #: setup.php:866
 msgid "Truncate Syslog Table"
-msgstr ""
+msgstr "Syslog-ის ცხრილის წაკვეთა"
 
 #: setup.php:867
 msgid "Inline Upgrade"
@@ -282,7 +282,7 @@ msgstr ""
 
 #: setup.php:975
 msgid "Syslog Data Only"
-msgstr ""
+msgstr "მხოლოდ syslog-ის მონაცემები"
 
 #: setup.php:995
 msgid "Syslog Uninstall Preferences"
@@ -401,7 +401,7 @@ msgstr ""
 
 #: setup.php:1158
 msgid "Syslog Alert Retention"
-msgstr ""
+msgstr "Syslog-ის განგაშების შენარჩუნება"
 
 #: setup.php:1159
 msgid "This is the number of days to keep alert logs."
@@ -655,7 +655,7 @@ msgstr ""
 
 #: syslog.php:288
 msgid "Syslog Statistics Filter"
-msgstr ""
+msgstr "Syslog-ის სტატისტიკის ფილტრი"
 
 #: syslog.php:314 syslog.php:1550 syslog.php:1808
 msgid "Messages"
@@ -766,7 +766,7 @@ msgstr "მონიშნული მოწყობილობები"
 
 #: syslog.php:1095
 msgid "All Devices Selected"
-msgstr ""
+msgstr "ყველა მონიშნული მოწყობილობა"
 
 #: syslog.php:1329
 #, php-format
@@ -803,7 +803,7 @@ msgstr "დროის წანაცვლება უკან"
 
 #: syslog.php:1385
 msgid "Define Shifting Interval"
-msgstr ""
+msgstr "წანაცვლების ინტერვალის აღწერა"
 
 #: syslog.php:1398
 msgid "Shift Time Forward"
@@ -1126,7 +1126,7 @@ msgstr ""
 
 #: syslog_alerts.php:539 syslog_reports.php:444 syslog_reports.php:471
 msgid "Message Match String"
-msgstr ""
+msgstr "შეტყობინება ემთხვევა სტრიქონს"
 
 #: syslog_alerts.php:540 syslog_removal.php:450
 msgid "Enter the matching component of the syslog message, the facility or host name, or the SQL where clause if using the SQL Expression Match Type."
@@ -1282,7 +1282,7 @@ msgstr ""
 
 #: syslog_alerts.php:962
 msgid "Import Alert Rule"
-msgstr ""
+msgstr "განგაშის წესის შემოტანა"
 
 #: syslog_alerts.php:1039 syslog_removal.php:861 syslog_reports.php:903
 msgid "Imported"
@@ -1370,7 +1370,7 @@ msgstr "ახალი წაშლის ჩანაწერი"
 
 #: syslog_removal.php:411
 msgid "New Removal Rule"
-msgstr ""
+msgstr "ახალი წაშლის წესი"
 
 #: syslog_removal.php:421
 msgid "Removal Rule Details"
@@ -1458,7 +1458,7 @@ msgstr ""
 
 #: syslog_removal.php:783
 msgid "Import Removal Rule"
-msgstr ""
+msgstr "წაშლის წესის შემოტანა"
 
 #: syslog_removal.php:861
 #, php-format
