@@ -4,7 +4,7 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 msgid ""
-msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: developers@cacti.net\nPOT-Creation-Date: 2025-03-07 14:31-0500\nPO-Revision-Date: 2025-10-15 22:42+0000\nLast-Translator: Daniel Nylander <daniel@danielnylander.se>\nLanguage-Team: Swedish <https://translate.cacti.net/projects/cacti/syslog/sv/>\nLanguage: sv-SE\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=n != 1;\nX-Generator: Weblate 5.11.4\n"
+msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: developers@cacti.net\nPOT-Creation-Date: 2025-03-07 14:31-0500\nPO-Revision-Date: 2025-10-17 17:18+0000\nLast-Translator: Daniel Nylander <daniel@danielnylander.se>\nLanguage-Team: Swedish <https://translate.cacti.net/projects/cacti/syslog/sv/>\nLanguage: sv-SE\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=n != 1;\nX-Generator: Weblate 5.11.4\n"
 
 #: functions.php:72
 msgid "Save Failed.  Remote Data Collectors in Sync Mode are not allowed to Save Rules.  Save from the Main Cacti Server instead."
@@ -429,7 +429,7 @@ msgstr "Om dina fjärrdatainsamlare har sina egna Syslog-databaser och behandlar
 
 #: setup.php:1249 syslog_removal.php:37
 msgid "Delete"
-msgstr "Radera"
+msgstr "Ta bort"
 
 #: setup.php:1250 syslog_removal.php:38
 msgid "Disable"
@@ -1145,7 +1145,7 @@ msgstr "Är denna varning aktiverad?"
 
 #: syslog_alerts.php:553 syslog_removal.php:436 syslog_reports.php:431
 msgid "Disabled"
-msgstr "Inaktiverad"
+msgstr "Inaktiverat"
 
 #: syslog_alerts.php:557
 msgid "Re-Alert Cycle"
