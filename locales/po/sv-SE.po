@@ -4,7 +4,7 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 msgid ""
-msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: developers@cacti.net\nPOT-Creation-Date: 2025-03-07 14:31-0500\nPO-Revision-Date: 2025-10-17 17:18+0000\nLast-Translator: Daniel Nylander <daniel@danielnylander.se>\nLanguage-Team: Swedish <https://translate.cacti.net/projects/cacti/syslog/sv/>\nLanguage: sv-SE\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=n != 1;\nX-Generator: Weblate 5.11.4\n"
+msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: developers@cacti.net\nPOT-Creation-Date: 2025-03-07 14:31-0500\nPO-Revision-Date: 2025-10-20 08:18+0000\nLast-Translator: Daniel Nylander <daniel@danielnylander.se>\nLanguage-Team: Swedish <https://translate.cacti.net/projects/cacti/syslog/sv/>\nLanguage: sv-SE\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=n != 1;\nX-Generator: Weblate 5.11.4\n"
 
 #: functions.php:72
 msgid "Save Failed.  Remote Data Collectors in Sync Mode are not allowed to Save Rules.  Save from the Main Cacti Server instead."
@@ -381,7 +381,7 @@ msgstr "Om den här kryssrutan är markerad skickas alla e-postmeddelanden i HTM
 
 #: setup.php:1139
 msgid "Format File to Use"
-msgstr "Format Fil som ska användas"
+msgstr "Formatfil som ska användas"
 
 #: setup.php:1142
 msgid "Choose the custom html wrapper and CSS file to use.  This file contains both html and CSS to wrap around your report.  If it contains more than simply CSS, you need to place a special <REPORT> tag inside of the file.  This format tag will be replaced by the report content.  These files are located in the 'formats' directory."
@@ -775,7 +775,7 @@ msgstr "Filter för Syslog-meddelanden %s"
 
 #: syslog.php:1336
 msgid "Timespan"
-msgstr "Tidsspann"
+msgstr "Tidsintervall"
 
 #: syslog.php:1342
 msgid "Custom"
@@ -787,7 +787,7 @@ msgstr "Från"
 
 #: syslog.php:1370
 msgid "Start Date Selector"
-msgstr "Väljare för startdatum"
+msgstr "Välj startdatum"
 
 #: syslog.php:1373
 msgid "To"
@@ -795,19 +795,19 @@ msgstr "Till"
 
 #: syslog.php:1379
 msgid "End Date Selector"
-msgstr "Väljare för slutdatum"
+msgstr "Välj slutdatum"
 
 #: syslog.php:1382
 msgid "Shift Time Backward"
-msgstr "Flytta tiden bakåt"
+msgstr "Förskjut tiden bakåt"
 
 #: syslog.php:1385
 msgid "Define Shifting Interval"
-msgstr "Definiera växlingsintervall"
+msgstr "Definiera förskjutningsintervall"
 
 #: syslog.php:1398
 msgid "Shift Time Forward"
-msgstr "Skifta tiden framåt"
+msgstr "Förskjut tiden framåt"
 
 #: syslog.php:1403
 msgid "Return filter values to their user defined defaults"
@@ -1044,7 +1044,7 @@ msgstr "Den SQL som bearbetades var ogiltig.  Vänligen korrigera din SQL"
 
 #: syslog_alerts.php:386
 msgid "Not Set"
-msgstr "Ej inställt"
+msgstr "Inte inställd"
 
 #: syslog_alerts.php:391
 msgid "1 Minute"
@@ -1145,7 +1145,7 @@ msgstr "Är denna varning aktiverad?"
 
 #: syslog_alerts.php:553 syslog_removal.php:436 syslog_reports.php:431
 msgid "Disabled"
-msgstr "Inaktiverat"
+msgstr "Inaktiverad"
 
 #: syslog_alerts.php:557
 msgid "Re-Alert Cycle"
@@ -1169,7 +1169,7 @@ msgstr "E-post Val"
 
 #: syslog_alerts.php:580 syslog_reports.php:490
 msgid "Notification List"
-msgstr "Aviseringslista"
+msgstr "Notifieringslista"
 
 #: syslog_alerts.php:581 syslog_reports.php:491
 msgid "Use the contents of this Notification List to dictate who should be notified and how."
