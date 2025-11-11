@@ -4,7 +4,7 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 msgid ""
-msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: developers@cacti.net\nPOT-Creation-Date: 2025-03-07 14:31-0500\nPO-Revision-Date: 2025-10-27 10:09+0000\nLast-Translator: Daniel Nylander <daniel@danielnylander.se>\nLanguage-Team: Swedish <https://translate.cacti.net/projects/cacti/syslog/sv/>\nLanguage: sv-SE\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=n != 1;\nX-Generator: Weblate 5.11.4\n"
+msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: developers@cacti.net\nPOT-Creation-Date: 2025-03-07 14:31-0500\nPO-Revision-Date: 2025-11-11 04:26+0000\nLast-Translator: Daniel Nylander <daniel@danielnylander.se>\nLanguage-Team: Swedish <https://translate.cacti.net/projects/cacti/syslog/sv/>\nLanguage: sv-SE\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=n != 1;\nX-Generator: Weblate 5.11.4\n"
 
 #: functions.php:72
 msgid "Save Failed.  Remote Data Collectors in Sync Mode are not allowed to Save Rules.  Save from the Main Cacti Server instead."
@@ -129,7 +129,7 @@ msgstr ", URL:"
 
 #: functions.php:1484 functions.php:1548
 msgid "Sev:"
-msgstr "Sev:"
+msgstr "Allv:"
 
 #: functions.php:1490 functions.php:1544
 #, php-format
@@ -323,7 +323,7 @@ msgstr "Om den här kryssrutan är markerad kommer statistik över varifrån sys
 
 #: setup.php:1086
 msgid "Strip Domains"
-msgstr "Strip Domains"
+msgstr "Ta bort domäner"
 
 #: setup.php:1087
 msgid "A comma delimited list of domains that you wish to remove from the syslog hostname, Examples would be 'mydomain.com, otherdomain.com'"
@@ -347,7 +347,7 @@ msgstr "Detta är den tid i sekunder som återstår innan sidan uppdateras."
 
 #: setup.php:1107
 msgid "Max Report Records"
-msgstr "Max Report Records"
+msgstr "Max rapportposter"
 
 #: setup.php:1108
 msgid "For Threshold based Alerts, what is the maximum number that you wish to show in the report.  This is used to limit the size of the html log and Email."
