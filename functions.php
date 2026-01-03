@@ -1495,7 +1495,7 @@ function syslog_process_alert($alert, $sql, $params, $count, $hostname = '') {
 					/**
 					 * Open a ticket if this options have been selected.
 					 */
-					$command = read_config_option('syslog_ticket_command');
+					 $command = read_config_option('syslog_ticket_command');
 
 					if ($command != '') {
 						$command = trim($command);
@@ -1765,6 +1765,46 @@ function syslog_strip_incoming_domains($uniqueID) {
 	}
 }
 
+
+
+
+/**
+ * Check if the hostname is in the cacti hosts table
+ * Some devices only send IP addresses in syslog messages, and may not be in the DNS
+ * however they may be in the cacti hosts table as monitored devices.
+ * 
+ * @param  (string) The hostname to check
+ * @param  (int) The unique id for syslog_incoming messages to process
+ * 
+ * @return (bool) True if the host exists in the Cacti database, false otherwise
+ */
+
+function syslog_check_cacti_hosts($host, $uniqueID) {
+	global $syslogdb_default;
+
+	if (empty($host)) {
+		return false;
+	}
+
+	// Check if the host exists in cacti by hostname and get the description
+	$cacti_host = db_fetch_row_prepared('SELECT DISTINCT description
+		FROM host
+		WHERE hostname = ?
+		LIMIT 1',
+		array($host));
+
+	if (cacti_sizeof($cacti_host) && !empty($cacti_host['description'])) {
+		syslog_db_execute_prepared('UPDATE `' . $syslogdb_default . '`.`syslog_incoming`
+			SET host = ?
+			WHERE host = ?
+			AND `status` = ?',
+			array($cacti_host['description'], $host, $uniqueID));
+		
+		return true;
+	}
+	
+	return false;
+}
 /**
  * syslog_update_reference_tables - There are many values in the syslog plugin
  *   that for the purposes of reducing the size of the syslog table are normalized
@@ -1784,20 +1824,45 @@ function syslog_update_reference_tables($uniqueID) {
 	syslog_debug('-------------------------------------------------------------------------------------');
 	syslog_debug('Updating Reference Tables from New Syslog Records');
 
-	/* correct for invalid hosts */
-	if (read_config_option('syslog_validate_hostname') == 'on') {
-		$hosts = syslog_db_fetch_assoc('SELECT DISTINCT host
-			FROM `' . $syslogdb_default . '`.`syslog_incoming`');
+	/* Validate and resolve hostnames - check DNS first, then Cacti, then mark invalid */
+    if (read_config_option('syslog_resolve_hostname') == 'on') {
+        $hosts = syslog_db_fetch_assoc_prepared('SELECT DISTINCT host
+            FROM `' . $syslogdb_default . '`.`syslog_incoming`
+            WHERE `status` = ?',
+            array($uniqueID));
 
-		foreach($hosts as $host) {
-			if ($host['host'] == gethostbyname($host['host'])) {
-				syslog_db_execute_prepared('UPDATE `' . $syslogdb_default . "`.`syslog_incoming`
-					SET host = 'invalid_host'
-					WHERE host = ?",
-					array($host['host']));
-			}
-		}
-	}
+        foreach($hosts as $host) {
+            if (!isset($host['host']) || empty($host['host'])) {
+                continue;
+            }
+            
+            $resolved = false;
+            
+            // Check if hostname resolves via DNS (only if DNS is enabled)
+            if (read_config_option('syslog_no_dns') != 'on') {
+                if ($host['host'] != gethostbyname($host['host'])) {
+                    // DNS resolved successfully
+                    $resolved = true;
+                }
+            }
+            
+            // Check if hostname exists in Cacti hosts table (only if not already resolved via DNS)
+            if (!$resolved) {
+                $resolved = syslog_check_cacti_hosts($host['host'], $uniqueID);
+            }
+            
+            // If not resolved via DNS or found in Cacti, prefix the hostname
+            if (!$resolved) {
+                $unresolved_host = 'unresolved-' . $host['host'];
+                cacti_log("SYSLOG WARNING: Hostname '" . $host['host'] . "' could not be resolved via DNS or found in Cacti hosts table, marking as '" . $unresolved_host . "'", false, 'SYSLOG');
+                syslog_db_execute_prepared('UPDATE `' . $syslogdb_default . "`.`syslog_incoming`
+                    SET host = ?
+                    WHERE host = ?
+                    AND `status` = ?",
+                    array($unresolved_host, $host['host'], $uniqueID));
+            }
+        }
+    }
 
 	syslog_db_execute_prepared('INSERT INTO `' . $syslogdb_default . '`.`syslog_programs`
 		(program, last_updated)
