@@ -779,7 +779,7 @@ function syslog_request_validation($current_tab, $force = false) {
 function set_shift_span($shift_span, $session_prefix) {
 	global $graph_timeshifts;
 
-	if ($shift_span == 'span' || $shift_span === false) {
+	if ($shift_span == 'span' || ($shift_span === false && !isset($_SESSION[$session_prefix . '_date1']))) {
 		$span = array();
 
 		// Calculate the timespan
@@ -795,6 +795,11 @@ function set_shift_span($shift_span, $session_prefix) {
 		kill_session_var($session_prefix . '_date2');
 
 		set_request_var('custom', false);
+	} elseif ($shift_span === false) {
+		// Page navigation: custom dates were set earlier; restore from session.
+		set_request_var('date1', $_SESSION[$session_prefix . '_date1']);
+		set_request_var('date2', $_SESSION[$session_prefix . '_date2']);
+		set_request_var('custom', true);
 	} elseif ($shift_span == 'shift') {
 		$span = array();
 
@@ -826,6 +831,9 @@ function set_shift_span($shift_span, $session_prefix) {
 
 		set_request_var('custom', true);
 	} elseif ($shift_span == 'custom') {
+		// Persist custom dates so page navigation preserves the filter.
+		$_SESSION[$session_prefix . '_date1'] = get_request_var('date1');
+		$_SESSION[$session_prefix . '_date2'] = get_request_var('date2');
 		set_request_var('custom', true);
 	}
 }
