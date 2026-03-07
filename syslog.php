@@ -797,9 +797,19 @@ function set_shift_span($shift_span, $session_prefix) {
 		set_request_var('custom', false);
 	} elseif ($shift_span === false) {
 		// Page navigation: custom dates were set earlier; restore from session.
-		set_request_var('date1', $_SESSION[$session_prefix . '_date1']);
-		set_request_var('date2', $_SESSION[$session_prefix . '_date2']);
-		set_request_var('custom', true);
+		if (isset($_SESSION[$session_prefix . '_date1']) && isset($_SESSION[$session_prefix . '_date2'])) {
+			set_request_var('date1', $_SESSION[$session_prefix . '_date1']);
+			set_request_var('date2', $_SESSION[$session_prefix . '_date2']);
+			set_request_var('custom', true);
+		} else {
+			// Session keys missing; fall back to a fresh span calculation.
+			$first_weekdayid = read_user_setting('first_weekdayid');
+			$span = array();
+			get_timespan($span, time(), get_request_var('predefined_timespan'), $first_weekdayid);
+			set_request_var('date1', date('Y-m-d H:i:s', $span['begin_now']));
+			set_request_var('date2', date('Y-m-d H:i:s', $span['end_now']));
+			set_request_var('custom', false);
+		}
 	} elseif ($shift_span == 'shift') {
 		$span = array();
 
