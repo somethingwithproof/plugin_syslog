@@ -779,7 +779,7 @@ function syslog_request_validation($current_tab, $force = false) {
 function set_shift_span($shift_span, $session_prefix) {
 	global $graph_timeshifts;
 
-	if ($shift_span == 'span' || ($shift_span === false && !isset($_SESSION[$session_prefix . '_date1']))) {
+	if ($shift_span == 'span' || ($shift_span === false && (!isset($_SESSION[$session_prefix . '_date1']) || !isset($_SESSION[$session_prefix . '_date2'])))) {
 		$span = array();
 
 		// Calculate the timespan
