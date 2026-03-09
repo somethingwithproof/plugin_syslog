@@ -741,7 +741,9 @@ function sql_hosts_where($tab) {
  */
 function syslog_csv_escape($value) {
 	$value = str_replace('"', '""', (string) $value);
-	if (strlen($value) > 0 && strpos('=+-@\t\r', $value[0]) !== false) {
+	/* Use double-quoted string so \t and \r are actual control characters,
+	 * not literal backslash sequences. */
+	if (strlen($value) > 0 && strpos("=+-@\t\r", $value[0]) !== false) {
 		$value = "'" . $value;
 	}
 	return $value;
