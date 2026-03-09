@@ -730,6 +730,23 @@ function sql_hosts_where($tab) {
 	}
 }
 
+/** syslog_csv_escape - escape a value for CSV output
+ *
+ *  Doubles embedded quotes and prefixes formula-triggering characters
+ *  (=, +, -, @, tab, CR) with a single quote so spreadsheet applications
+ *  do not interpret the cell as a formula.
+ *
+ * @param  string $value  raw field value
+ * @return string         escaped value safe for use inside CSV double-quotes
+ */
+function syslog_csv_escape($value) {
+	$value = str_replace('"', '""', (string) $value);
+	if (strlen($value) > 0 && strpos('=+-@\t\r', $value[0]) !== false) {
+		$value = "'" . $value;
+	}
+	return $value;
+}
+
 function syslog_export($tab) {
 	global $syslog_incoming_config, $severities;
 	global $syslogdb_default;
@@ -797,14 +814,15 @@ function syslog_export($tab) {
 					$host = 'Unknown';
 				}
 
-				print
-					'"' .
-					$host                                          . '","' .
-					ucfirst($facility)                             . '","' .
-					ucfirst($priority)                             . '","' .
-					ucfirst($program)                              . '","' .
-					$message['logtime']                            . '","' .
-					$message[$syslog_incoming_config['textField']] . '"'   . "\r\n";
+				$row = array(
+					syslog_csv_escape($host),
+					syslog_csv_escape(ucfirst($facility)),
+					syslog_csv_escape(ucfirst($priority)),
+					syslog_csv_escape(ucfirst($program)),
+					syslog_csv_escape($message['logtime']),
+					syslog_csv_escape($message[$syslog_incoming_config['textField']]),
+				);
+				print '"' . implode('","', $row) . '"' . "\r\n";
 			}
 		}
 	} else {
@@ -824,16 +842,17 @@ function syslog_export($tab) {
 					$severity = 'Unknown';
 				}
 
-				print
-					'"' .
-					$message['name']                  . '","' .
-					$severity                         . '","' .
-					$message['logtime']               . '","' .
-					$message['logmsg']                . '","' .
-					$message['host']                  . '","' .
-					ucfirst($message['facility'])     . '","' .
-					ucfirst($message['priority'])     . '","' .
-					$message['count']                 . '"'   . "\r\n";
+				$row = array(
+					syslog_csv_escape($message['name']),
+					syslog_csv_escape($severity),
+					syslog_csv_escape($message['logtime']),
+					syslog_csv_escape($message['logmsg']),
+					syslog_csv_escape($message['host']),
+					syslog_csv_escape(ucfirst($message['facility'])),
+					syslog_csv_escape(ucfirst($message['priority'])),
+					$message['count'],
+				);
+				print '"' . implode('","', $row) . '"' . "\r\n";
 			}
 		}
 	}
