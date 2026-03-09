@@ -88,7 +88,7 @@ $use_cacti_db = true;
 
 to 
 
-``console
+```console
 $use_cacti_db = false;
 ```
 
