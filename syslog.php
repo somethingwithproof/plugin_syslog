@@ -1485,7 +1485,7 @@ function syslog_filter($sql_where, $tab) {
  * @param string hostname
  */
 function syslog_strip_domain($hostname) {
-	if (strpos($hostname, '.') === false) {
+	if (!str_contains($hostname, '.')) {
 		return $hostname;
 	} elseif (filter_var($hostname, FILTER_VALIDATE_IP)) {
 		return $hostname;
@@ -1873,7 +1873,7 @@ function save_settings() {
 	foreach($variables as $v) {
 		if (isset_request_var($v)) {
 			// Accommodate predefined
-			if (strpos($v, 'predefined') !== false) {
+			if (str_contains($v, 'predefined')) {
 				$v = str_replace('predefined_', 'default_', $v);
 				set_user_setting($v, get_request_var($v));
 			} else {
@@ -1886,7 +1886,7 @@ function save_settings() {
 }
 
 function html_program_filter($program_id = '-1', $none_entry = '', $action = 'ajax_programs', $call_back = 'applyFilter', $sql_where = '') {
-	if (strpos($call_back, '()') === false) {
+	if (!str_contains($call_back, '()')) {
 		$call_back .= '()';
 	}
 

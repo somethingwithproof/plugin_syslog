@@ -2357,7 +2357,7 @@ function syslog_init_variables() {
 		set_config_option('syslog_alert_retention', '30');
 	}
 
-	if (substr(read_config_option('base_url'), 0, 4) != 'http') {
+	if (!str_starts_with(read_config_option('base_url'), 'http')) {
 		if (read_config_option('force_https') == 'on') {
 			$prefix = 'https://';
 		} else {
