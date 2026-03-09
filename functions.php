@@ -612,14 +612,24 @@ function syslog_remove_items($table, $uniqueID) {
 
 			if ($sql != '' || $sql1 != '') {
 				$debugm = '';
-				/* process the removal rule first */
+				db_begin_transaction($syslog_cnn);
+
+				/* move matching records before deleting them */
 				if ($sql1 != '') {
-					/* now delete the remainder that match */
 					syslog_db_execute($sql1);
 				}
 
-				/* now delete the remainder that match */
-				syslog_db_execute($sql);
+				/* delete the matched records */
+				$ok = syslog_db_execute($sql);
+
+				if ($ok) {
+					db_commit_transaction($syslog_cnn);
+				} else {
+					db_rollback_transaction($syslog_cnn);
+					cacti_log('ERROR: syslog_remove_items rollback on rule \'' . $remove['name'] . '\'', false, 'SYSLOG');
+					continue;
+				}
+
 				$removed += db_affected_rows($syslog_cnn);
 				$debugm   = sprintf('Deleted %5s - ', $removed);
 				if ($sql1 != '') {
@@ -1002,17 +1012,27 @@ function syslog_manage_items($from_table, $to_table) {
 						}
 
 						$all_seq = preg_replace('/^,/i', '', $all_seq);
-						syslog_db_execute("INSERT INTO `". $syslogdb_default . "`.`". $to_table ."`
+
+						db_begin_transaction($syslog_cnn);
+						$ok = syslog_db_execute("INSERT INTO `" . $syslogdb_default . "`.`" . $to_table . "`
 							(facility_id, priority_id, host_id, logtime, message)
 							(SELECT facility_id, priority_id, host_id, logtime, message
-							FROM `". $syslogdb_default . "`.". $from_table ."
-							WHERE seq IN (" . $all_seq ."))");
+							FROM `" . $syslogdb_default . "`. " . $from_table . "
+							WHERE seq IN (" . $all_seq . ")));
 
 						$messages_moved = db_affected_rows($syslog_cnn);
 
-						if ($messages_moved > 0) {
-							syslog_db_execute("DELETE FROM `". $syslogdb_default . "`.`" . $from_table ."`
-								WHERE seq IN (" . $all_seq .")" );
+						if ($ok && $messages_moved > 0) {
+							$ok = syslog_db_execute("DELETE FROM `" . $syslogdb_default . "`.`" . $from_table . "`
+								WHERE seq IN (" . $all_seq . ")");
+						}
+
+						if ($ok) {
+							db_commit_transaction($syslog_cnn);
+						} else {
+							db_rollback_transaction($syslog_cnn);
+							cacti_log('ERROR: syslog_manage_items move rollback', false, 'SYSLOG');
+							continue;
 						}
 
 						$xferred += $messages_moved;
