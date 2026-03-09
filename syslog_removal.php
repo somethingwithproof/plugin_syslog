@@ -743,10 +743,14 @@ function removal_import() {
 		/* textbox input */
 		$xml_data = get_nfilter_request_var('import_text');
 	} elseif (($_FILES['import_file']['tmp_name'] != 'none') && ($_FILES['import_file']['tmp_name'] != '')) {
-		/* file upload */
-		$fp = fopen($_FILES['import_file']['tmp_name'],'r');
-		$xml_data = fread($fp, filesize($_FILES['import_file']['tmp_name']));
-		fclose($fp);
+		/* file upload — reject oversized imports before reading into memory */
+		if (filesize($_FILES['import_file']['tmp_name']) > 1048576) {
+			raise_message('syslog_import_too_large', __('Import file exceeds the 1 MB limit.  Use a smaller export file.', 'syslog'), MESSAGE_LEVEL_ERROR);
+			header('Location: syslog_removal.php?header=false');
+			exit;
+		}
+
+		$xml_data = file_get_contents($_FILES['import_file']['tmp_name']);
 	} else {
 		header('Location: syslog_removal.php?header=false');
 		exit;
