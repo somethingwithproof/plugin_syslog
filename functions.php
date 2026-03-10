@@ -1521,23 +1521,23 @@ function syslog_process_alert($alert, $sql, $params, $count, $hostname = '') {
 					}
 
 					if (trim($alert['command']) != '' && !$found) {
-						$command = alert_replace_variables($alert, $results, $hostname);
+						$command    = alert_replace_variables($alert, $results, $hostname);
+						$cparts     = preg_split('/\s+/', trim($command));
+						/* trim surrounding quotes so paths like "/usr/bin/cmd" resolve correctly */
+						$executable = trim($cparts[0], '"\'');
+						$output     = array();
+						$returnCode = 0;
 
-						$logMessage = "SYSLOG NOTICE: Executing '$command'";
-
-						$cparts = explode(' ', $command);
-
-						if (is_executable($cparts[0])) {
+						if (cacti_sizeof($cparts) && is_executable($executable)) {
 							exec($command, $output, $returnCode);
+							cacti_log("SYSLOG NOTICE: Executing '$command' Command return code: $returnCode", true, 'SYSTEM');
 						} else {
-							exec('/bin/sh ' . $command, $output, $returnCode);
+							$returnCode = 126;
+							$reason     = (strpos($executable, DIRECTORY_SEPARATOR) === false)
+								? 'PATH-based lookups are not supported; use an absolute path'
+								: 'file not found or not marked executable';
+							cacti_log("SYSLOG ERROR: Alert command is not executable: '$command' -- $reason", false, 'SYSTEM');
 						}
-
-						// Append the return code to the log message without the dot
-						$logMessage .= " Command return code: $returnCode";
-
-						// Log the combined message
-						cacti_log($logMessage, true, 'SYSTEM');
 					}
 
 				}
@@ -1581,23 +1581,23 @@ function syslog_process_alert($alert, $sql, $params, $count, $hostname = '') {
 					}
 
 					if (trim($alert['command']) != '' && !$found) {
-						$command = alert_replace_variables($alert, $results, $hostname);
+						$command    = alert_replace_variables($alert, $results, $hostname);
+						$cparts     = preg_split('/\s+/', trim($command));
+						/* trim surrounding quotes so paths like "/usr/bin/cmd" resolve correctly */
+						$executable = trim($cparts[0], '"\'');
+						$output     = array();
+						$returnCode = 0;
 
-						$logMessage = "SYSLOG NOTICE: Executing '$command'";
-
-						$cparts = explode(' ', $command);
-
-						if (is_executable($cparts[0])) {
+						if (cacti_sizeof($cparts) && is_executable($executable)) {
 							exec($command, $output, $returnCode);
+							cacti_log("SYSLOG NOTICE: Executing '$command' Command return code: $returnCode", true, 'SYSTEM');
 						} else {
-							exec('/bin/sh ' . $command, $output, $returnCode);
+							$returnCode = 126;
+							$reason     = (strpos($executable, DIRECTORY_SEPARATOR) === false)
+								? 'PATH-based lookups are not supported; use an absolute path'
+								: 'file not found or not marked executable';
+							cacti_log("SYSLOG ERROR: Alert command is not executable: '$command' -- $reason", false, 'SYSTEM');
 						}
-
-						// Append the return code to the log message without the dot
-						$logMessage .= " Command return code: $returnCode";
-
-						// Log the combined message
-						cacti_log($logMessage, true, 'SYSTEM');
 					}
 				}
 			}
@@ -2421,4 +2421,3 @@ function alert_replace_variables($alert, $results, $hostname = '') {
 
 	return $command;
 }
-

@@ -3,6 +3,7 @@
 --- develop ---
 
 * issue#250: Fix date filter persistence by validating before shift_span detection
+* issue#257: Remove /bin/sh fallback from alert command execution path
 * issue: Making changes to support Cacti 1.3
 * issue: Don't use MyISAM for non-analytical tables
 * issue: The install advisor for Syslog was broken in current Cacti releases
