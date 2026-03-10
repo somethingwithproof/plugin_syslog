@@ -1757,10 +1757,17 @@ function syslog_strip_incoming_domains($uniqueID) {
 		$domains = explode(',', trim($syslog_domains));
 
 		foreach($domains as $domain) {
-			syslog_db_execute('UPDATE `' . $syslogdb_default . "`.`syslog_incoming`
+			$domain = trim($domain);
+
+			if ($domain == '') {
+				continue;
+			}
+
+			syslog_db_execute_prepared('UPDATE `' . $syslogdb_default . '`.`syslog_incoming`
 				SET host = SUBSTRING_INDEX(host, '.', 1)
-				WHERE host LIKE '%$domain'
-				AND `status` = $uniqueID");
+				WHERE host LIKE ?
+				AND `status` = ?',
+				array('%' . $domain, $uniqueID));
 		}
 	}
 }
@@ -2421,4 +2428,3 @@ function alert_replace_variables($alert, $results, $hostname = '') {
 
 	return $command;
 }
-

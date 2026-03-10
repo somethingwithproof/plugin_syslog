@@ -3,6 +3,7 @@
 --- develop ---
 
 * issue#250: Fix date filter persistence by validating before shift_span detection
+* issue#261: Parameterize domain stripping update query in syslog incoming processing
 * issue: Making changes to support Cacti 1.3
 * issue: Don't use MyISAM for non-analytical tables
 * issue: The install advisor for Syslog was broken in current Cacti releases
