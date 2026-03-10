@@ -187,6 +187,16 @@ jobs:
           echo "Syntax errors found!"
           exit 1
         fi
+
+    - name: Run Plugin Regression Tests
+      run: |
+        cd ${{ github.workspace }}/cacti/plugins/syslog
+        if [ -d tests/regression ]; then
+          for test in tests/regression/*.php; do
+            [ -f "$test" ] || continue
+            php "$test"
+          done
+        fi
     
     
     - name: Run Cacti Poller
