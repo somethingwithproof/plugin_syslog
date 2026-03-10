@@ -126,50 +126,25 @@ function syslog_sendemail($to, $from, $subject, $message, $smsmessage = '') {
 	}
 }
 
-function syslog_get_import_xml_payload($redirect_url) {
-	if (trim(get_nfilter_request_var('import_text')) != '') {
-		/* textbox input */
-		return get_nfilter_request_var('import_text');
+function syslog_apply_selected_items_action($selected_items, $drp_action, $action_map, $export_action = '', $export_items = '') {
+	if ($selected_items != false) {
+		if (isset($action_map[$drp_action])) {
+			$action_function = $action_map[$drp_action];
+
+			if (function_exists($action_function)) {
+				foreach($selected_items as $selected_item) {
+					$action_function($selected_item);
+				}
+			} else {
+				cacti_log("SYSLOG ERROR: Bulk action function '$action_function' not found.", false, 'SYSTEM');
+			}
+		} elseif ($export_action != '' && $drp_action == $export_action) {
+			/* Re-serialize the sanitized array and URL-encode so the value is
+			 * safe to embed in a JS document.location string (avoids injection
+			 * via the raw request value that $export_items carries). */
+			$_SESSION['exporter'] = rawurlencode(serialize($selected_items));
+		}
 	}
-
-	if (isset($_FILES['import_file']['tmp_name']) &&
-		$_FILES['import_file']['tmp_name'] != 'none' &&
-		$_FILES['import_file']['tmp_name'] != '') {
-		/* file upload */
-		$tmp_name = $_FILES['import_file']['tmp_name'];
-
-		if (!isset($_FILES['import_file']['error']) || $_FILES['import_file']['error'] !== UPLOAD_ERR_OK) {
-			header('Location: ' . $redirect_url);
-			exit;
-		}
-
-		if (!is_uploaded_file($tmp_name)) {
-			header('Location: ' . $redirect_url);
-			exit;
-		}
-
-		$fp = fopen($tmp_name, 'rb');
-
-		if ($fp === false) {
-			cacti_log('SYSLOG ERROR: Failed to open uploaded import file', false, 'SYSTEM');
-			header('Location: ' . $redirect_url);
-			exit;
-		}
-
-		$xml_data = fread($fp, filesize($tmp_name));
-		fclose($fp);
-
-		if ($xml_data === false) {
-			cacti_log('SYSLOG ERROR: Failed to read uploaded import file', false, 'SYSTEM');
-			header('Location: ' . $redirect_url);
-			exit;
-		}
-
-		return $xml_data;
-	}
-
-	header('Location: ' . $redirect_url);
-	exit;
 }
 
 function syslog_is_partitioned() {
@@ -233,184 +208,86 @@ function syslog_partition_manage() {
 }
 
 /**
- * Validate tables that support partition maintenance.
- *
- * Any value added to the allowlist MUST match ^[a-z_]+$ so it is safe
- * for identifier interpolation in DDL statements (MySQL does not support
- * parameter binding for identifiers).
- */
-function syslog_partition_table_allowed($table) {
-	if (!in_array($table, array('syslog', 'syslog_removed'), true)) {
-		return false;
-	}
-
-	/* Defense-in-depth: reject values unsafe for identifier interpolation. */
-	if (!preg_match('/^[a-z_]+$/', $table)) {
-		return false;
-	}
-
-	return true;
-}
-
-/**
- * Create a new partition for the specified table.
- *
- * @return bool true on success, false on lock failure or disallowed table.
+ * This function will create a new partition for the specified table.
  */
 function syslog_partition_create($table) {
 	global $syslogdb_default;
 
-	if (!syslog_partition_table_allowed($table)) {
-		return false;
+	/* determine the format of the table name */
+	$time    = time();
+	$cformat = 'd' . date('Ymd', $time);
+	$lnow    = date('Y-m-d', $time+86400);
+
+	$exists = syslog_db_fetch_row("SELECT *
+		FROM `information_schema`.`partitions`
+        WHERE table_schema='" . $syslogdb_default . "'
+		AND partition_name='" . $cformat . "'
+		AND table_name='syslog'
+        ORDER BY partition_ordinal_position");
+
+	if (!cacti_sizeof($exists)) {
+		cacti_log("SYSLOG: Creating new partition '$cformat'", false, 'SYSTEM');
+
+		syslog_debug("Creating new partition '$cformat'");
+
+		syslog_db_execute("ALTER TABLE `" . $syslogdb_default . "`.`$table` REORGANIZE PARTITION dMaxValue INTO (
+			PARTITION $cformat VALUES LESS THAN (TO_DAYS('$lnow')),
+			PARTITION dMaxValue VALUES LESS THAN MAXVALUE)");
 	}
-
-	/* Hash to guarantee the lock name stays within MySQL's 64-byte limit. */
-	$lock_name = substr(hash('sha256', $syslogdb_default . '.syslog_partition_create.' . $table), 0, 60);
-
-	/*
-	 * 10-second timeout is sufficient: partition maintenance runs once per
-	 * poller cycle (typically 5 minutes), so sustained contention is not
-	 * expected. A failure is logged so monitoring can detect repeated misses.
-	 */
-	$locked    = syslog_db_fetch_cell_prepared('SELECT GET_LOCK(?, 10)', array($lock_name));
-
-	if ($locked === null) {
-		/* NULL means the GET_LOCK call itself failed, not just contention. */
-		cacti_log("SYSLOG: GET_LOCK call failed for partition create on '$table'", false, 'SYSTEM');
-		return false;
-	}
-
-	if ((int)$locked !== 1) {
-		cacti_log("SYSLOG: Unable to acquire partition create lock for '$table'", false, 'SYSTEM');
-		return false;
-	}
-
-	try {
-		/* determine the format of the table name */
-		$time    = time();
-		$cformat = 'd' . date('Ymd', $time);
-		$lnow    = date('Y-m-d', $time+86400);
-
-		$exists = syslog_db_fetch_row_prepared("SELECT *
-			FROM `information_schema`.`partitions`
-			WHERE table_schema = ?
-			AND partition_name = ?
-			AND table_name = ?
-			ORDER BY partition_ordinal_position",
-			array($syslogdb_default, $cformat, $table));
-
-		if (!cacti_sizeof($exists)) {
-			cacti_log("SYSLOG: Creating new partition '$cformat'", false, 'SYSTEM');
-
-			syslog_debug("Creating new partition '$cformat'");
-
-			/*
-			 * MySQL does not support parameter binding for DDL identifiers
-			 * or partition definitions. $table is safe because it passed
-			 * syslog_partition_table_allowed() (two-value allowlist plus
-			 * regex guard). $cformat and $lnow derive from date() and
-			 * contain only digits, hyphens, and the letter 'd'.
-			 */
-			syslog_db_execute("ALTER TABLE `" . $syslogdb_default . "`.`$table` REORGANIZE PARTITION dMaxValue INTO (
-				PARTITION $cformat VALUES LESS THAN (TO_DAYS('$lnow')),
-				PARTITION dMaxValue VALUES LESS THAN MAXVALUE)");
-		}
-	} finally {
-		syslog_db_fetch_cell_prepared('SELECT RELEASE_LOCK(?)', array($lock_name));
-	}
-
-	return true;
 }
 
 /**
- * Remove old partitions for the specified table.
+ * This function will remove all old partitions for the specified table.
  */
 function syslog_partition_remove($table) {
 	global $syslogdb_default;
 
-	if (!syslog_partition_table_allowed($table)) {
-		cacti_log("SYSLOG: partition_remove called with disallowed table '$table'", false, 'SYSTEM');
-		return 0;
-	}
-
-	$lock_name = substr(hash('sha256', $syslogdb_default . '.syslog_partition_remove.' . $table), 0, 60);
-
-	$locked = syslog_db_fetch_cell_prepared('SELECT GET_LOCK(?, 10)', array($lock_name));
-
-	if ($locked === null) {
-		cacti_log("SYSLOG: GET_LOCK call failed for partition remove on '$table'", false, 'SYSTEM');
-		return 0;
-	}
-
-	if ((int)$locked !== 1) {
-		cacti_log("SYSLOG: Unable to acquire partition remove lock for '$table'", false, 'SYSTEM');
-		return 0;
-	}
-
 	$syslog_deleted = 0;
+	$number_of_partitions = syslog_db_fetch_assoc("SELECT *
+		FROM `information_schema`.`partitions`
+		WHERE table_schema='" . $syslogdb_default . "' AND table_name='syslog'
+		ORDER BY partition_ordinal_position");
 
-	try {
-		$number_of_partitions = syslog_db_fetch_assoc_prepared("SELECT *
-			FROM `information_schema`.`partitions`
-			WHERE table_schema = ? AND table_name = ?
-			ORDER BY partition_ordinal_position",
-			array($syslogdb_default, $table));
+	$days = read_config_option('syslog_retention');
 
-		$days = read_config_option('syslog_retention');
+	syslog_debug("There are currently '" . sizeof($number_of_partitions) . "' Syslog Partitions, We will keep '$days' of them.");
 
-		syslog_debug("There are currently '" . sizeof($number_of_partitions) . "' Syslog Partitions, We will keep '$days' of them.");
+	if ($days > 0) {
+		$user_partitions = sizeof($number_of_partitions) - 1;
+		if ($user_partitions >= $days) {
+			$i = 0;
+			while ($user_partitions > $days) {
+				$oldest = $number_of_partitions[$i];
 
-		if ($days > 0) {
-			$user_partitions = sizeof($number_of_partitions) - 1;
-			if ($user_partitions >= $days) {
-				$i = 0;
-				while ($user_partitions > $days) {
-					$oldest = $number_of_partitions[$i];
+				cacti_log("SYSLOG: Removing old partition '" . $oldest['PARTITION_NAME'] . "'", false, 'SYSTEM');
 
-					cacti_log("SYSLOG: Removing old partition '" . $oldest['PARTITION_NAME'] . "'", false, 'SYSTEM');
+				syslog_debug("Removing partition '" . $oldest['PARTITION_NAME'] . "'");
 
-					syslog_debug("Removing partition '" . $oldest['PARTITION_NAME'] . "'");
+				syslog_db_execute("ALTER TABLE `" . $syslogdb_default . "`.`$table` DROP PARTITION " . $oldest['PARTITION_NAME']);
 
-					syslog_db_execute("ALTER TABLE `" . $syslogdb_default . "`.`$table` DROP PARTITION " . $oldest['PARTITION_NAME']);
-
-					$i++;
-					$user_partitions--;
-					$syslog_deleted++;
-				}
+				$i++;
+				$user_partitions--;
+				$syslog_deleted++;
 			}
 		}
-	} finally {
-		syslog_db_fetch_cell_prepared('SELECT RELEASE_LOCK(?)', array($lock_name));
 	}
 
 	return $syslog_deleted;
 }
 
-/*
- * syslog_partition_check is a read-only SELECT against information_schema.
- * It does not execute DDL, so it does not need the named lock that
- * syslog_partition_create and syslog_partition_remove acquire. External
- * serialization is provided by the poller cycle calling
- * syslog_partition_manage().
- */
 function syslog_partition_check($table) {
 	global $syslogdb_default;
-
-	if (!syslog_partition_table_allowed($table)) {
-		return false;
-	}
 
 	if (defined('SYSLOG_CONFIG')) {
 		include(SYSLOG_CONFIG);
 	}
 
 	/* find date of last partition */
-	$last_part = syslog_db_fetch_cell_prepared("SELECT PARTITION_NAME
+	$last_part = syslog_db_fetch_cell("SELECT PARTITION_NAME
 		FROM `information_schema`.`partitions`
-		WHERE table_schema = ? AND table_name = ?
+		WHERE table_schema='" . $syslogdb_default . "' AND table_name='syslog'
 		ORDER BY partition_ordinal_position DESC
-		LIMIT 1,1",
-		array($syslogdb_default, $table));
+		LIMIT 1,1;");
 
 	$lformat   = str_replace('d', '', $last_part);
 	$cformat   = date('Ymd');
@@ -1226,93 +1103,6 @@ function syslog_array2xml($array, $tag = 'template') {
 }
 
 /**
- * syslog_execute_ticket_command - run the configured ticketing command for an alert
- *
- * @param  array  $alert          The alert row from syslog_alert table
- * @param  array  $hostlist       Hostnames matched by the alert
- * @param  string $error_message  sprintf template used if exec() returns non-zero
- *
- * @return void
- */
-function syslog_execute_ticket_command($alert, $hostlist, $error_message) {
-	$command = read_config_option('syslog_ticket_command');
-
-	if ($command != '') {
-		$command = trim($command);
-	}
-
-	if ($alert['open_ticket'] == 'on' && $command != '') {
-		/* trim surrounding quotes so paths like "/usr/bin/cmd" resolve correctly */
-		$cparts     = preg_split('/\s+/', trim($command));
-		$executable = trim($cparts[0], '"\'');
-
-		if (cacti_sizeof($cparts) && is_executable($executable)) {
-			$command = $command .
-				' --alert-name=' . cacti_escapeshellarg(clean_up_name($alert['name'])) .
-				' --severity='   . cacti_escapeshellarg($alert['severity']) .
-				' --hostlist='   . cacti_escapeshellarg(implode(',', $hostlist)) .
-				' --message='    . cacti_escapeshellarg($alert['message']);
-
-			$output = array();
-			$return = 0;
-
-			exec($command, $output, $return);
-
-			if ($return !== 0) {
-				cacti_log(sprintf($error_message, $alert['name'], $return, implode(', ', $output)), false, 'SYSLOG');
-			}
-		} else {
-			$reason = (strpos($executable, DIRECTORY_SEPARATOR) === false)
-				? 'PATH-based lookups are not supported; use an absolute path'
-				: 'file not found or not marked executable';
-			cacti_log("SYSLOG ERROR: Ticket command is not executable: '$command' -- $reason", false, 'SYSTEM');
-		}
-	}
-}
-
-/**
- * syslog_execute_alert_command - run the per-alert shell command for a matched result
- *
- * @param  array  $alert     The alert row from syslog_alert table
- * @param  array  $results   The matched syslog result row
- * @param  string $hostname  Resolved hostname for the source device
- *
- * @return void
- */
-function syslog_execute_alert_command($alert, $results, $hostname) {
-	/* alert_replace_variables() escapes each substituted token (<ALERTID>,
-	 * <HOSTNAME>, <PRIORITY>, <FACILITY>, <MESSAGE>, <SEVERITY>) with
-	 * cacti_escapeshellarg(). The command template itself comes from admin
-	 * configuration ($alert['command']) and is trusted at that boundary.
-	 * Do not introduce additional substitution paths that bypass this escaping. */
-	$command = alert_replace_variables($alert, $results, $hostname);
-
-	/* trim surrounding quotes so paths like "/usr/bin/cmd" resolve correctly */
-	$cparts     = preg_split('/\s+/', trim($command));
-	$executable = trim($cparts[0], '"\'');
-
-	$output = array();
-	$return = 0;
-
-	if (cacti_sizeof($cparts) && is_executable($executable)) {
-		exec($command, $output, $return);
-
-		if ($return !== 0 && !empty($output)) {
-			cacti_log('SYSLOG NOTICE: Alert command output: ' . implode(', ', $output), true, 'SYSTEM');
-		}
-
-		if ($return !== 0) {
-			cacti_log(sprintf('ERROR: Alert command failed.  Alert:%s, Exit:%s, Output:%s', $alert['name'], $return, implode(', ', $output)), false, 'SYSLOG');
-		}
-	} else {
-		$reason = (strpos($executable, DIRECTORY_SEPARATOR) === false)
-			? 'PATH-based lookups are not supported; use an absolute path'
-			: 'file not found or not marked executable';
-		cacti_log("SYSLOG ERROR: Alert command is not executable: '$command' -- $reason", false, 'SYSTEM');
-	}
-}
-
-/**
  * syslog_process_alerts - Process each of the Syslog Alerts
  *
  * Syslog Alerts come in essentially 4 types
@@ -1726,10 +1516,49 @@ function syslog_process_alert($alert, $sql, $params, $count, $hostname = '') {
 					/**
 					 * Open a ticket if this options have been selected.
 					 */
-					syslog_execute_ticket_command($alert, $hostlist, 'ERROR: Ticket Command Failed.  Alert:%s, Exit:%s, Output:%s');
+					 $command = read_config_option('syslog_ticket_command');
+
+					if ($command != '') {
+						$command = trim($command);
+					}
+
+					if ($alert['open_ticket'] == 'on' && $command != '') {
+						if (is_executable($command)) {
+							$command = $command .
+								' --alert-name=' . cacti_escapeshellarg(clean_up_name($alert['name'])) .
+								' --severity='   . cacti_escapeshellarg($alert['severity']) .
+								' --hostlist='   . cacti_escapeshellarg(implode(',',$hostlist)) .
+								' --message='    . cacti_escapeshellarg($alert['message']);
+
+							$output = array();
+							$return = 0;
+
+							exec($command, $output, $return);
+
+							if ($return != 0) {
+								cacti_log(sprintf('ERROR: Ticket Command Failed.  Alert:%s, Exit:%s, Output:%s', $alert['name'], $return, implode(', ', $output)), false, 'SYSLOG');
+							}
+						}
+					}
 
 					if (trim($alert['command']) != '' && !$found) {
-						syslog_execute_alert_command($alert, $results, $hostname);
+						$command = alert_replace_variables($alert, $results, $hostname);
+
+						$logMessage = "SYSLOG NOTICE: Executing '$command'";
+
+						$cparts = explode(' ', $command);
+
+						if (is_executable($cparts[0])) {
+							exec($command, $output, $returnCode);
+						} else {
+							exec('/bin/sh ' . $command, $output, $returnCode);
+						}
+
+						// Append the return code to the log message without the dot
+						$logMessage .= " Command return code: $returnCode";
+
+						// Log the combined message
+						cacti_log($logMessage, true, 'SYSTEM');
 					}
 
 				}
@@ -1747,10 +1576,49 @@ function syslog_process_alert($alert, $sql, $params, $count, $hostname = '') {
 
 					alert_setup_environment($alert, $results, $hostlist, $hostname);
 
-					syslog_execute_ticket_command($alert, $hostlist, 'ERROR: Command Failed.  Alert:%s, Exit:%s, Output:%s');
+					$command = read_config_option('syslog_ticket_command');
+
+					if ($command != '') {
+						$command = trim($command);
+					}
+
+					if ($alert['open_ticket'] == 'on' && $command != '') {
+						if (is_executable($command)) {
+							$command = $command .
+								' --alert-name=' . cacti_escapeshellarg(clean_up_name($alert['name'])) .
+								' --severity='   . cacti_escapeshellarg($alert['severity']) .
+								' --hostlist='   . cacti_escapeshellarg(implode(',',$hostlist)) .
+								' --message='    . cacti_escapeshellarg($alert['message']);
+
+							$output = array();
+							$return = 0;
+
+							exec($command, $output, $return);
+
+							if ($return != 0) {
+								cacti_log(sprintf('ERROR: Command Failed.  Alert:%s, Exit:%s, Output:%s', $alert['name'], $return, implode(', ', $output)), false, 'SYSLOG');
+							}
+						}
+					}
 
 					if (trim($alert['command']) != '' && !$found) {
-						syslog_execute_alert_command($alert, $results, $hostname);
+						$command = alert_replace_variables($alert, $results, $hostname);
+
+						$logMessage = "SYSLOG NOTICE: Executing '$command'";
+
+						$cparts = explode(' ', $command);
+
+						if (is_executable($cparts[0])) {
+							exec($command, $output, $returnCode);
+						} else {
+							exec('/bin/sh ' . $command, $output, $returnCode);
+						}
+
+						// Append the return code to the log message without the dot
+						$logMessage .= " Command return code: $returnCode";
+
+						// Log the combined message
+						cacti_log($logMessage, true, 'SYSTEM');
 					}
 				}
 			}
@@ -1820,7 +1688,7 @@ function syslog_get_alert_sql(&$alert, $uniqueID) {
 		$sql = 'SELECT *
 			FROM `' . $syslogdb_default . '`.`syslog_incoming`
 			WHERE `' . $syslog_incoming_config['hostField'] . '` = ?
-			AND `status` = ?';
+			AND `status` = ?' . $uniqueID;
 
 		$params[] = $alert['message'];
 		$params[] = $uniqueID;
@@ -1828,7 +1696,7 @@ function syslog_get_alert_sql(&$alert, $uniqueID) {
 		$sql = 'SELECT *
 			FROM `' . $syslogdb_default . '`.`syslog_incoming`
 			WHERE `' . $syslog_incoming_config['programField'] . '` = ?
-			AND `status` = ?';
+			AND `status` = ?' . $uniqueID;
 
 		$params[] = $alert['message'];
 		$params[] = $uniqueID;
