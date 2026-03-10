@@ -1667,7 +1667,7 @@ function syslog_get_alert_sql(&$alert, $uniqueID) {
 		$sql = 'SELECT *
 			FROM `' . $syslogdb_default . '`.`syslog_incoming`
 			WHERE `' . $syslog_incoming_config['hostField'] . '` = ?
-			AND `status` = ?' . $uniqueID;
+			AND `status` = ?';
 
 		$params[] = $alert['message'];
 		$params[] = $uniqueID;
@@ -1675,7 +1675,7 @@ function syslog_get_alert_sql(&$alert, $uniqueID) {
 		$sql = 'SELECT *
 			FROM `' . $syslogdb_default . '`.`syslog_incoming`
 			WHERE `' . $syslog_incoming_config['programField'] . '` = ?
-			AND `status` = ?' . $uniqueID;
+			AND `status` = ?';
 
 		$params[] = $alert['message'];
 		$params[] = $uniqueID;
