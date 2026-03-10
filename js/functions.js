@@ -220,7 +220,11 @@ function initSyslogMain(config) {
 
 							$.each(data, function(index, hostData) {
 								if ($('#host option[value="'+index+'"]').length == 0) {
-									$('#host').append('<option class="'+hostData.class+'" value="'+index+'">'+hostData.host+'</option>');
+									var option = $('<option>')
+										.addClass(hostData.class || '')
+										.val(index)
+										.text(hostData.host);
+									$('#host').append(option);
 								}
 							});
 
