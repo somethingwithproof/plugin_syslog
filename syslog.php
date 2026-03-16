@@ -364,10 +364,10 @@ function syslog_statistics() {
 
 			form_alternate_row('line' . $i);
 
-			print '<td>' . (get_request_var('host') != '-2' ? $r['host']:'-') . '</td>';
-			print '<td>' . (get_request_var('facility') != '-2' ? ucfirst($r['facility']):'-') . '</td>';
-			print '<td>' . (get_request_var('priority') != '-2' ? ucfirst($r['priority']):'-') . '</td>';
-			print '<td>' . (get_request_var('program') != '-2' ? ucfirst($r['program']):'-') . '</td>';
+			print '<td>' . (get_request_var('host') != '-2' ? html_escape($r['host']):'-') . '</td>';
+			print '<td>' . (get_request_var('facility') != '-2' ? html_escape(ucfirst($r['facility'])):'-') . '</td>';
+			print '<td>' . (get_request_var('priority') != '-2' ? html_escape(ucfirst($r['priority'])):'-') . '</td>';
+			print '<td>' . (get_request_var('program') != '-2' ? html_escape(ucfirst($r['program'])):'-') . '</td>';
 			//print '<td class="right">' . $r['insert_time'] . '</td>';
 			print '<td class="right">' . $time . '</td>';
 			print '<td class="right">' . number_format_i18n($r['records'], -1)     . '</td>';
@@ -521,7 +521,7 @@ function syslog_stats_filter() {
 										$class = 'deviceUp';
 									}
 
-									print '<option class="' . $class . '" value="' . $host['host_id'] . '"'; if (get_request_var('host') == $host['host_id']) { print ' selected'; } print '>' . $host['host'] . '</option>';
+									print '<option class="' . $class . '" value="' . $host['host_id'] . '"'; if (get_request_var('host') == $host['host_id']) { print ' selected'; } print '>' . html_escape($host['host']) . '</option>';
 								}
 							}
 							?>
@@ -541,7 +541,7 @@ function syslog_stats_filter() {
 
 							if (cacti_sizeof($facilities)) {
 								foreach ($facilities as $r) {
-									print '<option value="' . $r['facility_id'] . '"'; if (get_request_var('facility') == $r['facility_id']) { print ' selected'; } print '>' . ucfirst($r['facility']) . "</option>\n";
+									print '<option value="' . $r['facility_id'] . '"'; if (get_request_var('facility') == $r['facility_id']) { print ' selected'; } print '>' . html_escape(ucfirst($r['facility'])) . "</option>\n";
 								}
 							}
 							?>
@@ -561,7 +561,7 @@ function syslog_stats_filter() {
 
 							if (cacti_sizeof($priorities)) {
 								foreach ($priorities as $r) {
-									print '<option value="' . $r['priority_id'] . '"'; if (get_request_var('priority') == $r['priority_id']) { print ' selected'; } print '>' . ucfirst($r['priority']) . "</option>\n";
+									print '<option value="' . $r['priority_id'] . '"'; if (get_request_var('priority') == $r['priority_id']) { print ' selected'; } print '>' . html_escape(ucfirst($r['priority'])) . "</option>\n";
 								}
 							}
 							?>
@@ -1367,7 +1367,7 @@ function syslog_filter($sql_where, $tab) {
 											}
 										}
 										print '>';
-										print $host['host'] . '</option>';
+										print html_escape($host['host']) . '</option>';
 									}
 								}
 								?>
@@ -2055,4 +2055,3 @@ function syslog_form_callback($form_name, $classic_sql, $column_display, $column
 		<?php
 	}
 }
-
