@@ -20,7 +20,7 @@ msgstr ""
 
 #: functions.php:72
 msgid "Save Failed.  Remote Data Collectors in Sync Mode are not allowed to Save Rules.  Save from the Main Cacti Server instead."
-msgstr "Error al guardar.  Los recopiladores de datos remotos en modo de sincronización no pueden guardar reglas.  En su lugar, guarde desde el servidor principal de Cactus."
+msgstr "Error al guardar.  Los recopiladores de datos remotos en modo de sincronización no pueden guardar reglas.  En su lugar, guarde desde el servidor principal de Cacti."
 
 #: functions.php:116
 msgid "Please use an HTML Email Client"
@@ -951,7 +951,7 @@ msgstr "Información"
 
 #: syslog.php:1633 syslog.php:1699
 msgid "Debug"
-msgstr "Depuraración"
+msgstr "Depuración"
 
 #: syslog.php:1638
 msgid "Record Type"

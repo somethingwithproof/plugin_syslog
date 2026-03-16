@@ -11,7 +11,7 @@
  * Clear filter for statistics view
  */
 function clearFilterStats() {
-	strURL = 'syslog.php?tab=stats&clear=1&header=false';
+	var strURL = 'syslog.php?tab=stats&clear=1&header=false';
 	loadPageNoHeader(strURL);
 }
 
@@ -196,7 +196,7 @@ function initSyslogMain(config) {
 				$(this).multiselect('widget').find(':checkbox:first').each(function() {
 					$(this).prop('checked', true);
 				});
-				$('#test').trigger('keyup');
+				$('#term').trigger('keyup');
 			},
 			checkAll: function() {
 				$(this).multiselect('widget').find(':checkbox').not(':first').each(function() {
@@ -253,7 +253,7 @@ function initSyslogMain(config) {
 					if (checked > 0) {
 						$(this).multiselect('widget').find(':checkbox:first').each(function() {
 							$(this).click();
-							$(this).prop('disable', true);
+							$(this).prop('disabled', true);
 						});
 					}
 				}
@@ -658,7 +658,7 @@ function initSyslogAutocomplete(formName, callback, onChange) {
 			}, 800);
 		});
 
-		$('ul[id^="ui-id"] > li').each().on('mouseenter', function() {
+		$('ul[id^="ui-id"] > li').on('mouseenter', function() {
 			$(this).addClass('ui-state-hover');
 		}).on('mouseleave', function() {
 			$(this).removeClass('ui-state-hover');

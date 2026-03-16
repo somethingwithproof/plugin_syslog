@@ -86,9 +86,9 @@ To use a dedicated DB first create a database in mysql and assign a user you wil
 $use_cacti_db = true; 
 ```
 
-to 
+to
 
-``console
+```console
 $use_cacti_db = false;
 ```
 

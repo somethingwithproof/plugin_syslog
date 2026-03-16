@@ -52,7 +52,7 @@ jobs:
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping"
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -pcactiroot"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=3
@@ -104,7 +104,6 @@ jobs:
     - name: Create MySQL Config
       run: |
         echo -e "[client]\nuser = root\npassword = cactiroot\nhost = 127.0.0.1\n" > ~/.my.cnf
-        cat ~/.my.cnf
     
     - name: Initialize Cacti Database
       env:

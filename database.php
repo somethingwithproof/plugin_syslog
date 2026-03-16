@@ -174,9 +174,12 @@ function syslog_db_fetch_assoc_prepared($sql, $params = array(), $log = TRUE) {
  *
  * @return the id of the last auto incriment row that was created
  */
-function syslog_db_fetch_insert_id() {
-	global $syslog_cnn;
-	return  db_fetch_insert_id($syslog_cnn);
+function syslog_db_fetch_insert_id($syslog_cnn = null) {
+	if ($syslog_cnn === null) {
+		global $syslog_cnn;
+	}
+
+	return db_fetch_insert_id($syslog_cnn);
 }
 
 /**
