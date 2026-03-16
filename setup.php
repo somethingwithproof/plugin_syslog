@@ -966,10 +966,11 @@ function syslog_install_advisor($syslog_exists) {
 		$type = __('Install', 'syslog');
 	}
 
-	$database = db_fetch_row('SHOW GLOBAL VARIABLES LIKE "version"');
+	syslog_connect();
+	$database = syslog_db_fetch_row('SHOW GLOBAL VARIABLES LIKE "version"');
 
-	/* remove Aria as a storage enging if this is mysql */
-	if (stripos($database['Value'], 'mariadb') == false) {
+	/* remove Aria as a storage engine if this is mysql */
+	if (stripos($database['Value'], 'mariadb') === false) {
 		unset($fields_syslog_update['engine']['array']['aria']);
 	} else {
 		$fields_syslog_update['engine']['value'] = 'aria';
@@ -1632,4 +1633,3 @@ function syslog_utilities_list() {
 	</tr>
 	<?php
 }
-
