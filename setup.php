@@ -817,6 +817,7 @@ function syslog_replace_data($table, &$data) {
 		$sqlData  = array();
 		$sqlQuery = array();
 		$columns  = array_keys($data[0]);
+		$create_sql = '';
 
 		$create = db_fetch_row('SHOW CREATE TABLE ' . $table);
 		if (isset($create["CREATE TABLE `$table`"]) || isset($create['Create Table'])) {
@@ -828,7 +829,12 @@ function syslog_replace_data($table, &$data) {
 		}
 
 		if (!syslog_db_table_exists($table)) {
-			syslog_db_execute($create);
+			if ($create_sql == '') {
+				cacti_log('WARNING: Unable to derive CREATE TABLE SQL for `' . $table . '` during Syslog replication.', false, 'REPLICATE');
+				return;
+			}
+
+			syslog_db_execute($create_sql);
 			syslog_db_execute("TRUNCATE TABLE $table");
 		}
 
