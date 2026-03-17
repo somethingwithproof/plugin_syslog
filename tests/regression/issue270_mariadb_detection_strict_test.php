@@ -20,4 +20,4 @@ if (!preg_match($fixedPattern, $setup)) {
 	exit(1);
 }
 
-echo "issue270_mariadb_detection_strict_test passed\n";
+print "issue270_mariadb_detection_strict_test passed\n";

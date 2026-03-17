@@ -118,4 +118,4 @@ if (cacti_sizeof($GLOBALS['syslog_replace_data_prepared_calls']) !== 0) {
 	exit(1);
 }
 
-echo "issue258_replication_create_sql_test passed\n";
+print "issue258_replication_create_sql_test passed\n";

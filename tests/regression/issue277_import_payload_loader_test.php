@@ -65,4 +65,4 @@ foreach ($targets as $target) {
 	}
 }
 
-echo "issue277_import_payload_loader_test passed\n";
+print "issue277_import_payload_loader_test passed\n";

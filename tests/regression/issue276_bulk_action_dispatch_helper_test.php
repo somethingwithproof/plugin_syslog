@@ -33,4 +33,4 @@ foreach ($targets as $target) {
 	}
 }
 
-echo "issue276_bulk_action_dispatch_helper_test passed\n";
+print "issue276_bulk_action_dispatch_helper_test passed\n";
