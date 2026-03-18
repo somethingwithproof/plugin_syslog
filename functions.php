@@ -1245,7 +1245,7 @@ function syslog_execute_ticket_command($alert, $hostlist) {
 		$cparts     = preg_split('/\s+/', trim($command));
 		$executable = trim($cparts[0], '"\'');
 
-		if (cacti_sizeof($cparts) && is_executable($executable)) {
+		if (cacti_sizeof($cparts) && strpos($executable, '..') === false && is_executable($executable)) {
 			/* sanitize hostlist: trim whitespace and drop empty entries */
 			$hostlist = array_values(array_filter(array_map('trim', $hostlist)));
 
@@ -1266,9 +1266,9 @@ function syslog_execute_ticket_command($alert, $hostlist) {
 			exec($command, $output, $return);
 
 			if ($return !== 0) {
-				cacti_log(sprintf('ERROR: Ticket Command Failed.  Alert:%s, Exit:%s, Output:%s, Command:%s', $alert['name'], $return, implode(', ', $output), $command), false, 'SYSLOG');
+				cacti_log('ERROR: Ticket Command Failed.  Alert:' . $alert['name'] . ', Exit:' . $return . ', Output:' . implode(', ', $output) . ', Command:' . $command, false, 'SYSLOG');
 			} else {
-				cacti_log(sprintf('SYSLOG NOTICE: Ticket command succeeded.  Alert:%s, Command:%s', $alert['name'], $command), false, 'SYSLOG');
+				cacti_log('SYSLOG NOTICE: Ticket command succeeded.  Alert:' . $alert['name'] . ', Command:' . $command, false, 'SYSLOG');
 			}
 		} else {
 			$reason = (strpos($executable, DIRECTORY_SEPARATOR) === false)
@@ -1314,7 +1314,7 @@ function syslog_execute_alert_command($alert, $results, $hostname) {
 	$output = array();
 	$return = 0;
 
-	if (cacti_sizeof($cparts) && is_executable($executable)) {
+	if (cacti_sizeof($cparts) && strpos($executable, '..') === false && is_executable($executable)) {
 		exec($command, $output, $return);
 
 		if ($return !== 0 && !empty($output)) {
@@ -1322,7 +1322,7 @@ function syslog_execute_alert_command($alert, $results, $hostname) {
 		}
 
 		if ($return !== 0) {
-			cacti_log(sprintf('ERROR: Alert command failed.  Alert:%s, Exit:%s, Output:%s, Command:%s', $alert['name'], $return, implode(', ', $output), $command), false, 'SYSLOG');
+			cacti_log(sprintf('ERROR: Alert Command Failed.  Alert:%s, Exit:%s, Output:%s, Command:%s', $alert['name'], $return, implode(', ', $output), $command), false, 'SYSLOG');
 		} else {
 			cacti_log(sprintf('SYSLOG NOTICE: Alert command succeeded.  Alert:%s, Command:%s', $alert['name'], $command), false, 'SYSLOG');
 		}
