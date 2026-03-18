@@ -1234,7 +1234,7 @@ function syslog_array2xml($array, $tag = 'template') {
  * @return void
  */
 function syslog_execute_ticket_command($alert, $hostlist) {
-	$command = read_config_option('syslog_ticket_command');
+	$command = (string) read_config_option('syslog_ticket_command');
 
 	if ($command != '') {
 		$command = trim($command);
@@ -1248,6 +1248,11 @@ function syslog_execute_ticket_command($alert, $hostlist) {
 		if (cacti_sizeof($cparts) && is_executable($executable)) {
 			/* sanitize hostlist: trim whitespace and drop empty entries */
 			$hostlist = array_values(array_filter(array_map('trim', $hostlist)));
+
+			/* validate entries: only allow characters valid in hostnames and IP addresses */
+			$hostlist = array_values(array_filter($hostlist, function($h) {
+				return preg_match('/^[a-zA-Z0-9.\-_:]+$/', $h) && strlen($h) <= 253;
+			}));
 
 			$command = $command .
 				' --alert-name=' . cacti_escapeshellarg(clean_up_name($alert['name'])) .
@@ -2560,6 +2565,12 @@ function alert_setup_environment(&$alert, $results, $hostlist = array(), $hostna
 
 	putenv('ALERT_PRIORITY='      . cacti_escapeshellarg($syslog_levels[$results['priority_id']]));
 	putenv('ALERT_FACILITY='      . cacti_escapeshellarg($syslog_facilities[$results['facility_id']]));
+
+	/* validate hostlist entries: only allow characters valid in hostnames and IP addresses */
+	$hostlist = array_values(array_filter(array_map('trim', $hostlist)));
+	$hostlist = array_values(array_filter($hostlist, function($h) {
+		return preg_match('/^[a-zA-Z0-9.\-_:]+$/', $h) && strlen($h) <= 253;
+	}));
 
 	putenv('ALERT_HOSTLIST='      . cacti_escapeshellarg(implode(',', $hostlist)));
 	putenv('ALERT_HOSTNAME='      . cacti_escapeshellarg($hostname));

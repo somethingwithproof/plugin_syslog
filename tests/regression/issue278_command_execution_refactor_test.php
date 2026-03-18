@@ -120,6 +120,18 @@ if (strpos($functions, "array_filter(array_map('trim', \$hostlist))") === false)
 	exit(1);
 }
 
+/* hostlist validation: entries must be validated against a hostname/IP character whitelist */
+if (substr_count($functions, "preg_match('/^[a-zA-Z0-9") < 2) {
+	fwrite(STDERR, "Both syslog_execute_ticket_command() and alert_setup_environment() must validate hostlist entries against hostname/IP character whitelist.\n");
+	exit(1);
+}
+
+/* read_config_option return must be cast to string to handle false/null */
+if (strpos($functions, "(string) read_config_option('syslog_ticket_command')") === false) {
+	fwrite(STDERR, "syslog_execute_ticket_command() must cast read_config_option() return to string.\n");
+	exit(1);
+}
+
 /* error logs must include the command for debugging context */
 $ticket_fn_match = array();
 if (preg_match('/function syslog_execute_ticket_command\b.*?^}/ms', $functions, $ticket_fn_match)) {
