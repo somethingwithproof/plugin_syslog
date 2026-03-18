@@ -70,7 +70,7 @@ if (cacti_sizeof($parms)) {
 				display_help();
 				exit(0);
 			default:
-				echo "ERROR: Invalid Argument: ($arg)\n\n";
+				print "ERROR: Invalid Argument: ($arg)\n\n";
 				display_help();
 				exit(1);
 		}
@@ -140,15 +140,15 @@ function display_version() {
 	}
 
 	$info = plugin_syslog_version();
-	echo "Syslog Batch Process, Version " . $info['version'] . ", " . COPYRIGHT_YEARS . "\n";
+	print "Syslog Batch Process, Version " . $info['version'] . ", " . COPYRIGHT_YEARS . "\n";
 }
 
 function display_help() {
 	display_version();
 
-	echo "\nusage: syslog_batch_transfer.php [--debug|-d]\n\n";
-	echo "The Syslog batch process script for Cacti Syslogging.\n";
-	echo "This script removes old messages from main view.\n";
+	print "\nusage: syslog_batch_transfer.php [--debug|-d]\n\n";
+	print "The Syslog batch process script for Cacti Syslogging.\n";
+	print "This script removes old messages from main view.\n";
 }
 
 

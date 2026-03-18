@@ -208,31 +208,62 @@ function syslog_partition_manage() {
 }
 
 /**
+ * syslog_partition_table_allowed - validate that the table being partitioned
+ *   is in our approved list.
+ *
+ * @param  (string)  The table name
+ *
+ * @return (bool)    True if allowed, False otherwise
+ */
+function syslog_partition_table_allowed($table) {
+	if (in_array($table, array('syslog', 'syslog_removed'), true)) {
+		return (bool)preg_match('/^[a-z_]+$/', $table);
+	}
+
+	return false;
+}
+
+/**
  * This function will create a new partition for the specified table.
  */
 function syslog_partition_create($table) {
 	global $syslogdb_default;
+
+	if (!syslog_partition_table_allowed($table)) {
+		return false;
+	}
 
 	/* determine the format of the table name */
 	$time    = time();
 	$cformat = 'd' . date('Ymd', $time);
 	$lnow    = date('Y-m-d', $time+86400);
 
-	$exists = syslog_db_fetch_row("SELECT *
+	$exists = syslog_db_fetch_row_prepared("SELECT *
 		FROM `information_schema`.`partitions`
-        WHERE table_schema='" . $syslogdb_default . "'
-		AND partition_name='" . $cformat . "'
-		AND table_name='syslog'
-        ORDER BY partition_ordinal_position");
+		WHERE table_schema = ?
+		AND partition_name = ?
+		AND table_name = ?
+		ORDER BY partition_ordinal_position",
+		array($syslogdb_default, $cformat, $table)
+	);
 
 	if (!cacti_sizeof($exists)) {
-		cacti_log("SYSLOG: Creating new partition '$cformat'", false, 'SYSTEM');
+		$lock_name = hash('sha256', $syslogdb_default . 'syslog_partition_create.' . $table);
 
-		syslog_debug("Creating new partition '$cformat'");
+		try {
+			syslog_db_fetch_cell_prepared('SELECT GET_LOCK(?, 10)', array($lock_name));
 
-		syslog_db_execute("ALTER TABLE `" . $syslogdb_default . "`.`$table` REORGANIZE PARTITION dMaxValue INTO (
-			PARTITION $cformat VALUES LESS THAN (TO_DAYS('$lnow')),
-			PARTITION dMaxValue VALUES LESS THAN MAXVALUE)");
+			cacti_log("SYSLOG: Creating new partition '$cformat' for table '$table'", false, 'SYSTEM');
+
+			syslog_debug("Creating new partition '$cformat' for table '$table'");
+
+			/* MySQL does not support parameter binding for DDL statements */
+			syslog_db_execute("ALTER TABLE `" . $syslogdb_default . "`.`$table` REORGANIZE PARTITION dMaxValue INTO (
+				PARTITION $cformat VALUES LESS THAN (TO_DAYS('$lnow')),
+				PARTITION dMaxValue VALUES LESS THAN MAXVALUE)");
+		} finally {
+			syslog_db_fetch_cell_prepared('SELECT RELEASE_LOCK(?)', array($lock_name));
+		}
 	}
 }
 
@@ -242,32 +273,48 @@ function syslog_partition_create($table) {
 function syslog_partition_remove($table) {
 	global $syslogdb_default;
 
+	if (!syslog_partition_table_allowed($table)) {
+		cacti_log("SYSLOG ERROR: Attempt to remove partitions from disallowed table '$table'", false, 'SYSTEM');
+		return 0;
+	}
+
 	$syslog_deleted = 0;
-	$number_of_partitions = syslog_db_fetch_assoc("SELECT *
+	$number_of_partitions = syslog_db_fetch_assoc_prepared("SELECT *
 		FROM `information_schema`.`partitions`
-		WHERE table_schema='" . $syslogdb_default . "' AND table_name='syslog'
-		ORDER BY partition_ordinal_position");
+		WHERE table_schema = ?
+		AND table_name = ?
+		ORDER BY partition_ordinal_position",
+		array($syslogdb_default, $table)
+	);
 
 	$days = read_config_option('syslog_retention');
 
-	syslog_debug("There are currently '" . sizeof($number_of_partitions) . "' Syslog Partitions, We will keep '$days' of them.");
+	syslog_debug("There are currently '" . sizeof($number_of_partitions) . "' Syslog Partitions for '$table', We will keep '$days' of them.");
 
 	if ($days > 0) {
 		$user_partitions = sizeof($number_of_partitions) - 1;
 		if ($user_partitions >= $days) {
-			$i = 0;
-			while ($user_partitions > $days) {
-				$oldest = $number_of_partitions[$i];
+			$lock_name = hash('sha256', $syslogdb_default . 'syslog_partition_remove.' . $table);
 
-				cacti_log("SYSLOG: Removing old partition '" . $oldest['PARTITION_NAME'] . "'", false, 'SYSTEM');
+			try {
+				syslog_db_fetch_cell_prepared('SELECT GET_LOCK(?, 10)', array($lock_name));
 
-				syslog_debug("Removing partition '" . $oldest['PARTITION_NAME'] . "'");
+				$i = 0;
+				while ($user_partitions > $days) {
+					$oldest = $number_of_partitions[$i];
 
-				syslog_db_execute("ALTER TABLE `" . $syslogdb_default . "`.`$table` DROP PARTITION " . $oldest['PARTITION_NAME']);
+					cacti_log("SYSLOG: Removing old partition '" . $oldest['PARTITION_NAME'] . "' from table '$table'", false, 'SYSTEM');
 
-				$i++;
-				$user_partitions--;
-				$syslog_deleted++;
+					syslog_debug("Removing partition '" . $oldest['PARTITION_NAME'] . "' from table '$table'");
+
+					syslog_db_execute("ALTER TABLE `" . $syslogdb_default . "`.`$table` DROP PARTITION " . $oldest['PARTITION_NAME']);
+
+					$i++;
+					$user_partitions--;
+					$syslog_deleted++;
+				}
+			} finally {
+				syslog_db_fetch_cell_prepared('SELECT RELEASE_LOCK(?)', array($lock_name));
 			}
 		}
 	}
@@ -278,21 +325,29 @@ function syslog_partition_remove($table) {
 function syslog_partition_check($table) {
 	global $syslogdb_default;
 
+	if (!syslog_partition_table_allowed($table)) {
+		return false;
+	}
+
 	if (defined('SYSLOG_CONFIG')) {
 		include(SYSLOG_CONFIG);
 	}
 
 	/* find date of last partition */
-	$last_part = syslog_db_fetch_cell("SELECT PARTITION_NAME
+	$last_part = syslog_db_fetch_cell_prepared("SELECT PARTITION_NAME
 		FROM `information_schema`.`partitions`
-		WHERE table_schema='" . $syslogdb_default . "' AND table_name='syslog'
+		WHERE table_schema = ?
+		AND table_name = ?
 		ORDER BY partition_ordinal_position DESC
-		LIMIT 1,1;");
+		LIMIT 1,1",
+		array($syslogdb_default, $table)
+	);
 
 	$lformat   = str_replace('d', '', $last_part);
 	$cformat   = date('Ymd');
 
 	if ($cformat > $lformat) {
+
 		return true;
 	} else {
 		return false;
@@ -314,16 +369,9 @@ function syslog_remove_items($table, $uniqueID) {
 	syslog_debug('-------------------------------------------------------------------------------------');
 	syslog_debug('Processing Removal Rules...');
 
-	if ($table == 'syslog') {
-		$rows = syslog_db_fetch_assoc("SELECT *
-			FROM `" . $syslogdb_default . "`.`syslog_remove`
-			WHERE enabled = 'on'
-			AND id = $uniqueID");
-	} else {
-		$rows = syslog_db_fetch_assoc('SELECT *
-			FROM `' . $syslogdb_default . '`.`syslog_remove`
-			WHERE enabled="on"');
-	}
+	$rows = syslog_db_fetch_assoc('SELECT *
+		FROM `' . $syslogdb_default . '`.`syslog_remove`
+		WHERE enabled="on"');
 
 	syslog_debug(sprintf('Found   %5s - Removal Rule(s) to process', cacti_sizeof($rows)));
 
