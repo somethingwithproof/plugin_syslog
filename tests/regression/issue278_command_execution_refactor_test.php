@@ -46,15 +46,22 @@ if (strpos($functions, "\$command != ''") === false) {
 	exit(1);
 }
 
-/* is_executable must be called on the stripped executable, not the raw command string.
- * Old code checked is_executable($command) which broke quoted absolute paths. */
-if (strpos($functions, 'is_executable($executable)') === false) {
-	fwrite(STDERR, "is_executable() must be called on stripped \$executable, not raw \$command.\n");
+/* is_executable must be called on the resolved path, not the raw command string.
+ * Old code checked is_executable($command) which broke quoted absolute paths.
+ * realpath() resolves symlinks and relative segments before the check. */
+if (strpos($functions, 'is_executable($resolved)') === false) {
+	fwrite(STDERR, "is_executable() must be called on realpath-resolved \$resolved, not raw \$command.\n");
 	exit(1);
 }
 
 if (strpos($functions, 'is_executable($command)') !== false) {
 	fwrite(STDERR, "is_executable() must not be called on raw \$command string.\n");
+	exit(1);
+}
+
+/* realpath() must be used to resolve executable path (prevents path traversal) */
+if (substr_count($functions, 'realpath($executable)') < 2) {
+	fwrite(STDERR, "Both helpers must use realpath() to resolve the executable path.\n");
 	exit(1);
 }
 
@@ -114,28 +121,44 @@ if (preg_match('/function syslog_execute_ticket_command\b.*?^}/ms', $functions, 
 	}
 }
 
-/* hostlist sanitization: ticket command must filter/trim hostlist entries */
+/* hostlist sanitization: shared helper must exist and contain validation logic */
+if (strpos($functions, 'function syslog_sanitize_hostlist(') === false) {
+	fwrite(STDERR, "syslog_sanitize_hostlist() shared helper must exist.\n");
+	exit(1);
+}
+
 if (strpos($functions, "array_filter(array_map('trim', \$hostlist))") === false) {
-	fwrite(STDERR, "syslog_execute_ticket_command() must sanitize hostlist entries via array_filter/array_map.\n");
+	fwrite(STDERR, "syslog_sanitize_hostlist() must sanitize hostlist entries via array_filter/array_map.\n");
 	exit(1);
 }
 
-/* hostlist validation: entries must be validated against a hostname/IP character whitelist */
-if (substr_count($functions, "preg_match('/^[a-zA-Z0-9") < 2) {
-	fwrite(STDERR, "Both syslog_execute_ticket_command() and alert_setup_environment() must validate hostlist entries against hostname/IP character whitelist.\n");
+/* hostlist validation: helper must validate against a hostname/IP character whitelist */
+if (strpos($functions, "preg_match('/^[a-zA-Z0-9") === false) {
+	fwrite(STDERR, "syslog_sanitize_hostlist() must validate hostlist entries against hostname/IP character whitelist.\n");
 	exit(1);
 }
 
-/* read_config_option return must be cast to string to handle false/null */
-if (strpos($functions, "(string) read_config_option('syslog_ticket_command')") === false) {
-	fwrite(STDERR, "syslog_execute_ticket_command() must cast read_config_option() return to string.\n");
+/* both call sites must use the shared helper */
+if (substr_count($functions, 'syslog_sanitize_hostlist(') < 3) {
+	fwrite(STDERR, "syslog_sanitize_hostlist() must be called from both syslog_execute_ticket_command() and alert_setup_environment().\n");
+	exit(1);
+}
+
+/* read_config_option return must be validated for false/null before cast to string */
+if (strpos($functions, "read_config_option('syslog_ticket_command')") === false) {
+	fwrite(STDERR, "syslog_execute_ticket_command() must call read_config_option().\n");
+	exit(1);
+}
+
+if (strpos($functions, '!== false') === false || strpos($functions, '!== null') === false) {
+	fwrite(STDERR, "syslog_execute_ticket_command() must validate read_config_option() for false/null.\n");
 	exit(1);
 }
 
 /* error logs must include the command for debugging context */
 $ticket_fn_match = array();
 if (preg_match('/function syslog_execute_ticket_command\b.*?^}/ms', $functions, $ticket_fn_match)) {
-	if (strpos($ticket_fn_match[0], "Command:' . \$command") === false) {
+	if (strpos($ticket_fn_match[0], 'Command:%s') === false) {
 		fwrite(STDERR, "syslog_execute_ticket_command() error log must include the command.\n");
 		exit(1);
 	}
@@ -184,6 +207,104 @@ if (strpos($functions, 'Ticket command succeeded') === false) {
 if (strpos($functions, 'Alert command succeeded') === false) {
 	fwrite(STDERR, "syslog_execute_alert_command() must log successful executions.\n");
 	exit(1);
+}
+
+/* ticket command must validate clean_up_name() result is non-empty */
+$ticket_fn_match3 = array();
+if (preg_match('/function syslog_execute_ticket_command\b.*?^}/ms', $functions, $ticket_fn_match3)) {
+	if (strpos($ticket_fn_match3[0], 'clean_up_name(') === false) {
+		fwrite(STDERR, "syslog_execute_ticket_command() must call clean_up_name().\n");
+		exit(1);
+	}
+	if (strpos($ticket_fn_match3[0], "== ''") === false) {
+		fwrite(STDERR, "syslog_execute_ticket_command() must validate clean_up_name() result is non-empty.\n");
+		exit(1);
+	}
+}
+
+/* alert_replace_variables must cap hostname length to 253 */
+$arv_match2 = array();
+if (preg_match('/function alert_replace_variables\b.*?^}/ms', $functions, $arv_match2)) {
+	if (strpos($arv_match2[0], 'substr(') === false) {
+		fwrite(STDERR, "alert_replace_variables() must cap hostname and message length via substr().\n");
+		exit(1);
+	}
+	if (strpos($arv_match2[0], '253') === false) {
+		fwrite(STDERR, "alert_replace_variables() must cap hostname to 253 characters.\n");
+		exit(1);
+	}
+	if (strpos($arv_match2[0], '65536') === false) {
+		fwrite(STDERR, "alert_replace_variables() must cap message to 65536 characters.\n");
+		exit(1);
+	}
+}
+
+/* ticket command must log sanitized hostlist at debug level */
+$ticket_fn_match4 = array();
+if (preg_match('/function syslog_execute_ticket_command\b.*?^}/ms', $functions, $ticket_fn_match4)) {
+	if (strpos($ticket_fn_match4[0], 'hostlist after sanitization') === false) {
+		fwrite(STDERR, "syslog_execute_ticket_command() must log sanitized hostlist for debugging.\n");
+		exit(1);
+	}
+}
+
+/* both error formats must use sprintf for consistency */
+if (preg_match('/function syslog_execute_ticket_command\b.*?^}/ms', $functions, $ticket_fn_match4)) {
+	if (strpos($ticket_fn_match4[0], "sprintf('ERROR: Ticket Command Failed.") === false) {
+		fwrite(STDERR, "syslog_execute_ticket_command() must use sprintf for error format.\n");
+		exit(1);
+	}
+}
+
+/* success logs must not include full command at normal verbosity */
+$ticket_fn_match5 = array();
+if (preg_match('/function syslog_execute_ticket_command\b.*?^}/ms', $functions, $ticket_fn_match5)) {
+	if (preg_match('/SYSLOG NOTICE: Ticket command succeeded\..*Command/', $ticket_fn_match5[0])
+		&& strpos($ticket_fn_match5[0], 'POLLER_VERBOSITY_DEBUG') === false) {
+		fwrite(STDERR, "syslog_execute_ticket_command() must gate command logging behind POLLER_VERBOSITY_DEBUG.\n");
+		exit(1);
+	}
+}
+
+$alert_fn_match3 = array();
+if (preg_match('/function syslog_execute_alert_command\b.*?^}/ms', $functions, $alert_fn_match3)) {
+	if (preg_match('/SYSLOG NOTICE: Alert command succeeded\..*Command/', $alert_fn_match3[0])
+		&& strpos($alert_fn_match3[0], 'POLLER_VERBOSITY_DEBUG') === false) {
+		fwrite(STDERR, "syslog_execute_alert_command() must gate command logging behind POLLER_VERBOSITY_DEBUG.\n");
+		exit(1);
+	}
+}
+
+/* syslog_execute_alert_command must guard against empty command */
+$alert_fn_match4 = array();
+if (preg_match('/function syslog_execute_alert_command\b.*?^}/ms', $functions, $alert_fn_match4)) {
+	if (strpos($alert_fn_match4[0], "trim(\$command) == ''") === false) {
+		fwrite(STDERR, "syslog_execute_alert_command() must guard against empty command from alert_replace_variables().\n");
+		exit(1);
+	}
+}
+
+/* syslog_execute_alert_command must reject path traversal via realpath */
+if (preg_match('/function syslog_execute_alert_command\b.*?^}/ms', $functions, $alert_fn_match4)) {
+	if (strpos($alert_fn_match4[0], 'realpath(') === false) {
+		fwrite(STDERR, "syslog_execute_alert_command() must use realpath() to prevent path traversal.\n");
+		exit(1);
+	}
+}
+
+/* read_config_option must be validated for false/null before use */
+if (strpos($functions, '!== false') === false || strpos($functions, '!== null') === false) {
+	fwrite(STDERR, "syslog_execute_ticket_command() must validate read_config_option() return for false/null.\n");
+	exit(1);
+}
+
+/* both success log formats must use sprintf for consistency */
+$ticket_fn_match6 = array();
+if (preg_match('/function syslog_execute_ticket_command\b.*?^}/ms', $functions, $ticket_fn_match6)) {
+	if (strpos($ticket_fn_match6[0], "sprintf('SYSLOG NOTICE: Ticket command succeeded.") === false) {
+		fwrite(STDERR, "syslog_execute_ticket_command() must use sprintf for success log format.\n");
+		exit(1);
+	}
 }
 
 echo "issue278_command_execution_refactor_test passed\n";
