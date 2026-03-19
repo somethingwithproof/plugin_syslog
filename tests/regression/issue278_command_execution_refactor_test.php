@@ -115,4 +115,4 @@ if (preg_match('/function syslog_execute_ticket_command\b.*?^}/ms', $functions, 
 	}
 }
 
-echo "issue278_command_execution_refactor_test passed\n";
+print "issue278_command_execution_refactor_test passed\n";

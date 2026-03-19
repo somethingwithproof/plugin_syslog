@@ -40,4 +40,4 @@ issue253_assert(strpos($progSql['sql'], '?66') === false, 'Program alert SQL mus
 issue253_assert(count($progSql['params']) === 2, 'Program alert SQL must pass two prepared parameters.');
 issue253_assert($progSql['params'][1] === 66, 'Program alert status param should be the uniqueID.');
 
-echo "issue253_alert_sql_placeholder_test passed\n";
+print "issue253_alert_sql_placeholder_test passed\n";

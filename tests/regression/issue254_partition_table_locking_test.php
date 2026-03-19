@@ -186,4 +186,4 @@ if (!preg_match('/syslog_db_fetch_cell_prepared[^)]*information_schema[^)]*table
 	exit(1);
 }
 
-echo "issue254_partition_table_locking_test passed\n";
+print "issue254_partition_table_locking_test passed\n";
