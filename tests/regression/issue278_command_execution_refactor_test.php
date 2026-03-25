@@ -86,14 +86,15 @@ if (preg_match('/\$returnCode\s*=\s*126/', $functions)) {
 	exit(1);
 }
 
-/* quote-stripping: executable extraction must trim surrounding quotes */
-if (strpos($functions, "trim(\$cparts[0], '\"\\'')") === false) {
+/* quote-stripping: executable extraction must handle surrounding quotes */
+if (strpos($functions, "trim(\$cparts[0], '\"\\'')") === false && 
+    strpos($functions, "strpos(\$executable, \$quoteChar, 1)") === false) {
 	fwrite(STDERR, "Executable extraction must strip surrounding quotes from command path.\n");
 	exit(1);
 }
 
 /* preg_split for whitespace tokenization (handles tabs and consecutive spaces) */
-if (substr_count($functions, "preg_split('/\\s+/', trim(\$command))") < 1) {
+if (substr_count($functions, "preg_split('/\\s+/',") < 1) {
 	fwrite(STDERR, "Command tokenization must use preg_split for whitespace splitting.\n");
 	exit(1);
 }

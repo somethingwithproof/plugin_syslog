@@ -12,7 +12,7 @@ if ($functions === false) {
  * whose first argument contains 'information_schema' to exclude the
  * GET_LOCK / RELEASE_LOCK uses of syslog_db_fetch_cell_prepared. */
 $partition_query_count = preg_match_all('/syslog_db_fetch_(?:row|assoc|cell)_prepared\s*\([^)]*information_schema/', $functions);
-if ($partition_query_count === false || $partition_query_count !== 3) {
+if ($partition_query_count === false || $partition_query_count !== 4) {
 	fwrite(STDERR, "Partition queries are not consistently scoped to the requested table.\n");
 	exit(1);
 }

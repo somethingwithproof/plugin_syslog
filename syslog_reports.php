@@ -152,53 +152,29 @@ function form_actions() {
 				FROM `' . $syslogdb_default . '`.`syslog_reports`
 				WHERE id=' . $matches[1]);
 
-			$report_list  .= '<li>' . $report_info . '</li>';
+			$report_list  .= '<li>' . html_escape($report_info) . '</li>';
 			$report_array[] = $matches[1];
 		}
 	}
 
 	if (cacti_sizeof($report_array)) {
-		if (get_request_var('drp_action') == '1') { /* delete */
-			print "<tr>
-				<td class='textArea'>
-					<p>" . __('Click \'Continue\' to Delete the following Syslog Report(s).', 'syslog') . "</p>
-					<div class='itemlist'><ul>$report_list</ul></div>";
-					print "</td></tr>
-				</td>
-			</tr>\n";
+		$action_verbs = array(
+			'1' => __('Delete', 'syslog'),
+			'2' => __('Disable', 'syslog'),
+			'3' => __('Enable', 'syslog'),
+			'4' => __('Export', 'syslog')
+		);
 
-			$title = __esc('Delete Syslog Report(s)', 'syslog');
-		} elseif (get_request_var('drp_action') == '2') { /* disable */
-			print "<tr>
-				<td class='textArea'>
-					<p>" . __('Click \'Continue\' to Disable the following Syslog Report(s).', 'syslog') . "</p>
-					<div class='itemlist'><ul>$report_list</ul></div>";
-					print "</td></tr>
-				</td>
-			</tr>\n";
+		syslog_draw_bulk_action_confirm(get_request_var('drp_action'), $report_list, __('Syslog Report(s)', 'syslog'), $action_verbs);
 
-			$title = __esc('Disable Syslog Report(s)', 'syslog');
-		} elseif (get_request_var('drp_action') == '3') { /* enable */
-			print "<tr>
-				<td class='textArea'>
-					<p>" . __('Click \'Continue\' to Enable the following Syslog Report(s).', 'syslog') . "</p>
-					<div class='itemlist'><ul>$report_list</ul></div>";
-					print "</td></tr>
-				</td>
-			</tr>\n";
+		$titles = array(
+			'1' => __('Delete Syslog Report(s)', 'syslog'),
+			'2' => __('Disable Syslog Report(s)', 'syslog'),
+			'3' => __('Enable Syslog Report(s)', 'syslog'),
+			'4' => __('Export Syslog Report(s)', 'syslog')
+		);
 
-			$title = __esc('Enable Syslog Report(s)', 'syslog');
-		} elseif (get_request_var('drp_action') == '4') { /* export */
-			print "<tr>
-				<td class='textArea'>
-					<p>" . __('Click \'Continue\' to Export the following Syslog Report Rule(s).', 'syslog') . "</p>
-					<div class='itemlist'><ul>$report_list</ul></div>";
-					print "</td></tr>
-				</td>
-			</tr>\n";
-
-			$title = __esc('Export Syslog Report Rule(s)', 'syslog');
-		}
+		$title = $titles[get_request_var('drp_action')] ?? '';
 
 		$save_html = "<input type='button' value='" . __esc('Cancel', 'syslog') . "' onClick='cactiReturnTo()'>&nbsp;<input type='submit' value='" . __esc('Continue', 'syslog') . "' title='$title'";
 	} else {
@@ -717,15 +693,15 @@ function syslog_report() {
 	if (cacti_sizeof($reports)) {
 		foreach ($reports as $report) {
 			form_alternate_row('line' . $report['id']);
-			form_selectable_cell(filter_value(title_trim($report['name'], read_config_option('max_title_length')), get_request_var('filter'), $config['url_path'] . 'plugins/syslog/syslog_reports.php?action=edit&id=' . $report['id']), $report['id']);
-			form_selectable_cell((($report['enabled'] == 'on') ? __('Yes', 'syslog'):__('No', 'syslog')), $report['id']);
-			form_selectable_cell($message_types[$report['type']], $report['id']);
-			form_selectable_cell($report['message'], $report['id']);
-			form_selectable_cell($syslog_freqs[$report['timespan']], $report['id']);
-			form_selectable_cell($syslog_times[$report['timepart']], $report['id']);
-			form_selectable_cell(($report['lastsent'] == 0 ? __('Never', 'syslog'): date('Y-m-d H:i:s', $report['lastsent'])), $report['id']);
-			form_selectable_cell(date('Y-m-d H:i:s', $report['date']), $report['id']);
-			form_selectable_cell($report['user'], $report['id']);
+			form_selectable_ecell(filter_value(title_trim($report['name'], read_config_option('max_title_length')), get_request_var('filter'), $config['url_path'] . 'plugins/syslog/syslog_reports.php?action=edit&id=' . $report['id']), $report['id']);
+			form_selectable_ecell((($report['enabled'] == 'on') ? __('Yes', 'syslog'):__('No', 'syslog')), $report['id']);
+			form_selectable_ecell($message_types[$report['type']], $report['id']);
+			form_selectable_ecell($report['message'], $report['id']);
+			form_selectable_ecell($syslog_freqs[$report['timespan']], $report['id']);
+			form_selectable_ecell($syslog_times[$report['timepart']], $report['id']);
+			form_selectable_ecell(($report['lastsent'] == 0 ? __('Never', 'syslog'): date('Y-m-d H:i:s', $report['lastsent'])), $report['id']);
+			form_selectable_ecell(date('Y-m-d H:i:s', $report['date']), $report['id']);
+			form_selectable_ecell($report['user'], $report['id']);
 			form_checkbox_cell($report['name'], $report['id']);
 			form_end_row();
 		}
@@ -796,20 +772,7 @@ function import() {
 }
 
 function report_import() {
-	$import_text = get_nfilter_request_var('import_text');
-
-	if (trim($import_text) != '') {
-		/* textbox input */
-		$xml_data = $import_text;
-	} elseif (($_FILES['import_file']['tmp_name'] != 'none') && ($_FILES['import_file']['tmp_name'] != '')) {
-		/* file upload */
-		$fp = fopen($_FILES['import_file']['tmp_name'],'r');
-		$xml_data = fread($fp, filesize($_FILES['import_file']['tmp_name']));
-		fclose($fp);
-	} else {
-		header('Location: syslog_reports.php?header=false');
-		exit;
-	}
+	$xml_data = syslog_get_import_xml_payload('syslog_reports.php?header=false');
 
 	/* obtain debug information if it's set */
 	$xml_array = xml2array($xml_data);

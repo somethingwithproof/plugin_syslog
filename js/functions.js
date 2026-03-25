@@ -11,7 +11,7 @@
  * Clear filter for statistics view
  */
 function clearFilterStats() {
-	strURL = 'syslog.php?tab=stats&clear=1&header=false';
+	var strURL = 'syslog.php?tab=stats&clear=1&header=false';
 	loadPageNoHeader(strURL);
 }
 
@@ -196,7 +196,7 @@ function initSyslogMain(config) {
 				$(this).multiselect('widget').find(':checkbox:first').each(function() {
 					$(this).prop('checked', true);
 				});
-				$('#test').trigger('keyup');
+				$('#term').trigger('keyup');
 			},
 			checkAll: function() {
 				$(this).multiselect('widget').find(':checkbox').not(':first').each(function() {
@@ -220,7 +220,11 @@ function initSyslogMain(config) {
 
 							$.each(data, function(index, hostData) {
 								if ($('#host option[value="'+index+'"]').length == 0) {
-									$('#host').append('<option class="'+hostData.class+'" value="'+index+'">'+hostData.host+'</option>');
+									var option = $('<option>')
+										.addClass(hostData.class || '')
+										.val(index)
+										.text(hostData.host);
+									$('#host').append(option);
 								}
 							});
 
@@ -249,7 +253,7 @@ function initSyslogMain(config) {
 					if (checked > 0) {
 						$(this).multiselect('widget').find(':checkbox:first').each(function() {
 							$(this).click();
-							$(this).prop('disable', true);
+							$(this).prop('disabled', true);
 						});
 					}
 				}
@@ -568,6 +572,25 @@ function initSyslogReports() {
  * ======================================================================== */
 
 /**
+ * Validate and invoke a named callback function specified as a string
+ * @param {string} onChange - Name of the global function to call (e.g. 'myCallback')
+ */
+function runSyslogAutocompleteOnChange(onChange) {
+	if (typeof onChange !== 'string') {
+		return;
+	}
+
+	var callbackName = onChange.trim().replace(/\(\)\s*$/, '');
+	if (!callbackName.match(/^[A-Za-z_$][A-Za-z0-9_$]*$/)) {
+		return;
+	}
+
+	if (typeof window[callbackName] === 'function') {
+		window[callbackName]();
+	}
+}
+
+/**
  * Initialize autocomplete for form dropdown fields
  * @param {string} formName - The name of the form field
  * @param {string} callback - The AJAX callback action
@@ -591,7 +614,7 @@ function initSyslogAutocomplete(formName, callback, onChange) {
 					$('#' + formName).val(ui.item.value);
 				}
 				if (onChange) {
-					eval(onChange);
+					runSyslogAutocompleteOnChange(onChange);
 				}
 			}
 		}).css('border', 'none').css('background-color', 'transparent');
@@ -635,7 +658,7 @@ function initSyslogAutocomplete(formName, callback, onChange) {
 			}, 800);
 		});
 
-		$('ul[id^="ui-id"] > li').each().on('mouseenter', function() {
+		$('ul[id^="ui-id"] > li').on('mouseenter', function() {
 			$(this).addClass('ui-state-hover');
 		}).on('mouseleave', function() {
 			$(this).removeClass('ui-state-hover');

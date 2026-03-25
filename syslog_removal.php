@@ -161,66 +161,35 @@ function form_actions() {
 				FROM `" . $syslogdb_default . "`.`syslog_remove`
 				WHERE id=" . $matches[1]);
 
-			$removal_list  .= '<li>' . $removal_info . '</li>';
+			$removal_list  .= '<li>' . html_escape($removal_info) . '</li>';
 			$removal_array[] = $matches[1];
 		}
 	}
 
 	if (cacti_sizeof($removal_array)) {
-		if (get_request_var('drp_action') == '1') { /* delete */
-			print "<tr>
-				<td class='textArea'>
-					<p>" . __('Click \'Continue\' to Delete the following Syslog Removal Rule(s).', 'syslog') . "</p>
-					<div class='itemlist'><ul>$removal_list</ul></div>";
-					print "</td></tr>
-				</td>
-			</tr>\n";
+		$action_verbs = array(
+			'1' => __('Delete', 'syslog'),
+			'2' => __('Disable', 'syslog'),
+			'3' => __('Enable', 'syslog'),
+			'4' => __('Re-process', 'syslog'),
+			'5' => __('Export', 'syslog')
+		);
 
-			$title = __esc('Delete Syslog Removal Rule(s)', 'syslog');
-		} else if (get_request_var('drp_action') == '2') { /* disable */
-			print "<tr>
-				<td class='textArea'>
-					<p>" . __('Click \'Continue\' to Disable the following Syslog Removal Rule(s).', 'syslog') . "</p>
-					<div class='itemlist'><ul>$removal_list</ul></div>";
-					print "</td></tr>
-				</td>
-			</tr>\n";
+		syslog_draw_bulk_action_confirm(get_request_var('drp_action'), $removal_list, __('Syslog Removal Rule(s)', 'syslog'), $action_verbs);
 
-			$title = __esc('Disable Syslog Removal Rule(s)', 'syslog');
-		} else if (get_request_var('drp_action') == '3') { /* enable */
-			print "<tr>
-				<td class='textArea'>
-					<p>" . __('Click \'Continue\' to Enable the following Syslog Removal Rule(s).', 'syslog') . "</p>
-					<div class='itemlist'><ul>$removal_list</ul></div>";
-					print "</td></tr>
-				</td>
-			</tr>\n";
+		$titles = array(
+			'1' => __('Delete Syslog Removal Rule(s)', 'syslog'),
+			'2' => __('Disable Syslog Removal Rule(s)', 'syslog'),
+			'3' => __('Enable Syslog Removal Rule(s)', 'syslog'),
+			'4' => __('Retroactively Process Syslog Removal Rule(s)', 'syslog'),
+			'5' => __('Export Syslog Removal Rule(s)', 'syslog')
+		);
 
-			$title = __esc('Enable Syslog Removal Rule(s)', 'syslog');
-		} else if (get_request_var('drp_action') == '4') { /* reprocess */
-			print "<tr>
-				<td class='textArea'>
-					<p>" . __('Click \'Continue\' to Re-process the following Syslog Removal Rule(s).', 'syslog') . "</p>
-					<div class='itemlist'><ul>$removal_list</ul></div>";
-					print "</td></tr>
-				</td>
-			</tr>\n";
+		$title = $titles[get_request_var('drp_action')] ?? '';
 
-			$title = __esc('Retroactively Process Syslog Removal Rule(s)', 'syslog');
-		} elseif (get_request_var('drp_action') == '5') { /* export */
-			print "<tr>
-				<td class='textArea'>
-					<p>" . __('Click \'Continue\' to Export the following Syslog Removal Rule(s).', 'syslog') . "</p>
-					<div class='itemlist'><ul>$removal_list</ul></div>";
-					print "</td></tr>
-				</td>
-			</tr>\n";
-
-			$title = __esc('Export Syslog Removal Rule(s)', 'syslog');
-		}
-
-		$save_html = "<input type='button' value='" . __esc('Cancel', 'syslog') . "' onClick='cactiReturnTo()'>&nbsp;<input type='submit' value='" . __esc('Continue', 'syslog') . "' title='$title'";
+		$save_html = "<input type='button' value='" . __esc('Cancel', 'syslog') . "' onClick='cactiReturnTo()'>&nbsp;<input type='submit' value='" . __esc('Continue', 'syslog') . "' title='$title'>";
 	} else {
+
 		raise_message(40);
 		header('Location: syslog_removal.php?header=false');
 		exit;
@@ -654,13 +623,13 @@ function syslog_removal() {
 	if (cacti_sizeof($removals)) {
 		foreach ($removals as $removal) {
 			form_alternate_row('line' . $removal['id'], true);
-			form_selectable_cell(filter_value(title_trim($removal['name'], read_config_option('max_title_length')), get_request_var('filter'), $config['url_path'] . 'plugins/syslog/syslog_removal.php?action=edit&id=' . $removal['id']), $removal['id']);
-			form_selectable_cell((($removal['enabled'] == 'on') ? __('Yes', 'syslog'):__('No', 'syslog')), $removal['id']);
-			form_selectable_cell($message_types[$removal['type']], $removal['id']);
+			form_selectable_ecell(filter_value(title_trim($removal['name'], read_config_option('max_title_length')), get_request_var('filter'), $config['url_path'] . 'plugins/syslog/syslog_removal.php?action=edit&id=' . $removal['id']), $removal['id']);
+			form_selectable_ecell((($removal['enabled'] == 'on') ? __('Yes', 'syslog'):__('No', 'syslog')), $removal['id']);
+			form_selectable_ecell($message_types[$removal['type']], $removal['id']);
 			form_selectable_ecell($removal['message'], $removal['id']);
-			form_selectable_cell((($removal['method'] == 'del') ? __('Deletion', 'syslog'): __('Transfer', 'syslog')), $removal['id']);
-			form_selectable_cell(date('Y-m-d H:i:s', $removal['date']), $removal['id']);
-			form_selectable_cell($removal['user'], $removal['id']);
+			form_selectable_ecell((($removal['method'] == 'del') ? __('Deletion', 'syslog'): __('Transfer', 'syslog')), $removal['id']);
+			form_selectable_ecell(date('Y-m-d H:i:s', $removal['date']), $removal['id']);
+			form_selectable_ecell($removal['user'], $removal['id']);
 			form_checkbox_cell($removal['name'], $removal['id']);
 			form_end_row();
 		}
@@ -731,20 +700,7 @@ function import() {
 }
 
 function removal_import() {
-	$import_text = get_nfilter_request_var('import_text');
-
-	if (trim($import_text) != '') {
-		/* textbox input */
-		$xml_data = $import_text;
-	} elseif (($_FILES['import_file']['tmp_name'] != 'none') && ($_FILES['import_file']['tmp_name'] != '')) {
-		/* file upload */
-		$fp = fopen($_FILES['import_file']['tmp_name'],'r');
-		$xml_data = fread($fp, filesize($_FILES['import_file']['tmp_name']));
-		fclose($fp);
-	} else {
-		header('Location: syslog_removal.php?header=false');
-		exit;
-	}
+	$xml_data = syslog_get_import_xml_payload('syslog_removal.php?header=false');
 
 	/* obtain debug information if it's set */
 	$xml_array = xml2array($xml_data);

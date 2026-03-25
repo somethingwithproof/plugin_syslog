@@ -364,10 +364,10 @@ function syslog_statistics() {
 
 			form_alternate_row('line' . $i);
 
-			print '<td>' . (get_request_var('host') != '-2' ? $r['host']:'-') . '</td>';
-			print '<td>' . (get_request_var('facility') != '-2' ? ucfirst($r['facility']):'-') . '</td>';
-			print '<td>' . (get_request_var('priority') != '-2' ? ucfirst($r['priority']):'-') . '</td>';
-			print '<td>' . (get_request_var('program') != '-2' ? ucfirst($r['program']):'-') . '</td>';
+			print '<td>' . (get_request_var('host') != '-2' ? html_escape($r['host']):'-') . '</td>';
+			print '<td>' . (get_request_var('facility') != '-2' ? html_escape(ucfirst($r['facility'])):'-') . '</td>';
+			print '<td>' . (get_request_var('priority') != '-2' ? html_escape(ucfirst($r['priority'])):'-') . '</td>';
+			print '<td>' . (get_request_var('program') != '-2' ? html_escape(ucfirst($r['program'])):'-') . '</td>';
 			//print '<td class="right">' . $r['insert_time'] . '</td>';
 			print '<td class="right">' . $time . '</td>';
 			print '<td class="right">' . number_format_i18n($r['records'], -1)     . '</td>';
@@ -521,7 +521,7 @@ function syslog_stats_filter() {
 										$class = 'deviceUp';
 									}
 
-									print '<option class="' . $class . '" value="' . $host['host_id'] . '"'; if (get_request_var('host') == $host['host_id']) { print ' selected'; } print '>' . $host['host'] . '</option>';
+									print '<option class="' . $class . '" value="' . $host['host_id'] . '"'; if (get_request_var('host') == $host['host_id']) { print ' selected'; } print '>' . html_escape($host['host']) . '</option>';
 								}
 							}
 							?>
@@ -541,7 +541,7 @@ function syslog_stats_filter() {
 
 							if (cacti_sizeof($facilities)) {
 								foreach ($facilities as $r) {
-									print '<option value="' . $r['facility_id'] . '"'; if (get_request_var('facility') == $r['facility_id']) { print ' selected'; } print '>' . ucfirst($r['facility']) . "</option>\n";
+									print '<option value="' . $r['facility_id'] . '"'; if (get_request_var('facility') == $r['facility_id']) { print ' selected'; } print '>' . html_escape(ucfirst($r['facility'])) . "</option>\n";
 								}
 							}
 							?>
@@ -561,7 +561,7 @@ function syslog_stats_filter() {
 
 							if (cacti_sizeof($priorities)) {
 								foreach ($priorities as $r) {
-									print '<option value="' . $r['priority_id'] . '"'; if (get_request_var('priority') == $r['priority_id']) { print ' selected'; } print '>' . ucfirst($r['priority']) . "</option>\n";
+									print '<option value="' . $r['priority_id'] . '"'; if (get_request_var('priority') == $r['priority_id']) { print ' selected'; } print '>' . html_escape(ucfirst($r['priority'])) . "</option>\n";
 								}
 							}
 							?>
@@ -1367,7 +1367,7 @@ function syslog_filter($sql_where, $tab) {
 											}
 										}
 										print '>';
-										print $host['host'] . '</option>';
+										print html_escape($host['host']) . '</option>';
 									}
 								}
 								?>
@@ -1734,27 +1734,27 @@ function syslog_messages($tab = 'syslog') {
 						$url .= "<a style='padding:1px' href='" . html_escape('syslog_removal.php?id=' . $sm[$syslog_incoming_config['id']] . '&action=newedit&type=new&type=0') . "'><i class='deviceDown fas fa-minus-circle'></i>";
 					}
 
-					form_selectable_cell($url, $sm['seq'], '', 'left');
+					form_selectable_ecell($url, $sm['seq'], '', 'left');
 				}
 
 				// Display grouped or individual messages
 				if ($grouping_enabled && isset($sm['occurrence_count']) && $sm['occurrence_count'] > 1) {
 					// Grouped message display with expand/collapse
 					$expand_icon = "<i class='fas fa-chevron-down syslog-group-toggle' data-seq='" . html_escape($sm['seq']) . "' style='cursor:pointer; margin-right:5px;'></i>";
-					form_selectable_cell($expand_icon . $sm['logtime'], $sm['seq'], '', 'left');
+					form_selectable_ecell($expand_icon . $sm['logtime'], $sm['seq'], '', 'left');
 				} else {
-					form_selectable_cell($sm['logtime'], $sm['seq'], '', 'left');
+					form_selectable_ecell($sm['logtime'], $sm['seq'], '', 'left');
 				}
 				
-				form_selectable_cell(isset($hosts[$sm['host_id']]) ? $hosts[$sm['host_id']]:__('Unknown', 'syslog'), $sm['seq'], '', 'left');
-				form_selectable_cell($sm['program'], $sm['seq'], '', 'left');
-				form_selectable_cell(filter_value(title_trim($sm[$syslog_incoming_config['textField']], get_request_var_request('trimval')), get_request_var('rfilter')), $sm['seq'], '', 'left syslogMessage');
-				form_selectable_cell(isset($facilities[$sm['facility_id']]) ? $facilities[$sm['facility_id']]:__('Unknown', 'syslog'), $sm['seq'], '', 'left');
-				form_selectable_cell(isset($priorities[$sm['priority_id']]) ? $priorities[$sm['priority_id']]:__('Unknown', 'syslog'), $sm['seq'], '', 'left');
+				form_selectable_ecell(isset($hosts[$sm['host_id']]) ? $hosts[$sm['host_id']]:__('Unknown', 'syslog'), $sm['seq'], '', 'left');
+				form_selectable_ecell($sm['program'], $sm['seq'], '', 'left');
+				form_selectable_ecell(filter_value(title_trim($sm[$syslog_incoming_config['textField']], get_request_var_request('trimval')), get_request_var('rfilter')), $sm['seq'], '', 'left syslogMessage');
+				form_selectable_ecell(isset($facilities[$sm['facility_id']]) ? $facilities[$sm['facility_id']]:__('Unknown', 'syslog'), $sm['seq'], '', 'left');
+				form_selectable_ecell(isset($priorities[$sm['priority_id']]) ? $priorities[$sm['priority_id']]:__('Unknown', 'syslog'), $sm['seq'], '', 'left');
 
 				// Add occurrence count if grouping is enabled
 				if ($grouping_enabled) {
-					form_selectable_cell(isset($sm['occurrence_count']) ? $sm['occurrence_count'] : 1, $sm['seq'], '', 'right');
+					form_selectable_ecell(isset($sm['occurrence_count']) ? $sm['occurrence_count'] : 1, $sm['seq'], '', 'right');
 				}
 
 				form_end_row();
@@ -1843,16 +1843,16 @@ function syslog_messages($tab = 'syslog') {
 
 				syslog_log_row_color($log['severity'], $title);
 
-				form_selectable_cell(filter_value($log['name'] != '' ? $log['name']:__('Alert Removed', 'syslog'), get_request_var('rfilter'), $config['url_path'] . 'plugins/syslog/syslog.php?id=' . $log['seq'] . '&tab=current'), $log['seq'], '', 'left');
+				form_selectable_ecell(filter_value($log['name'] != '' ? $log['name']:__('Alert Removed', 'syslog'), get_request_var('rfilter'), $config['url_path'] . 'plugins/syslog/syslog.php?id=' . $log['seq'] . '&tab=current'), $log['seq'], '', 'left');
 
-				form_selectable_cell(isset($severities[$log['severity']]) ? $severities[$log['severity']]:__('Unknown', 'syslog'), $log['seq'], '', 'left');
-				form_selectable_cell($log['logtime'], $log['seq'], '', 'left');
-				form_selectable_cell(filter_value(title_trim($log['logmsg'], get_request_var_request('trimval')), get_request_var('rfilter')), $log['seq'], '', 'syslogMessage left');
+				form_selectable_ecell(isset($severities[$log['severity']]) ? $severities[$log['severity']]:__('Unknown', 'syslog'), $log['seq'], '', 'left');
+				form_selectable_ecell($log['logtime'], $log['seq'], '', 'left');
+				form_selectable_ecell(filter_value(title_trim($log['logmsg'], get_request_var_request('trimval')), get_request_var('rfilter')), $log['seq'], '', 'syslogMessage left');
 
-				form_selectable_cell($log['count'], $log['seq'], '', 'right');
-				form_selectable_cell($log['host'], $log['seq'], '', 'right');
-				form_selectable_cell(ucfirst($log['facility']), $log['seq'], '', 'right');
-				form_selectable_cell(ucfirst($log['priority']), $log['seq'], '', 'right');
+				form_selectable_ecell($log['count'], $log['seq'], '', 'right');
+				form_selectable_ecell($log['host'], $log['seq'], '', 'right');
+				form_selectable_ecell(ucfirst($log['facility']), $log['seq'], '', 'right');
+				form_selectable_ecell(ucfirst($log['priority']), $log['seq'], '', 'right');
 
 				form_end_row();
 			}
@@ -2055,4 +2055,3 @@ function syslog_form_callback($form_name, $classic_sql, $column_display, $column
 		<?php
 	}
 }
-

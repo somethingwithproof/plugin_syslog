@@ -151,14 +151,20 @@ if (!syslog_is_partitioned()) {
 syslog_debug('-------------------------------------------------------------------------------------');
 
 /**
- * pre-processing includes marking a max_seq to be used
+ * pre-processing includes marking a uniqueID to be used
  * in the processesing of alerts and stripping domains
  * from hostnames in the case that the administrator
  * chooses to strip them.
  */
 $results  = syslog_preprocess_incoming_records();
-$max_seq = $results['max_seq'];
+$uniqueID = $results['uniqueID'];
 $incoming = $results['incoming'];
+
+if ($uniqueID === 0) {
+	syslog_debug('No valid uniqueID obtained, skipping processing cycle');
+	unregister_process('syslog', 'master', $config['poller_id']);
+	exit(0);
+}
 
 /**
  * place new normalized values in various reference tables
@@ -173,7 +179,7 @@ $incoming = $results['incoming'];
  * time and to speed up searching for these various
  * columns in the database.
  */
-syslog_update_reference_tables($max_seq);
+syslog_update_reference_tables($uniqueID);
 
 /**
  * The statistics process allows the Cacti
@@ -181,19 +187,19 @@ syslog_update_reference_tables($max_seq);
  * into the syslog table and what message types are flowing
  * into it.
  */
-syslog_update_statistics($max_seq);
+syslog_update_statistics($uniqueID);
 
 /**
  * remove records that don't need to to be transferred
  */
-$results = syslog_remove_items('syslog_incoming', $max_seq);
+$results = syslog_remove_items('syslog_incoming', $uniqueID);
 $removed = $results['removed'];
 $xferred = $results['xferred'];
 
 /**
  * process the syslog rules and generate alerts
  */
-$results = syslog_process_alerts($max_seq);
+$results = syslog_process_alerts($uniqueID);
 $alerts  = $results['syslog_alerts'];
 $alarms  = $results['syslog_alarms'];
 
@@ -209,7 +215,7 @@ api_plugin_hook('plugin_syslog_after_processing');
  * move records from incoming to syslog table and remove
  * any stale records to to a poller crash
  */
-$results = syslog_incoming_to_syslog($max_seq);
+$results = syslog_incoming_to_syslog($uniqueID);
 $moved   = $results['moved'];
 $stale   = $results['stale'];
 
