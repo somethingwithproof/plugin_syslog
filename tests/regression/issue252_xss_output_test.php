@@ -1,14 +1,25 @@
 <?php
 
-$syslogPhp   = file_get_contents(dirname(__DIR__, 2) . '/syslog.php');
-$reportsPhp  = file_get_contents(dirname(__DIR__, 2) . '/syslog_reports.php');
-$removalPhp  = file_get_contents(dirname(__DIR__, 2) . '/syslog_removal.php');
-$functionsJs = file_get_contents(dirname(__DIR__, 2) . '/js/functions.js');
+$syslog_path  = dirname(__DIR__, 2) . '/syslog.php';
+$reports_path = dirname(__DIR__, 2) . '/syslog_reports.php';
+$removal_path = dirname(__DIR__, 2) . '/syslog_removal.php';
+$alerts_path  = dirname(__DIR__, 2) . '/syslog_alerts.php';
+$functions_js = dirname(__DIR__, 2) . '/js/functions.js';
 
-if ($syslogPhp === false || $reportsPhp === false || $removalPhp === false || $functionsJs === false) {
-	fwrite(STDERR, "Failed to load one or more plugin files for issue252 checks.\n");
-	exit(1);
+foreach ([$syslog_path, $reports_path, $removal_path, $alerts_path, $functions_js] as $path) {
+	if (!file_exists($path)) {
+		fwrite(STDERR, "Failed to load required file for issue252 checks: $path\n");
+		exit(1);
+	}
 }
+
+/* php_strip_whitespace() removes all PHP comments before asserting, so a
+   commented-out html_escape() call cannot satisfy the check and mask XSS. */
+$syslogPhp   = php_strip_whitespace($syslog_path);
+$reportsPhp  = php_strip_whitespace($reports_path);
+$removalPhp  = php_strip_whitespace($removal_path);
+$alertsPhp   = php_strip_whitespace($alerts_path);
+$functionsJs = file_get_contents($functions_js);
 
 if (substr_count($syslogPhp, "html_escape(\$host['host'])") < 2) {
 	fwrite(STDERR, "Expected escaped host rendering in syslog.php output paths.\n");
@@ -22,13 +33,6 @@ if (strpos($reportsPhp, "html_escape(\$report_info)") === false) {
 
 if (strpos($removalPhp, "html_escape(\$removal_info)") === false) {
 	fwrite(STDERR, "Expected escaped removal confirmation list entries.\n");
-	exit(1);
-}
-
-$alertsPhp = file_get_contents(dirname(__DIR__, 2) . '/syslog_alerts.php');
-
-if ($alertsPhp === false) {
-	fwrite(STDERR, "Failed to load syslog_alerts.php for issue252 checks.\n");
 	exit(1);
 }
 

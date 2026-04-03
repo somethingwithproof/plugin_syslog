@@ -182,10 +182,18 @@ function syslog_apply_selected_items_action($selected_items, $drp_action, $actio
 }
 
 function syslog_get_import_xml_payload($redirect_url) {
+	/* Decode percent-encoding before allowlist validation so that encoded
+	   characters (e.g. %2F, %3A) cannot smuggle past the regex. */
+	$redirect_url = urldecode($redirect_url);
+
 	/* Allow only relative paths that start with a filename character. Schemes
 	   (http://), protocol-relative URLs (//), and backslash prefixes (\, /\)
 	   all fail to match the allowlist and collapse to the safe default. */
 	if (!preg_match('/^[a-zA-Z0-9_\-][a-zA-Z0-9_\-\.\/]*(?:\?[a-zA-Z0-9_\-&=%\.+]*)?$/', $redirect_url)) {
+		$redirect_url = 'index.php';
+	}
+
+	if (strpos($redirect_url, '..') !== false) {
 		$redirect_url = 'index.php';
 	}
 
@@ -212,6 +220,15 @@ function syslog_get_import_xml_payload($redirect_url) {
 
 		if ($_FILES['import_file']['size'] > 1048576) {
 			cacti_log('SYSLOG ERROR: Uploaded import file exceeds 1 MB limit', false, 'SYSTEM');
+			header('Location: ' . $redirect_url);
+			exit;
+		}
+
+		/* Reject non-XML uploads based on MIME sniffing of the actual bytes,
+		   not the browser-supplied Content-Type which is attacker-controlled. */
+		$mime = function_exists('mime_content_type') ? mime_content_type($tmp_name) : '';
+		if ($mime !== 'text/xml' && $mime !== 'application/xml') {
+			cacti_log('SYSLOG ERROR: Uploaded import file is not XML (detected: ' . $mime . ')', false, 'SYSTEM');
 			header('Location: ' . $redirect_url);
 			exit;
 		}
@@ -433,11 +450,11 @@ function syslog_partition_remove($table) {
 					   binding for DDL statements. */
 					if (!preg_match('/^d\d{8}$/', $oldest['PARTITION_NAME'])) {
 						cacti_log("SYSLOG ERROR: Unexpected partition name format '" . $oldest['PARTITION_NAME'] . "' for table '$table', skipping, cannot prune past this entry", false, 'SYSTEM');
-						$i++;
-						/* Do NOT decrement $user_partitions: no partition was dropped,
-						   so the actual count is unchanged. The upper bound on $i
-						   prevents an infinite loop when all remaining names are invalid. */
-						continue;
+						/* Stop immediately: partitions are ordered by age, so an invalid
+						   name means we cannot safely drop any further entries. Breaking
+						   here also ensures the loop terminates even if all remaining
+						   names are invalid. */
+						break;
 					}
 
 					cacti_log("SYSLOG: Removing old partition '" . $oldest['PARTITION_NAME'] . "' from table '$table'", false, 'SYSTEM');
