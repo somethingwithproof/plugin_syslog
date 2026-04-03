@@ -197,6 +197,13 @@ function syslog_get_import_xml_payload($redirect_url) {
 		$redirect_url = 'index.php';
 	}
 
+	/* Block double-slash sequences that survive urldecode (e.g. %2F%2F -> //)
+	   and could be used to construct protocol-relative URLs or confuse path
+	   normalization in certain web-server configurations. */
+	if (strpos($redirect_url, '//') !== false) {
+		$redirect_url = 'index.php';
+	}
+
 	if (trim(get_nfilter_request_var('import_text')) != '') {
 		/* textbox input */
 		return get_nfilter_request_var('import_text');
@@ -227,8 +234,23 @@ function syslog_get_import_xml_payload($redirect_url) {
 		/* Reject non-XML uploads based on MIME sniffing of the actual bytes,
 		   not the browser-supplied Content-Type which is attacker-controlled. */
 		$mime = function_exists('mime_content_type') ? mime_content_type($tmp_name) : '';
-		if ($mime !== 'text/xml' && $mime !== 'application/xml') {
+		$mime_base = strtolower(explode(';', $mime)[0]);
+		if ($mime_base !== 'text/xml' && $mime_base !== 'application/xml') {
 			cacti_log('SYSLOG ERROR: Uploaded import file is not XML (detected: ' . $mime . ')', false, 'SYSTEM');
+			header('Location: ' . $redirect_url);
+			exit;
+		}
+
+		/* Secondary: verify XML magic bytes independently of mime_content_type so
+		   that spoofed or environment-inconsistent MIME results are caught.
+		   Accepts bare <?xml and UTF-8-BOM-prefixed <?xml openings. */
+		$hdr = file_get_contents($tmp_name, false, null, 0, 8);
+		$has_xml_sig = $hdr !== false && (
+			strncmp($hdr, '<?xml', 5) === 0 ||
+			strncmp($hdr, "\xef\xbb\xbf<?xml", 8) === 0
+		);
+		if (!$has_xml_sig) {
+			cacti_log('SYSLOG ERROR: Uploaded import file failed XML signature check', false, 'SYSTEM');
 			header('Location: ' . $redirect_url);
 			exit;
 		}
@@ -246,6 +268,19 @@ function syslog_get_import_xml_payload($redirect_url) {
 
 		if ($xml_data === false) {
 			cacti_log('SYSLOG ERROR: Failed to read uploaded import file', false, 'SYSTEM');
+			header('Location: ' . $redirect_url);
+			exit;
+		}
+
+		/* Tertiary: parse the content to confirm it is well-formed XML.
+		   mime_content_type() is heuristic and can be spoofed by crafted files;
+		   a successful parse is the authoritative check. */
+		libxml_use_internal_errors(true);
+		$parsed = simplexml_load_string($xml_data);
+		libxml_clear_errors();
+		libxml_use_internal_errors(false);
+		if ($parsed === false) {
+			cacti_log('SYSLOG ERROR: Uploaded import file is not well-formed XML', false, 'SYSTEM');
 			header('Location: ' . $redirect_url);
 			exit;
 		}
@@ -449,7 +484,7 @@ function syslog_partition_remove($table) {
 					   format before DDL interpolation — MySQL does not support parameter
 					   binding for DDL statements. */
 					if (!preg_match('/^d\d{8}$/', $oldest['PARTITION_NAME'])) {
-						cacti_log("SYSLOG ERROR: Unexpected partition name format '" . $oldest['PARTITION_NAME'] . "' for table '$table', skipping, cannot prune past this entry", false, 'SYSTEM');
+						cacti_log("SYSLOG ERROR: Unexpected partition name format '" . htmlspecialchars($oldest['PARTITION_NAME'], ENT_QUOTES, 'UTF-8') . "' for table '$table', skipping, cannot prune past this entry", false, 'SYSTEM');
 						/* Stop immediately: partitions are ordered by age, so an invalid
 						   name means we cannot safely drop any further entries. Breaking
 						   here also ensures the loop terminates even if all remaining
@@ -969,22 +1004,30 @@ function syslog_manage_items($from_table, $to_table) {
 
 					if (cacti_sizeof($move_records)) {
 						$messages_moved = 0;
-						$all_seq = implode(',', array_map('intval', array_column($move_records, 'seq')));
-						syslog_db_execute_prepared("INSERT INTO `". $syslogdb_default . "`.`". $to_table ."`
-							(facility_id, priority_id, host_id, logtime, message)
-							(SELECT facility_id, priority_id, host_id, logtime, message
-							FROM `". $syslogdb_default . "`.". $from_table ."
-							WHERE seq IN (" . $all_seq ."))");
+						/* Discard any seq values that are not numeric before building the
+						   IN list; intval() silently coerces garbage to 0, which would
+						   match the wrong rows. */
+						$seq_values = array_filter(array_column($move_records, 'seq'), 'is_numeric');
+						if (empty($seq_values)) {
+							cacti_log('SYSLOG WARNING: Move set contained no valid seq values; skipping batch', false, 'SYSTEM');
+						} else {
+							$all_seq = implode(',', array_map('intval', $seq_values));
+							syslog_db_execute_prepared("INSERT INTO `". $syslogdb_default . "`.`". $to_table ."`
+								(facility_id, priority_id, host_id, logtime, message)
+								(SELECT facility_id, priority_id, host_id, logtime, message
+								FROM `". $syslogdb_default . "`.". $from_table ."
+								WHERE seq IN (" . $all_seq ."))");
 
-						$messages_moved = db_affected_rows($syslog_cnn);
+							$messages_moved = db_affected_rows($syslog_cnn);
 
-						if ($messages_moved > 0) {
-							syslog_db_execute_prepared("DELETE FROM `". $syslogdb_default . "`.`" . $from_table ."`
-								WHERE seq IN (" . $all_seq .")" );
+							if ($messages_moved > 0) {
+								syslog_db_execute_prepared("DELETE FROM `". $syslogdb_default . "`.`" . $from_table ."`
+									WHERE seq IN (" . $all_seq .")" );
+							}
+
+							$xferred += $messages_moved;
+							$move_count = $messages_moved;
 						}
-
-						$xferred += $messages_moved;
-						$move_count = $messages_moved;
 					}
 
 					$debugm = sprintf('Moved   %5s - Message(s)', $move_count);
