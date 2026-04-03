@@ -182,9 +182,10 @@ function syslog_apply_selected_items_action($selected_items, $drp_action, $actio
 }
 
 function syslog_get_import_xml_payload($redirect_url) {
-	/* Reject non-relative redirect targets to prevent open redirect.
-	   All legitimate callers pass a relative path (e.g. syslog_removal.php?header=false). */
-	if (preg_match('/^(?:[a-z][a-z\d+\-.]*:|\/{2})/i', $redirect_url)) {
+	/* Allow only relative paths that start with a filename character. Schemes
+	   (http://), protocol-relative URLs (//), and backslash prefixes (\, /\)
+	   all fail to match the allowlist and collapse to the safe default. */
+	if (!preg_match('/^[a-zA-Z0-9_\-][a-zA-Z0-9_\-\.\/]*(?:\?[a-zA-Z0-9_\-&=%\.+]*)?$/', $redirect_url)) {
 		$redirect_url = 'index.php';
 	}
 
@@ -424,16 +425,18 @@ function syslog_partition_remove($table) {
 			$user_partitions = sizeof($number_of_partitions) - 1;
 			if ($user_partitions >= $days) {
 				$i = 0;
-				while ($user_partitions > $days) {
+				while ($user_partitions > $days && $i < cacti_sizeof($number_of_partitions)) {
 					$oldest = $number_of_partitions[$i];
 
 					/* PARTITION_NAME comes from information_schema, but validate the
 					   format before DDL interpolation — MySQL does not support parameter
 					   binding for DDL statements. */
 					if (!preg_match('/^d\d{8}$/', $oldest['PARTITION_NAME'])) {
-						cacti_log("SYSLOG ERROR: Unexpected partition name format '" . $oldest['PARTITION_NAME'] . "' for table '$table', skipping", false, 'SYSTEM');
+						cacti_log("SYSLOG ERROR: Unexpected partition name format '" . $oldest['PARTITION_NAME'] . "' for table '$table', skipping, cannot prune past this entry", false, 'SYSTEM');
 						$i++;
-						$user_partitions--;
+						/* Do NOT decrement $user_partitions: no partition was dropped,
+						   so the actual count is unchanged. The upper bound on $i
+						   prevents an infinite loop when all remaining names are invalid. */
 						continue;
 					}
 
