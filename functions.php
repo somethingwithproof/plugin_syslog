@@ -182,6 +182,12 @@ function syslog_apply_selected_items_action($selected_items, $drp_action, $actio
 }
 
 function syslog_get_import_xml_payload($redirect_url) {
+	/* Reject non-relative redirect targets to prevent open redirect.
+	   All legitimate callers pass a relative path (e.g. syslog_removal.php?header=false). */
+	if (preg_match('/^(?:[a-z][a-z\d+\-.]*:|\/{2})/i', $redirect_url)) {
+		$redirect_url = 'index.php';
+	}
+
 	if (trim(get_nfilter_request_var('import_text')) != '') {
 		/* textbox input */
 		return get_nfilter_request_var('import_text');
@@ -199,6 +205,12 @@ function syslog_get_import_xml_payload($redirect_url) {
 		}
 
 		if (!is_uploaded_file($tmp_name)) {
+			header('Location: ' . $redirect_url);
+			exit;
+		}
+
+		if ($_FILES['import_file']['size'] > 1048576) {
+			cacti_log('SYSLOG ERROR: Uploaded import file exceeds 1 MB limit', false, 'SYSTEM');
 			header('Location: ' . $redirect_url);
 			exit;
 		}
@@ -414,6 +426,16 @@ function syslog_partition_remove($table) {
 				$i = 0;
 				while ($user_partitions > $days) {
 					$oldest = $number_of_partitions[$i];
+
+					/* PARTITION_NAME comes from information_schema, but validate the
+					   format before DDL interpolation — MySQL does not support parameter
+					   binding for DDL statements. */
+					if (!preg_match('/^d\d{8}$/', $oldest['PARTITION_NAME'])) {
+						cacti_log("SYSLOG ERROR: Unexpected partition name format '" . $oldest['PARTITION_NAME'] . "' for table '$table', skipping", false, 'SYSTEM');
+						$i++;
+						$user_partitions--;
+						continue;
+					}
 
 					cacti_log("SYSLOG: Removing old partition '" . $oldest['PARTITION_NAME'] . "' from table '$table'", false, 'SYSTEM');
 
@@ -926,13 +948,8 @@ function syslog_manage_items($from_table, $to_table) {
 					syslog_debug(sprintf('Found   %5s - Message(s)', cacti_sizeof($move_records)));
 
 					if (cacti_sizeof($move_records)) {
-						$all_seq = '';
 						$messages_moved = 0;
-						foreach($move_records as $move_record) {
-							$all_seq = $all_seq . ", " . $move_record['seq'];
-						}
-
-						$all_seq = preg_replace('/^,/i', '', $all_seq);
+						$all_seq = implode(',', array_map('intval', array_column($move_records, 'seq')));
 						syslog_db_execute_prepared("INSERT INTO `". $syslogdb_default . "`.`". $to_table ."`
 							(facility_id, priority_id, host_id, logtime, message)
 							(SELECT facility_id, priority_id, host_id, logtime, message

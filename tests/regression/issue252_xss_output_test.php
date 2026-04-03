@@ -25,6 +25,18 @@ if (strpos($removalPhp, "html_escape(\$removal_info)") === false) {
 	exit(1);
 }
 
+$alertsPhp = file_get_contents(dirname(__DIR__, 2) . '/syslog_alerts.php');
+
+if ($alertsPhp === false) {
+	fwrite(STDERR, "Failed to load syslog_alerts.php for issue252 checks.\n");
+	exit(1);
+}
+
+if (strpos($alertsPhp, "html_escape(\$alert_info)") === false) {
+	fwrite(STDERR, "Expected escaped alert confirmation list entries.\n");
+	exit(1);
+}
+
 if (strpos($reportsPhp, "form_selectable_ecell(\$report['message'], \$report['id']);") === false) {
 	fwrite(STDERR, "Expected escaped report message cell rendering.\n");
 	exit(1);
