@@ -307,7 +307,7 @@ function syslog_partition_create($table) {
 		/* determine the format of the table name */
 		$time    = time();
 		$cformat = 'd' . date('Ymd', $time);
-		$lnow    = date('Y-m-d', $time+86400);
+		$lnow    = date('Y-m-d', strtotime('+1 day', $time));
 
 		$exists = syslog_db_fetch_row_prepared("SELECT *
 			FROM `information_schema`.`partitions`
@@ -788,12 +788,12 @@ function syslog_export($tab) {
 
 				print
 					'"' .
-					$host                                          . '","' .
-					ucfirst($facility)                             . '","' .
-					ucfirst($priority)                             . '","' .
-					ucfirst($program)                              . '","' .
-					$message['logtime']                            . '","' .
-					$message[$syslog_incoming_config['textField']] . '"'   . "\r\n";
+					syslog_csv_safe($host)                                          . '","' .
+					syslog_csv_safe(ucfirst($facility))                             . '","' .
+					syslog_csv_safe(ucfirst($priority))                             . '","' .
+					syslog_csv_safe(ucfirst($program))                              . '","' .
+					syslog_csv_safe($message['logtime'])                            . '","' .
+					syslog_csv_safe($message[$syslog_incoming_config['textField']]) . '"'   . "\r\n";
 			}
 		}
 	} else {
@@ -815,14 +815,14 @@ function syslog_export($tab) {
 
 				print
 					'"' .
-					$message['name']                  . '","' .
-					$severity                         . '","' .
-					$message['logtime']               . '","' .
-					$message['logmsg']                . '","' .
-					$message['host']                  . '","' .
-					ucfirst($message['facility'])     . '","' .
-					ucfirst($message['priority'])     . '","' .
-					$message['count']                 . '"'   . "\r\n";
+					syslog_csv_safe($message['name'])                  . '","' .
+					syslog_csv_safe($severity)                         . '","' .
+					syslog_csv_safe($message['logtime'])               . '","' .
+					syslog_csv_safe($message['logmsg'])                . '","' .
+					syslog_csv_safe($message['host'])                  . '","' .
+					syslog_csv_safe(ucfirst($message['facility']))     . '","' .
+					syslog_csv_safe(ucfirst($message['priority']))     . '","' .
+					syslog_csv_safe($message['count'])                 . '"'   . "\r\n";
 			}
 		}
 	}
@@ -2048,6 +2048,31 @@ function syslog_postprocess_tables() {
 				`' . $syslogdb_default . '`.`syslog_alert`');
 		}
 	}
+}
+
+/**
+ * syslog_csv_safe - Escapes a value for safe inclusion in a CSV field.
+ *
+ * Prevents formula injection by prefixing cells that start with a trigger
+ * character, and escapes embedded double-quotes per RFC 4180.
+ *
+ * @param  (mixed) $value  The value to sanitize
+ *
+ * @return (string) The sanitized string
+ */
+function syslog_csv_safe($value) {
+	if ($value === null || $value === '') {
+		return '';
+	}
+
+	$value = (string) $value;
+	$value = str_replace('"', '""', $value);
+
+	if (preg_match('/^[=+\-@\t\r]/', $value)) {
+		$value = "'" . $value;
+	}
+
+	return $value;
 }
 
 /**

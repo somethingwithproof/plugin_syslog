@@ -626,7 +626,7 @@ function syslog_setup_table_new($options) {
 		$newreport = true;
 	}
 
-	if ($truncate || !$newreport) {
+	if ($truncate) {
 		syslog_db_execute("DROP TABLE IF EXISTS `" . $syslogdb_default . "`.`syslog_reports`");
 	}
 

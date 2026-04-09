@@ -227,7 +227,7 @@ function initSyslogMain(config) {
 
 							$.each(data, function(index, hostData) {
 								if ($('#host option[value="'+index+'"]').length == 0) {
-									$('#host').append('<option class="'+hostData.class+'" value="'+index+'">'+hostData.host+'</option>');
+									$('#host').append('<option class="'+DOMPurify.sanitize(hostData.class)+'" value="'+DOMPurify.sanitize(index)+'">'+DOMPurify.sanitize(hostData.host)+'</option>');
 								}
 							});
 

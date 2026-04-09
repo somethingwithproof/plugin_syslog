@@ -393,8 +393,8 @@ function get_stats_records(&$sql_where, &$sql_groupby, $rows) {
 	/* form the 'where' clause for our main sql query */
 	if (!isempty_request_var('rfilter')) {
 		$sql_where .= ($sql_where == '' ? 'WHERE ' : ' AND ') .
-			"sh.host RLIKE '"       . get_request_var('rfilter') . "'
-			OR spr.program RLIKE '" . get_request_var('rfilter') . "'";
+			"sh.host RLIKE "       . db_qstr(get_request_var('rfilter')) . "
+			OR spr.program RLIKE " . db_qstr(get_request_var('rfilter'));
 	}
 
 	if (get_request_var('host') == '-2') {
@@ -910,9 +910,9 @@ function get_syslog_messages(&$sql_where, $rows, $tab) {
 
 	if (!isempty_request_var('rfilter')) {
 		if ($tab == 'syslog') {
-			$sql_where .= ($sql_where == '' ? 'WHERE ' : ' AND ') . "message RLIKE '" . get_request_var('rfilter') . "'";
+			$sql_where .= ($sql_where == '' ? 'WHERE ' : ' AND ') . "message RLIKE " . db_qstr(get_request_var('rfilter'));
 		} else {
-			$sql_where .= ($sql_where == '' ? 'WHERE ' : ' AND ') . "logmsg RLIKE '" . get_request_var('rfilter') . "'";
+			$sql_where .= ($sql_where == '' ? 'WHERE ' : ' AND ') . "logmsg RLIKE " . db_qstr(get_request_var('rfilter'));
 		}
 	}
 
