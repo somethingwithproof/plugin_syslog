@@ -30,10 +30,10 @@ $guest_account = true;
 
 /* initialize cacti environment */
 chdir('../../');
-include('./include/auth.php');
-include_once('./lib/html_tree.php');
-include_once('./plugins/syslog/functions.php');
-include_once('./plugins/syslog/database.php');
+include './include/auth.php';
+include_once './lib/html_tree.php';
+include_once './plugins/syslog/functions.php';
+include_once './plugins/syslog/database.php';
 
 syslog_connect();
 
@@ -53,31 +53,31 @@ if (get_request_var('action') == 'ajax_programs') {
 
 $title = __('Syslog Viewer', 'syslog');
 
-$trimvals = array(
+$trimvals = [
 	'1024' => __('All Text', 'syslog'),
-	'30'   => __('%d Chars', 30, 'syslog'),
-	'50'   => __('%d Chars', 50, 'syslog'),
-	'75'   => __('%d Chars', 75, 'syslog'),
-	'100'  => __('%d Chars', 100, 'syslog'),
-	'150'  => __('%d Chars', 150, 'syslog'),
-	'300'  => __('%d Chars', 300, 'syslog')
-);
+	'30' => __('%d Chars', 30, 'syslog'),
+	'50' => __('%d Chars', 50, 'syslog'),
+	'75' => __('%d Chars', 75, 'syslog'),
+	'100' => __('%d Chars', 100, 'syslog'),
+	'150' => __('%d Chars', 150, 'syslog'),
+	'300' => __('%d Chars', 300, 'syslog'),
+];
 
 /* set the default tab */
-get_filter_request_var('tab', FILTER_VALIDATE_REGEXP, array('options' => array('regexp' => '/^([a-zA-Z]+)$/')));
+get_filter_request_var('tab', FILTER_VALIDATE_REGEXP, ['options' => ['regexp' => '/^([a-zA-Z]+)$/']]);
 
 load_current_session_value('tab', 'sess_syslog_tab', 'syslog');
 $current_tab = get_request_var('tab');
 
-/* validate the syslog post/get/request information */;
+/* validate the syslog post/get/request information */
 if ($current_tab != 'stats') {
 	syslog_request_validation($current_tab);
 }
 
 if (isset_request_var('refresh')) {
 	$refresh['seconds'] = get_request_var('refresh');
-	$refresh['page']    = $config['url_path'] . 'plugins/syslog/syslog.php?header=false&tab=' . $current_tab;
-	$refresh['logout']  = 'false';
+	$refresh['page'] = $config['url_path'] . 'plugins/syslog/syslog.php?header=false&tab=' . $current_tab;
+	$refresh['logout'] = 'false';
 
 	set_page_refresh($refresh);
 }
@@ -107,9 +107,10 @@ if (isset_request_var('export')) {
 	bottom_footer();
 }
 
-$_SESSION['sess_nav_level_cache'] = array();
+$_SESSION['sess_nav_level_cache'] = [];
 
-function get_ajax_hosts() {
+function get_ajax_hosts()
+{
 	global $syslogdb_default;
 
 	$ac_rows = read_config_option('autocomplete_rows');
@@ -120,8 +121,9 @@ function get_ajax_hosts() {
 	$term = '%' . get_nfilter_request_var('term') . '%';
 
 	if (syslog_db_table_exists('host', false)) {
-		$hosts = syslog_db_fetch_assoc_prepared("SELECT DISTINCT sh.host_id, sh.host, h.id
-			FROM `" . $syslogdb_default . "`.`syslog_hosts` AS sh
+		$hosts = syslog_db_fetch_assoc_prepared(
+			'SELECT DISTINCT sh.host_id, sh.host, h.id
+			FROM `' . $syslogdb_default . "`.`syslog_hosts` AS sh
 			LEFT JOIN host AS h
 			ON sh.host = h.hostname
 			OR sh.host = h.description
@@ -131,14 +133,17 @@ function get_ajax_hosts() {
 			OR h.description LIKE ?
 			ORDER BY host
 			LIMIT $ac_rows",
-			array($term, $term));
+			[$term, $term]
+		);
 	} else {
-		$hosts = syslog_db_fetch_assoc_prepared("SELECT DISTINCT sh.host_id, sh.host, '0' AS id
+		$hosts = syslog_db_fetch_assoc_prepared(
+			"SELECT DISTINCT sh.host_id, sh.host, '0' AS id
 			FROM `" . $syslogdb_default . "`.`syslog_hosts` AS sh
 			WHERE sh.host LIKE ?
 			ORDER BY host
 			LIMIT $ac_rows",
-			array($term));
+			[$term]
+		);
 	}
 
 	if (cacti_sizeof($hosts)) {
@@ -149,26 +154,27 @@ function get_ajax_hosts() {
 				$class = 'deviceUp';
 			}
 
-			$rhosts[$host['host_id']] = array(
-				'host'    => $host['host'],
+			$rhosts[$host['host_id']] = [
+				'host' => $host['host'],
 				'host_id' => $host['id'],
-				'class'   => $class
-			);
+				'class' => $class,
+			];
 		}
 
 		return json_encode($rhosts);
 	} else {
-		return json_encode(array());
+		return json_encode([]);
 	}
 }
 
-function syslog_display_tabs($current_tab) {
+function syslog_display_tabs($current_tab)
+{
 	global $config;
 
 	/* present a tabbed interface */
 	$tabs_syslog['syslog'] = __('System Logs', 'syslog');
 	if (read_config_option('syslog_statistics') == 'on') {
-		$tabs_syslog['stats']  = __('Statistics', 'syslog');
+		$tabs_syslog['stats'] = __('Statistics', 'syslog');
 	}
 	$tabs_syslog['alerts'] = __('Alert Logs', 'syslog');
 
@@ -196,12 +202,13 @@ function syslog_display_tabs($current_tab) {
 	print "</ul></nav></div>\n";
 }
 
-function syslog_view_alarm() {
+function syslog_view_alarm()
+{
 	global $config;
 	global $syslogdb_default;
 
 	print "<table class='cactiTable'>";
-	print "<tr class='tableHeader'><td class='textHeaderDark'>" . __('Syslog Alert View', 'syslog') . "</td></tr>";
+	print "<tr class='tableHeader'><td class='textHeaderDark'>" . __('Syslog Alert View', 'syslog') . '</td></tr>';
 	print "<tr><td class='odd'>\n";
 
 	$html = syslog_db_fetch_cell('SELECT html FROM `' . $syslogdb_default . '`.`syslog_logs` WHERE seq=' . get_request_var('id'));
@@ -215,71 +222,72 @@ function syslog_view_alarm() {
 /** function syslog_statistics()
  *  This function paints a table of summary statistics for syslog
  *  messages by host, facility, priority, and time range.
-*/
-function syslog_statistics() {
+ */
+function syslog_statistics()
+{
 	global $title, $rows, $config;
 	global $syslogdb_default;
 
-    /* ================= input validation and session storage ================= */
-    $filters = array(
-        'rows' => array(
-            'filter' => FILTER_VALIDATE_INT,
-            'pageset' => true,
-            'default' => '-1',
-            ),
-        'refresh' => array(
-            'filter' => FILTER_VALIDATE_INT,
-            'default' => read_config_option('syslog_refresh'),
-            ),
-        'timespan' => array(
-            'filter' => FILTER_VALIDATE_INT,
+	/* ================= input validation and session storage ================= */
+	$filters = [
+		'rows' => [
+			'filter' => FILTER_VALIDATE_INT,
 			'pageset' => true,
-            'default' => '300',
-            ),
-        'page' => array(
-            'filter' => FILTER_VALIDATE_INT,
-            'default' => '1'
-            ),
-        'rfilter' => array(
-            'filter' => FILTER_VALIDATE_IS_REGEX,
-            'pageset' => true,
-            'default' => ''
-            ),
-        'host' => array(
-            'filter' => FILTER_VALIDATE_IS_NUMERIC_LIST,
-            'pageset' => true,
-            'default' => '',
-            ),
-        'facility' => array(
-            'filter' => FILTER_VALIDATE_INT,
-            'pageset' => true,
-            'default' => '',
-            ),
-        'priority' => array(
-            'filter' => FILTER_VALIDATE_INT,
-            'pageset' => true,
-            'default' => '',
-            ),
-        'program' => array(
-            'filter' => FILTER_VALIDATE_INT,
-            'pageset' => true,
-            'default' => '',
-            'options' => array('options' => 'sanitize_search_string')
-            ),
-        'sort_column' => array(
-            'filter' => FILTER_CALLBACK,
-            'default' => 'host',
-            'options' => array('options' => 'sanitize_search_string')
-            ),
-        'sort_direction' => array(
-            'filter' => FILTER_CALLBACK,
-            'default' => 'ASC',
-            'options' => array('options' => 'sanitize_search_string')
-            )
-    );
+			'default' => '-1',
+			],
+		'refresh' => [
+			'filter' => FILTER_VALIDATE_INT,
+			'default' => read_config_option('syslog_refresh'),
+			],
+		'timespan' => [
+			'filter' => FILTER_VALIDATE_INT,
+			'pageset' => true,
+			'default' => '300',
+			],
+		'page' => [
+			'filter' => FILTER_VALIDATE_INT,
+			'default' => '1',
+			],
+		'rfilter' => [
+			'filter' => FILTER_VALIDATE_IS_REGEX,
+			'pageset' => true,
+			'default' => '',
+			],
+		'host' => [
+			'filter' => FILTER_VALIDATE_IS_NUMERIC_LIST,
+			'pageset' => true,
+			'default' => '',
+			],
+		'facility' => [
+			'filter' => FILTER_VALIDATE_INT,
+			'pageset' => true,
+			'default' => '',
+			],
+		'priority' => [
+			'filter' => FILTER_VALIDATE_INT,
+			'pageset' => true,
+			'default' => '',
+			],
+		'program' => [
+			'filter' => FILTER_VALIDATE_INT,
+			'pageset' => true,
+			'default' => '',
+			'options' => ['options' => 'sanitize_search_string'],
+			],
+		'sort_column' => [
+			'filter' => FILTER_CALLBACK,
+			'default' => 'host',
+			'options' => ['options' => 'sanitize_search_string'],
+			],
+		'sort_direction' => [
+			'filter' => FILTER_CALLBACK,
+			'default' => 'ASC',
+			'options' => ['options' => 'sanitize_search_string'],
+			],
+	];
 
-    validate_store_request_vars($filters, 'sess_syslogs');
-    /* ================= input validation ================= */
+	validate_store_request_vars($filters, 'sess_syslogs');
+	/* ================= input validation ================= */
 
 	html_start_box(__('Syslog Statistics Filter', 'syslog'), '100%', '', '3', 'center', '');
 
@@ -287,7 +295,7 @@ function syslog_statistics() {
 
 	html_end_box();
 
-	$sql_where   = '';
+	$sql_where = '';
 	$sql_groupby = '';
 
 	if (get_request_var('rows') == -1) {
@@ -300,12 +308,12 @@ function syslog_statistics() {
 
 	$records = get_stats_records($sql_where, $sql_groupby, $rows);
 
-	$rows_query_string = "SELECT COUNT(*)
-		FROM `" . $syslogdb_default . "`.`syslog_statistics` AS ss
+	$rows_query_string = 'SELECT COUNT(*)
+		FROM `' . $syslogdb_default . "`.`syslog_statistics` AS ss
 		$sql_where
 		$sql_groupby";
 
-	$total_rows = syslog_db_fetch_cell('SELECT COUNT(*) FROM ('. $rows_query_string  . ') as temp');
+	$total_rows = syslog_db_fetch_cell('SELECT COUNT(*) FROM (' . $rows_query_string . ') as temp');
 
 	$nav = html_nav_bar('syslog.php?tab=stats', MAX_DISPLAY_PAGES, get_request_var_request('page'), $rows, $total_rows, 4, __('Messages', 'syslog'), 'page', 'main');
 
@@ -313,38 +321,38 @@ function syslog_statistics() {
 
 	html_start_box('', '100%', '', '3', 'center', '');
 
-	$display_text = array(
-		'host' => array(
+	$display_text = [
+		'host' => [
 			'display' => __('Device Name', 'syslog'),
 			'sort' => 'ASC',
-			'align' => 'left'
-		),
-		'facility' => array(
+			'align' => 'left',
+		],
+		'facility' => [
 			'display' => __('Facility', 'syslog'),
 			'sort' => 'ASC',
-			'align' => 'left'
-		),
-		'priority' => array(
+			'align' => 'left',
+		],
+		'priority' => [
 			'display' => __('Priority', 'syslog'),
 			'sort' => 'ASC',
-			'align' => 'left'
-		),
-		'program' => array(
+			'align' => 'left',
+		],
+		'program' => [
 			'display' => __('Program', 'syslog'),
 			'sort' => 'ASC',
-			'align' => 'left'
-		),
-		'insert_time' => array(
+			'align' => 'left',
+		],
+		'insert_time' => [
 			'display' => __('Date', 'syslog'),
 			'sort' => 'DESC',
-			'align' => 'right'
-		),
-		'records' => array(
+			'align' => 'right',
+		],
+		'records' => [
 			'display' => __('Records', 'syslog'),
 			'sort' => 'DESC',
-			'align' => 'right'
-		)
-	);
+			'align' => 'right',
+		],
+	];
 
 	html_header_sort($display_text, get_request_var('sort_column'), get_request_var('sort_direction'));
 
@@ -370,14 +378,14 @@ function syslog_statistics() {
 			print '<td>' . (get_request_var('program') != '-2' ? ucfirst($r['program']):'-') . '</td>';
 			//print '<td class="right">' . $r['insert_time'] . '</td>';
 			print '<td class="right">' . $time . '</td>';
-			print '<td class="right">' . number_format_i18n($r['records'], -1)     . '</td>';
+			print '<td class="right">' . number_format_i18n($r['records'], -1) . '</td>';
 
 			form_end_row();
 
 			$i++;
 		}
 	} else {
-		print "<tr><td colspan='4'><em>" . __('No Syslog Statistics Found', 'syslog') . "</em></td></tr>";
+		print "<tr><td colspan='4'><em>" . __('No Syslog Statistics Found', 'syslog') . '</em></td></tr>';
 	}
 
 	html_end_box(false);
@@ -387,13 +395,14 @@ function syslog_statistics() {
 	}
 }
 
-function get_stats_records(&$sql_where, &$sql_groupby, $rows) {
+function get_stats_records(&$sql_where, &$sql_groupby, $rows)
+{
 	global $syslogdb_default;
 
 	/* form the 'where' clause for our main sql query */
 	if (!isempty_request_var('rfilter')) {
 		$sql_where .= ($sql_where == '' ? 'WHERE ' : ' AND ') .
-			"sh.host RLIKE '"       . get_request_var('rfilter') . "'
+			"sh.host RLIKE '" . get_request_var('rfilter') . "'
 			OR spr.program RLIKE '" . get_request_var('rfilter') . "'";
 	}
 
@@ -439,7 +448,7 @@ function get_stats_records(&$sql_where, &$sql_groupby, $rows) {
 
 	$sql_order = get_order_string();
 	if (!isset_request_var('export')) {
-		$sql_limit = ' LIMIT ' . ($rows*(get_request_var('page')-1)) . ',' . $rows;
+		$sql_limit = ' LIMIT ' . ($rows * (get_request_var('page') - 1)) . ',' . $rows;
 	} else {
 		$sql_limit = ' LIMIT 10000';
 	}
@@ -457,13 +466,13 @@ function get_stats_records(&$sql_where, &$sql_groupby, $rows) {
 			$sql_where
 			$sql_groupby
 		) AS ss
-		LEFT JOIN `" . $syslogdb_default . "`.`syslog_facilities` AS sf
+		LEFT JOIN `" . $syslogdb_default . '`.`syslog_facilities` AS sf
 		ON ss.facility_id=sf.facility_id
-		LEFT JOIN `" . $syslogdb_default . "`.`syslog_priorities` AS sp
+		LEFT JOIN `' . $syslogdb_default . '`.`syslog_priorities` AS sp
 		ON ss.priority_id=sp.priority_id
-		LEFT JOIN `" . $syslogdb_default . "`.`syslog_programs` AS spr
+		LEFT JOIN `' . $syslogdb_default . '`.`syslog_programs` AS spr
 		ON ss.program_id=spr.program_id
-		LEFT JOIN `" . $syslogdb_default . "`.`syslog_hosts` AS sh
+		LEFT JOIN `' . $syslogdb_default . "`.`syslog_hosts` AS sh
 		ON ss.host_id=sh.host_id
 		$sql_order
 		$sql_limit";
@@ -473,7 +482,8 @@ function get_stats_records(&$sql_where, &$sql_groupby, $rows) {
 	return syslog_db_fetch_assoc($query_sql);
 }
 
-function syslog_stats_filter() {
+function syslog_stats_filter()
+{
 	global $config, $item_rows;
 	global $syslogdb_default;
 
@@ -492,13 +502,13 @@ function syslog_stats_filter() {
 							<option value='-2'<?php if (get_request_var('host') == '-2') { ?> selected<?php } ?>><?php print __('None', 'syslog');?></option>
 							<?php
 							$ac_rows = read_config_option('autocomplete_rows');
-							if ($ac_rows <= 0) {
-								$ac_rows = 100;
-							}
+	if ($ac_rows <= 0) {
+		$ac_rows = 100;
+	}
 
-							if (syslog_db_table_exists('host', false)) {
-								$hosts = syslog_db_fetch_assoc("SELECT DISTINCT sh.host_id, sh.host, h.id
-									FROM `" . $syslogdb_default . "`.`syslog_hosts` AS sh
+	if (syslog_db_table_exists('host', false)) {
+		$hosts = syslog_db_fetch_assoc('SELECT DISTINCT sh.host_id, sh.host, h.id
+									FROM `' . $syslogdb_default . "`.`syslog_hosts` AS sh
 									LEFT JOIN host AS h
 									ON sh.host = h.hostname
 									OR sh.host = h.description
@@ -506,25 +516,28 @@ function syslog_stats_filter() {
 									OR sh.host LIKE substring_index(h.description, '.', 1)
 									ORDER BY host
 									LIMIT $ac_rows");
-							} else {
-								$hosts = syslog_db_fetch_assoc("SELECT DISTINCT sh.host_id, sh.host, '0' AS id
+	} else {
+		$hosts = syslog_db_fetch_assoc("SELECT DISTINCT sh.host_id, sh.host, '0' AS id
 									FROM `" . $syslogdb_default . "`.`syslog_hosts` AS sh
 									ORDER BY host
 									LIMIT $ac_rows");
-							}
+	}
 
-							if (cacti_sizeof($hosts)) {
-								foreach ($hosts as $host) {
-									if (!empty($host['id'])) {
-										$class = get_device_leaf_class($host['id']);
-									} else {
-										$class = 'deviceUp';
-									}
+	if (cacti_sizeof($hosts)) {
+		foreach ($hosts as $host) {
+			if (!empty($host['id'])) {
+				$class = get_device_leaf_class($host['id']);
+			} else {
+				$class = 'deviceUp';
+			}
 
-									print '<option class="' . $class . '" value="' . $host['host_id'] . '"'; if (get_request_var('host') == $host['host_id']) { print ' selected'; } print '>' . $host['host'] . '</option>';
-								}
-							}
-							?>
+			print '<option class="' . $class . '" value="' . $host['host_id'] . '"';
+			if (get_request_var('host') == $host['host_id']) {
+				print ' selected';
+			} print '>' . $host['host'] . '</option>';
+		}
+	}
+	?>
 						</select>
 					</td>
 					<td>
@@ -535,16 +548,19 @@ function syslog_stats_filter() {
 							<option value='-1'<?php if (get_request_var('facility') == '-1') { ?> selected<?php } ?>><?php print __('All', 'syslog');?></option>
 							<option value='-2'<?php if (get_request_var('facility') == '-2') { ?> selected<?php } ?>><?php print __('None', 'syslog');?></option>
 							<?php
-							$facilities = syslog_db_fetch_assoc('SELECT DISTINCT facility_id, facility
+	$facilities = syslog_db_fetch_assoc('SELECT DISTINCT facility_id, facility
 								FROM `' . $syslogdb_default . '`.`syslog_facilities` AS sf
 								ORDER BY facility');
 
-							if (cacti_sizeof($facilities)) {
-								foreach ($facilities as $r) {
-									print '<option value="' . $r['facility_id'] . '"'; if (get_request_var('facility') == $r['facility_id']) { print ' selected'; } print '>' . ucfirst($r['facility']) . "</option>\n";
-								}
-							}
-							?>
+	if (cacti_sizeof($facilities)) {
+		foreach ($facilities as $r) {
+			print '<option value="' . $r['facility_id'] . '"';
+			if (get_request_var('facility') == $r['facility_id']) {
+				print ' selected';
+			} print '>' . ucfirst($r['facility']) . "</option>\n";
+		}
+	}
+	?>
 						</select>
 					</td>
 					<td>
@@ -555,16 +571,19 @@ function syslog_stats_filter() {
 							<option value='-1'<?php if (get_request_var('priority') == '-1') { ?> selected<?php } ?>><?php print __('All', 'syslog');?></option>
 							<option value='-2'<?php if (get_request_var('priority') == '-2') { ?> selected<?php } ?>><?php print __('None', 'syslog');?></option>
 							<?php
-							$priorities = syslog_db_fetch_assoc('SELECT DISTINCT priority_id, priority
+	$priorities = syslog_db_fetch_assoc('SELECT DISTINCT priority_id, priority
 								FROM `' . $syslogdb_default . '`.`syslog_priorities` AS sp
 								ORDER BY priority');
 
-							if (cacti_sizeof($priorities)) {
-								foreach ($priorities as $r) {
-									print '<option value="' . $r['priority_id'] . '"'; if (get_request_var('priority') == $r['priority_id']) { print ' selected'; } print '>' . ucfirst($r['priority']) . "</option>\n";
-								}
-							}
-							?>
+	if (cacti_sizeof($priorities)) {
+		foreach ($priorities as $r) {
+			print '<option value="' . $r['priority_id'] . '"';
+			if (get_request_var('priority') == $r['priority_id']) {
+				print ' selected';
+			} print '>' . ucfirst($r['priority']) . "</option>\n";
+		}
+	}
+	?>
 						</select>
 					</td>
 					<?php print html_program_filter(get_request_var('program'), true, 'ajax_programs_wnone');?>
@@ -590,23 +609,23 @@ function syslog_stats_filter() {
 					<td>
 						<select id='timespan' onChange='applyFilter()'>
 							<?php
-							$timespans = array(
-								60    => __('%d Minute', 1, 'syslog'),
-								120   => __('%d Minutes', 2, 'syslog'),
-								300   => __('%d Minutes', 5, 'syslog'),
-								600   => __('%d Minutes', 10, 'syslog'),
-								1800  => __('%d Minutes', 30, 'syslog'),
-								3600  => __('%d Hour', 1, 'syslog'),
-								7200  => __('%d Hours', 2, 'syslog'),
-								14400 => __('%d Hours', 4, 'syslog'),
-								28880 => __('%d Hours', 8, 'syslog'),
-								86400 => __('%d Day', 1, 'syslog')
-							);
+	$timespans = [
+		60 => __('%d Minute', 1, 'syslog'),
+		120 => __('%d Minutes', 2, 'syslog'),
+		300 => __('%d Minutes', 5, 'syslog'),
+		600 => __('%d Minutes', 10, 'syslog'),
+		1800 => __('%d Minutes', 30, 'syslog'),
+		3600 => __('%d Hour', 1, 'syslog'),
+		7200 => __('%d Hours', 2, 'syslog'),
+		14400 => __('%d Hours', 4, 'syslog'),
+		28880 => __('%d Hours', 8, 'syslog'),
+		86400 => __('%d Day', 1, 'syslog'),
+	];
 
-							foreach($timespans as $time => $span) {
-								print '<option value="'. $time . '"' . (get_request_var('timespan') == $time ? ' selected':'') . '>' . $span . '</option>';
-							}
-							?>
+	foreach ($timespans as $time => $span) {
+		print '<option value="' . $time . '"' . (get_request_var('timespan') == $time ? ' selected':'') . '>' . $span . '</option>';
+	}
+	?>
 						</select>
 					</td>
 					<td>
@@ -616,12 +635,15 @@ function syslog_stats_filter() {
 						<select id='rows' onChange='applyFilter()'>
 						<option value='-1'<?php if (get_request_var('rows') == '-1') { ?> selected<?php } ?>><?php print __('Default', 'syslog');?></option>
 						<?php
-							if (cacti_sizeof($item_rows)) {
-								foreach ($item_rows as $key => $value) {
-									print '<option value="' . $key . '"'; if (get_request_var('rows') == $key) { print ' selected'; } print '>' . $value . "</option>\n";
-								}
-							}
-						?>
+	if (cacti_sizeof($item_rows)) {
+		foreach ($item_rows as $key => $value) {
+			print '<option value="' . $key . '"';
+			if (get_request_var('rows') == $key) {
+				print ' selected';
+			} print '>' . $value . "</option>\n";
+		}
+	}
+	?>
 						</select>
 					</td>
 				</tr>
@@ -640,11 +662,12 @@ function syslog_stats_filter() {
  *  This is a generic function for this page that makes sure that
  *  we have a good request.  We want to protect against people who
  *  like to create issues with Cacti.
-*/
-function syslog_request_validation($current_tab, $force = false) {
+ */
+function syslog_request_validation($current_tab, $force = false)
+{
 	global $title, $rows, $config, $reset_multi;
 
-	include_once($config['base_path'] . '/lib/time.php');
+	include_once $config['base_path'] . '/lib/time.php';
 
 	if ($current_tab != 'alerts' && isset_request_var('host') && get_nfilter_request_var('host') == -1) {
 		kill_session_var('sess_syslog_' . $current_tab . '_hosts');
@@ -660,107 +683,112 @@ function syslog_request_validation($current_tab, $force = false) {
 		$shift_span = 'custom';
 	}
 
-    /* ================= input validation and session storage ================= */
-    $filters = array(
-        'rows' => array(
-            'filter' => FILTER_VALIDATE_INT,
-            'pageset' => true,
-            'default' => read_user_setting('syslog_rows', '-1', $force)
-            ),
-        'page' => array(
-            'filter' => FILTER_VALIDATE_INT,
-            'default' => '1'
-            ),
-        'id' => array(
-            'filter' => FILTER_VALIDATE_INT,
-            'default' => ''
-            ),
-        'removal' => array(
-            'filter' => FILTER_VALIDATE_INT,
-            'default' => read_user_setting('syslog_removal', '1', $force)
-            ),
-        'predefined_timespan' => array(
-            'filter' => FILTER_VALIDATE_INT,
+	/* ================= input validation and session storage ================= */
+	$filters = [
+		'rows' => [
+			'filter' => FILTER_VALIDATE_INT,
 			'pageset' => true,
-            'default' => read_user_setting('default_timespan', GT_LAST_DAY, $force)
-            ),
-        'predefined_timeshift' => array(
-            'filter' => FILTER_VALIDATE_INT,
+			'default' => read_user_setting('syslog_rows', '-1', $force),
+			],
+		'page' => [
+			'filter' => FILTER_VALIDATE_INT,
+			'default' => '1',
+			],
+		'id' => [
+			'filter' => FILTER_VALIDATE_INT,
+			'default' => '',
+			],
+		'removal' => [
+			'filter' => FILTER_VALIDATE_INT,
+			'default' => read_user_setting('syslog_removal', '1', $force),
+			],
+		'predefined_timespan' => [
+			'filter' => FILTER_VALIDATE_INT,
 			'pageset' => true,
-            'default' => read_user_setting('default_timeshift', GTS_1_DAY, $force)
-            ),
-        'refresh' => array(
-            'filter' => FILTER_VALIDATE_INT,
-            'default' => read_user_setting('syslog_refresh', read_config_option('syslog_refresh'), $force)
-            ),
-        'trimval' => array(
-            'filter' => FILTER_VALIDATE_INT,
-            'default' => read_user_setting('syslog_trimval', '75', $force)
-            ),
-        'enabled' => array(
-            'filter' => FILTER_VALIDATE_INT,
+			'default' => read_user_setting('default_timespan', GT_LAST_DAY, $force),
+			],
+		'predefined_timeshift' => [
+			'filter' => FILTER_VALIDATE_INT,
 			'pageset' => true,
-            'default' => '-1'
-			),
-        'host' => array(
-            'filter' => FILTER_VALIDATE_IS_NUMERIC_LIST,
-            'pageset' => true,
-            'default' => '',
-            ),
-        'efacility' => array(
-            'filter' => FILTER_CALLBACK,
-            'pageset' => true,
-            'default' => read_user_setting('syslog_efacility', '-1', $force),
-            'options' => array('options' => 'sanitize_search_string')
-            ),
-        'epriority' => array(
-            'filter' => FILTER_CALLBACK,
-            'pageset' => true,
-            'default' => read_user_setting('syslog_epriority', '-1', $force),
-            'options' => array('options' => 'sanitize_search_string')
-            ),
-        'eprogram' => array(
-            'filter' => FILTER_VALIDATE_INT,
-            'pageset' => true,
-            'default' => read_user_setting('syslog_eprogram', '-1', $force),
-            ),
-        'grouping' => array(
-            'filter' => FILTER_VALIDATE_INT,
-            'pageset' => true,
-            'default' => read_user_setting('syslog_grouping', '0', $force),
-            ),
-        'rfilter' => array(
-            'filter' => FILTER_VALIDATE_IS_REGEX,
-            'pageset' => true,
-            'default' => ''
-            ),
+			'default' => read_user_setting('default_timeshift', GTS_1_DAY, $force),
+			],
+		'refresh' => [
+			'filter' => FILTER_VALIDATE_INT,
+			'default' => read_user_setting('syslog_refresh', read_config_option('syslog_refresh'), $force),
+			],
+		'trimval' => [
+			'filter' => FILTER_VALIDATE_INT,
+			'default' => read_user_setting('syslog_trimval', '75', $force),
+			],
+		'enabled' => [
+			'filter' => FILTER_VALIDATE_INT,
+			'pageset' => true,
+			'default' => '-1',
+			],
+		'host' => [
+			'filter' => FILTER_VALIDATE_IS_NUMERIC_LIST,
+			'pageset' => true,
+			'default' => '',
+			],
+		'efacility' => [
+			'filter' => FILTER_CALLBACK,
+			'pageset' => true,
+			'default' => read_user_setting('syslog_efacility', '-1', $force),
+			'options' => ['options' => 'sanitize_search_string'],
+			],
+		'epriority' => [
+			'filter' => FILTER_CALLBACK,
+			'pageset' => true,
+			'default' => read_user_setting('syslog_epriority', '-1', $force),
+			'options' => ['options' => 'sanitize_search_string'],
+			],
+		'eprogram' => [
+			'filter' => FILTER_VALIDATE_INT,
+			'pageset' => true,
+			'default' => read_user_setting('syslog_eprogram', '-1', $force),
+			],
+		'grouping' => [
+			'filter' => FILTER_VALIDATE_INT,
+			'pageset' => true,
+			'default' => read_user_setting('syslog_grouping', '0', $force),
+			],
+		'rfilter' => [
+			'filter' => FILTER_VALIDATE_IS_REGEX,
+			'pageset' => true,
+			'default' => '',
+			],
 
-        'date1' => array(
-            'filter' => FILTER_CALLBACK,
-            'pageset' => true,
-            'default' => '',
-            'options' => array('options' => 'sanitize_search_string')
-			),
-        'date2' => array(
-            'filter' => FILTER_CALLBACK,
-            'pageset' => true,
-            'default' => '',
-            'options' => array('options' => 'sanitize_search_string')
-			),
-        'sort_column' => array(
-            'filter' => FILTER_CALLBACK,
-            'default' => 'logtime',
-            'options' => array('options' => 'sanitize_search_string')
-            ),
-        'sort_direction' => array(
-            'filter' => FILTER_CALLBACK,
-            'default' => 'DESC',
-            'options' => array('options' => 'sanitize_search_string')
-            )
-    );
+		'date1' => [
+			'filter' => FILTER_CALLBACK,
+			'pageset' => true,
+			'default' => '',
+			'options' => ['options' => 'syslog_sanitize_date_string'],
+			],
+		'date2' => [
+			'filter' => FILTER_CALLBACK,
+			'pageset' => true,
+			'default' => '',
+			'options' => ['options' => 'syslog_sanitize_date_string'],
+			],
+		'sort_column' => [
+			'filter' => FILTER_CALLBACK,
+			'default' => 'logtime',
+			'options' => ['options' => 'sanitize_search_string'],
+			],
+		'sort_direction' => [
+			'filter' => FILTER_CALLBACK,
+			'default' => 'DESC',
+			'options' => ['options' => 'sanitize_search_string'],
+			],
+	];
 
-    validate_store_request_vars($filters, 'sess_sl_' . $current_tab);
-    /* ================= input validation ================= */
+	validate_store_request_vars($filters, 'sess_sl_' . $current_tab);
+	/* ================= input validation ================= */
+
+	// Clamp removal to allowed values
+	if (!in_array((int) get_request_var('removal'), [-1, 1, 2], true)) {
+		set_request_var('removal', 1);
+	}
 
 	// Modify session and request variables based upon span/shift/settings
 	set_shift_span($shift_span, 'sess_sl_' . $current_tab);
@@ -776,11 +804,12 @@ function syslog_request_validation($current_tab, $force = false) {
 	}
 }
 
-function set_shift_span($shift_span, $session_prefix) {
+function set_shift_span($shift_span, $session_prefix)
+{
 	global $graph_timeshifts;
 
 	if ($shift_span == 'span' || $shift_span === false) {
-		$span = array();
+		$span = [];
 
 		// Calculate the timespan
 		$first_weekdayid = read_user_setting('first_weekdayid');
@@ -796,12 +825,24 @@ function set_shift_span($shift_span, $session_prefix) {
 
 		set_request_var('custom', false);
 	} elseif ($shift_span == 'shift') {
-		$span = array();
+		$span = [];
 
-		$span['current_value_date1'] = get_request_var('date1');
-		$span['current_value_date2'] = get_request_var('date2');
-		$span['begin_now'] = strtotime(get_request_var('date1'));
-		$span['end_now']   = strtotime(get_request_var('date2'));
+		$date1 = get_request_var('date1');
+		$date2 = get_request_var('date2');
+
+		if ($date1 === '' || $date2 === '' || strtotime($date1) === false || strtotime($date2) === false) {
+			$first_weekdayid = read_user_setting('first_weekdayid');
+			get_timespan($span, time(), get_request_var('predefined_timespan'), $first_weekdayid);
+			set_request_var('date1', date('Y-m-d H:i:s', $span['begin_now']));
+			set_request_var('date2', date('Y-m-d H:i:s', $span['end_now']));
+			$date1 = get_request_var('date1');
+			$date2 = get_request_var('date2');
+		}
+
+		$span['current_value_date1'] = $date1;
+		$span['current_value_date2'] = $date2;
+		$span['begin_now'] = strtotime($date1);
+		$span['end_now'] = strtotime($date2);
 
 		if (isset_request_var('shift_right')) {
 			$direction = '+';
@@ -830,7 +871,8 @@ function set_shift_span($shift_span, $session_prefix) {
 	}
 }
 
-function get_syslog_messages(&$sql_where, $rows, $tab) {
+function get_syslog_messages(&$sql_where, $rows, $tab)
+{
 	global $sql_where, $hostfilter, $hostfilter_log, $current_tab, $syslog_incoming_config;
 	global $syslogdb_default;
 
@@ -861,7 +903,8 @@ function get_syslog_messages(&$sql_where, $rows, $tab) {
 					syslog_db_fetch_assoc('SELECT id
 						FROM `' . $syslogdb_default . '`.`syslog_alert`
 						WHERE method = 1'),
-					'id', 'id'
+					'id',
+					'id'
 				);
 
 				if (cacti_sizeof($ids)) {
@@ -882,8 +925,8 @@ function get_syslog_messages(&$sql_where, $rows, $tab) {
 	}
 
 	$sql_where .= ($sql_where == '' ? 'WHERE ' : ' AND ') .
-		"logtime BETWEEN '" . get_request_var('date1') . "'
-			AND '" . get_request_var('date2') . "'";
+		'logtime BETWEEN ' . db_qstr(get_request_var('date1')) .
+			' AND ' . db_qstr(get_request_var('date2'));
 
 	if (isset_request_var('id') && $current_tab == 'current') {
 		$sql_where .= ($sql_where == '' ? 'WHERE ' : ' AND ') .
@@ -909,49 +952,49 @@ function get_syslog_messages(&$sql_where, $rows, $tab) {
 	if (isset_request_var('epriority') && get_request_var('epriority') != '-1') {
 		$priorities = '';
 
-		switch(get_request_var('epriority')) {
-		case '0':
-			$priorities = ' = 0';
-			break;
-		case '1o':
-			$priorities = ' = 1';
-			break;
-		case '1':
-			$priorities = ' <= 1';
-			break;
-		case '2o':
-			$priorities = ' = 2';
-			break;
-		case '2':
-			$priorities = ' <= 2';
-			break;
-		case '3o':
-			$priorities = ' = 3';
-			break;
-		case '3':
-			$priorities = ' <= 3';
-			break;
-		case '4o':
-			$priorities = ' = 4';
-			break;
-		case '4':
-			$priorities = ' <= 4';
-			break;
-		case '5o':
-			$priorities = ' = 5';
-			break;
-		case '5':
-			$priorities = ' <= 5';
-			break;
-		case '6o':
-			$priorities = ' = 6';
-			break;
-		case '6':
-			$priorities = ' <= 6';
-			break;
-		case '7':
-			$priorities = ' = 7';
-			break;
+		switch (get_request_var('epriority')) {
+			case '0':
+				$priorities = ' = 0';
+				break;
+			case '1o':
+				$priorities = ' = 1';
+				break;
+			case '1':
+				$priorities = ' <= 1';
+				break;
+			case '2o':
+				$priorities = ' = 2';
+				break;
+			case '2':
+				$priorities = ' <= 2';
+				break;
+			case '3o':
+				$priorities = ' = 3';
+				break;
+			case '3':
+				$priorities = ' <= 3';
+				break;
+			case '4o':
+				$priorities = ' = 4';
+				break;
+			case '4':
+				$priorities = ' <= 4';
+				break;
+			case '5o':
+				$priorities = ' = 5';
+				break;
+			case '5':
+				$priorities = ' <= 5';
+				break;
+			case '6o':
+				$priorities = ' = 6';
+				break;
+			case '6':
+				$priorities = ' <= 6';
+				break;
+			case '7':
+				$priorities = ' = 7';
+				break;
 		}
 
 		$sql_where .= ($sql_where == '' ? 'WHERE ': ' AND ') . 'syslog.priority_id ' . $priorities;
@@ -962,7 +1005,7 @@ function get_syslog_messages(&$sql_where, $rows, $tab) {
 	$sql_order = get_order_string();
 
 	if (!isset_request_var('export')) {
-		$sql_limit = ' LIMIT ' . ($rows*(get_request_var('page')-1)) . ',' . $rows;
+		$sql_limit = ' LIMIT ' . ($rows * (get_request_var('page') - 1)) . ',' . $rows;
 	} else {
 		$sql_limit = ' LIMIT 10000';
 	}
@@ -970,7 +1013,7 @@ function get_syslog_messages(&$sql_where, $rows, $tab) {
 	if ($tab == 'syslog') {
 		// Check if grouping is enabled
 		$grouping_enabled = isset_request_var('grouping') && get_request_var('grouping') == '1';
-	
+
 		if ($grouping_enabled) {
 			if (get_request_var('removal') == '-1') {
 				$query_sql = "SELECT 
@@ -986,9 +1029,9 @@ function get_syslog_messages(&$sql_where, $rows, $tab) {
 					MAX(syslog.logtime) AS logtime,
 					MIN(syslog.seq) AS seq,
 					GROUP_CONCAT(syslog.seq ORDER BY syslog.logtime DESC SEPARATOR ',') AS seq_list
-					FROM `" . $syslogdb_default . "`.`syslog`
-					LEFT JOIN `" . $syslogdb_default . "`.`syslog_programs`
-					ON syslog.program_id=syslog_programs.program_id " .
+					FROM `" . $syslogdb_default . '`.`syslog`
+					LEFT JOIN `' . $syslogdb_default . '`.`syslog_programs`
+					ON syslog.program_id=syslog_programs.program_id ' .
 					$sql_where . "
 					GROUP BY syslog.host_id, syslog.message, syslog.program_id, syslog.facility_id, syslog.priority_id
 					$sql_order
@@ -1008,9 +1051,9 @@ function get_syslog_messages(&$sql_where, $rows, $tab) {
 						MAX(syslog.logtime) AS logtime,
 						MIN(syslog.seq) AS seq,
 						GROUP_CONCAT(syslog.seq ORDER BY syslog.logtime DESC SEPARATOR ',') AS seq_list
-						FROM `" . $syslogdb_default . "`.`syslog` AS syslog
-						LEFT JOIN `" . $syslogdb_default . "`.`syslog_programs`
-						ON syslog.program_id=syslog_programs.program_id " .
+						FROM `" . $syslogdb_default . '`.`syslog` AS syslog
+						LEFT JOIN `' . $syslogdb_default . '`.`syslog_programs`
+						ON syslog.program_id=syslog_programs.program_id ' .
 						$sql_where . "
 						GROUP BY syslog.host_id, syslog.message, syslog.program_id, syslog.facility_id, syslog.priority_id
 					) UNION (SELECT 
@@ -1026,9 +1069,9 @@ function get_syslog_messages(&$sql_where, $rows, $tab) {
 						MAX(syslog.logtime) AS logtime,
 						MIN(syslog.seq) AS seq,
 						GROUP_CONCAT(syslog.seq ORDER BY syslog.logtime DESC SEPARATOR ',') AS seq_list
-						FROM `" . $syslogdb_default . "`.`syslog_removed` AS syslog
-						LEFT JOIN `" . $syslogdb_default . "`.`syslog_programs`
-						ON syslog.program_id=syslog_programs.program_id " .
+						FROM `" . $syslogdb_default . '`.`syslog_removed` AS syslog
+						LEFT JOIN `' . $syslogdb_default . '`.`syslog_programs`
+						ON syslog.program_id=syslog_programs.program_id ' .
 						$sql_where . "
 						GROUP BY syslog.host_id, syslog.message, syslog.program_id, syslog.facility_id, syslog.priority_id
 					)
@@ -1049,9 +1092,9 @@ function get_syslog_messages(&$sql_where, $rows, $tab) {
 					MAX(syslog.logtime) AS logtime,
 					MIN(syslog.seq) AS seq,
 					GROUP_CONCAT(syslog.seq ORDER BY syslog.logtime DESC SEPARATOR ',') AS seq_list
-					FROM `" . $syslogdb_default . "`.`syslog_removed` AS syslog
-					LEFT JOIN `" . $syslogdb_default . "`.`syslog_programs` AS syslog_programs
-					ON syslog.program_id=syslog_programs.program_id " .
+					FROM `" . $syslogdb_default . '`.`syslog_removed` AS syslog
+					LEFT JOIN `' . $syslogdb_default . '`.`syslog_programs` AS syslog_programs
+					ON syslog.program_id=syslog_programs.program_id ' .
 					$sql_where . "
 					GROUP BY syslog.host_id, syslog.message, syslog.program_id, syslog.facility_id, syslog.priority_id
 					$sql_order
@@ -1061,46 +1104,46 @@ function get_syslog_messages(&$sql_where, $rows, $tab) {
 			// Original non-grouped queries
 			if (get_request_var('removal') == '-1') {
 				$query_sql = "SELECT syslog.*, syslog_programs.program, 'main' AS mtype
-					FROM `" . $syslogdb_default . "`.`syslog`
-					LEFT JOIN `" . $syslogdb_default . "`.`syslog_programs`
-					ON syslog.program_id=syslog_programs.program_id " .
+					FROM `" . $syslogdb_default . '`.`syslog`
+					LEFT JOIN `' . $syslogdb_default . '`.`syslog_programs`
+					ON syslog.program_id=syslog_programs.program_id ' .
 					$sql_where . "
 					$sql_order
 					$sql_limit";
 			} elseif (get_request_var('removal') == '1') {
 				$query_sql = "(SELECT syslog.*, syslog_programs.program, 'main' AS mtype
-					FROM `" . $syslogdb_default . "`.`syslog` AS syslog
-					LEFT JOIN `" . $syslogdb_default . "`.`syslog_programs`
-					ON syslog.program_id=syslog_programs.program_id " .
+					FROM `" . $syslogdb_default . '`.`syslog` AS syslog
+					LEFT JOIN `' . $syslogdb_default . '`.`syslog_programs`
+					ON syslog.program_id=syslog_programs.program_id ' .
 					$sql_where . "
 					) UNION (SELECT syslog.*, syslog_programs.program, 'remove' AS mtype
-					FROM `" . $syslogdb_default . "`.`syslog_removed` AS syslog
-					LEFT JOIN `" . $syslogdb_default . "`.`syslog_programs`
-					ON syslog.program_id=syslog_programs.program_id " .
+					FROM `" . $syslogdb_default . '`.`syslog_removed` AS syslog
+					LEFT JOIN `' . $syslogdb_default . '`.`syslog_programs`
+					ON syslog.program_id=syslog_programs.program_id ' .
 					$sql_where . ")
 					$sql_order
 					$sql_limit";
 			} else {
 				$query_sql = "SELECT syslog.*, syslog_programs.program, 'remove' AS mtype
-					FROM `" . $syslogdb_default . "`.`syslog_removed` AS syslog
-					LEFT JOIN `" . $syslogdb_default . "`.`syslog_programs` AS syslog_programs
-					ON syslog.program_id=syslog_programs.program_id " .
+					FROM `" . $syslogdb_default . '`.`syslog_removed` AS syslog
+					LEFT JOIN `' . $syslogdb_default . '`.`syslog_programs` AS syslog_programs
+					ON syslog.program_id=syslog_programs.program_id ' .
 					$sql_where . "
 					$sql_order
 					$sql_limit";
 			}
 		}
 	} else {
-		$query_sql = "SELECT syslog.*, sf.facility, sp.priority, spr.program, sa.name, sa.severity
-			FROM `" . $syslogdb_default . "`.`syslog_logs` AS syslog
-			LEFT JOIN `" . $syslogdb_default . "`.`syslog_facilities` AS sf
+		$query_sql = 'SELECT syslog.*, sf.facility, sp.priority, spr.program, sa.name, sa.severity
+			FROM `' . $syslogdb_default . '`.`syslog_logs` AS syslog
+			LEFT JOIN `' . $syslogdb_default . '`.`syslog_facilities` AS sf
 			ON syslog.facility_id=sf.facility_id
-			LEFT JOIN `" . $syslogdb_default . "`.`syslog_priorities` AS sp
+			LEFT JOIN `' . $syslogdb_default . '`.`syslog_priorities` AS sp
 			ON syslog.priority_id=sp.priority_id
-			LEFT JOIN `" . $syslogdb_default . "`.`syslog_alert` AS sa
+			LEFT JOIN `' . $syslogdb_default . '`.`syslog_alert` AS sa
 			ON syslog.alert_id=sa.id
-			LEFT JOIN `" . $syslogdb_default . "`.`syslog_programs` AS spr
-			ON syslog.program_id=spr.program_id " .
+			LEFT JOIN `' . $syslogdb_default . '`.`syslog_programs` AS spr
+			ON syslog.program_id=spr.program_id ' .
 			$sql_where . "
 			$sql_order
 			$sql_limit";
@@ -1111,11 +1154,12 @@ function get_syslog_messages(&$sql_where, $rows, $tab) {
 	return syslog_db_fetch_assoc($query_sql);
 }
 
-function syslog_filter($sql_where, $tab) {
+function syslog_filter($sql_where, $tab)
+{
 	global $config, $graph_timespans, $graph_timeshifts, $reset_multi, $page_refresh_interval, $item_rows, $trimvals;
 	global $syslogdb_default;
 
-	$unprocessed = syslog_db_fetch_cell("SELECT COUNT(*) FROM `" . $syslogdb_default . "`.`syslog_incoming`");
+	$unprocessed = syslog_db_fetch_cell('SELECT COUNT(*) FROM `' . $syslogdb_default . '`.`syslog_incoming`');
 
 	if (isset_request_var('date1')) {
 		$filter_text = __esc(' [ Start: \'%s\' to End: \'%s\', Unprocessed Messages: %s ]', get_request_var('date1'), get_request_var('date2'), $unprocessed, 'syslog');
@@ -1158,15 +1202,18 @@ function syslog_filter($sql_where, $tab) {
 										array_shift($graph_timespans);
 									}
 									$start_val = 1;
-									$end_val = sizeof($graph_timespans)+1;
+									$end_val = sizeof($graph_timespans) + 1;
 								}
 
-								if (cacti_sizeof($graph_timespans)) {
-									for ($value=$start_val; $value < $end_val; $value++) {
-										print "<option value='$value'"; if (get_request_var('predefined_timespan') == $value) { print ' selected'; } print '>' . title_trim($graph_timespans[$value], 40) . "</option>\n";
-									}
-								}
-								?>
+	if (cacti_sizeof($graph_timespans)) {
+		for ($value = $start_val; $value < $end_val; $value++) {
+			print "<option value='$value'";
+			if (get_request_var('predefined_timespan') == $value) {
+				print ' selected';
+			} print '>' . title_trim($graph_timespans[$value], 40) . "</option>\n";
+		}
+	}
+	?>
 							</select>
 						</td>
 						<td>
@@ -1193,14 +1240,17 @@ function syslog_filter($sql_where, $tab) {
 						<td>
 							<select id='predefined_timeshift' title='<?php print __esc('Define Shifting Interval', 'syslog');?>'>
 								<?php
-								$start_val = 1;
-								$end_val = sizeof($graph_timeshifts) + 1;
-								if (cacti_sizeof($graph_timeshifts)) {
-									for ($shift_value=$start_val; $shift_value < $end_val; $shift_value++) {
-										print "<option value='$shift_value'"; if (get_request_var('predefined_timeshift') == $shift_value) { print ' selected'; } print '>' . title_trim($graph_timeshifts[$shift_value], 40) . '</option>';
-									}
-								}
-								?>
+	$start_val = 1;
+	$end_val = sizeof($graph_timeshifts) + 1;
+	if (cacti_sizeof($graph_timeshifts)) {
+		for ($shift_value = $start_val; $shift_value < $end_val; $shift_value++) {
+			print "<option value='$shift_value'";
+			if (get_request_var('predefined_timeshift') == $shift_value) {
+				print ' selected';
+			} print '>' . title_trim($graph_timeshifts[$shift_value], 40) . '</option>';
+		}
+	}
+	?>
 							</select>
 						</td>
 						<td>
@@ -1244,35 +1294,35 @@ function syslog_filter($sql_where, $tab) {
 						<td>
 							<select id='host' multiple style='display:none; width: 150px; overflow: scroll;'>
 								<?php
-								$hfilter = get_request_var('host');
+	$hfilter = get_request_var('host');
 
-								if ($tab == 'syslog') {
-									print "<option id='host_all' value='0'" . (($hfilter == 'null' || $hfilter == '0' || $reset_multi) ? 'selected':'') . '>' .  __('Show All Devices', 'syslog') . '</option>';
-								} else {
-									print "<option id='host_all' value='0'" . (($hfilter == 'null' || $hfilter == 0 || $reset_multi) ? 'selected':'') . '>' . __('Show All Logs', 'syslog') . '</option>';
-									print "<option id='host_none' value='-1'" . ($hfilter == '-1' ? 'selected':'') . '>' . __('Threshold Logs', 'syslog') . '</option>';
-								}
+	if ($tab == 'syslog') {
+		print "<option id='host_all' value='0'" . (($hfilter == 'null' || $hfilter == '0' || $reset_multi) ? 'selected':'') . '>' . __('Show All Devices', 'syslog') . '</option>';
+	} else {
+		print "<option id='host_all' value='0'" . (($hfilter == 'null' || $hfilter == 0 || $reset_multi) ? 'selected':'') . '>' . __('Show All Logs', 'syslog') . '</option>';
+		print "<option id='host_none' value='-1'" . ($hfilter == '-1' ? 'selected':'') . '>' . __('Threshold Logs', 'syslog') . '</option>';
+	}
 
-								$hosts_where = '';
-								$hosts_where = api_plugin_hook_function('syslog_hosts_where', $hosts_where);
+	$hosts_where = '';
+	$hosts_where = api_plugin_hook_function('syslog_hosts_where', $hosts_where);
 
-								if ($hosts_where != '') {
-									$hosts_where = 'WHERE ' . $hosts_where;
-								}
+	if ($hosts_where != '') {
+		$hosts_where = 'WHERE ' . $hosts_where;
+	}
 
-								if ($hfilter != '0' && $hfilter != '' && $hfilter != '-1') {
-									$mhosts_where  = ($hosts_where != '' ? ' AND ':'WHERE ') . ' host_id IN (' . $hfilter . ')';
-									$mhosts_nwhere = ($hosts_where != '' ? $hosts_where . ' AND ':'WHERE ') . ' host_id NOT IN (' . $hfilter . ')';
-								}
+	if ($hfilter != '0' && $hfilter != '' && $hfilter != '-1') {
+		$mhosts_where = ($hosts_where != '' ? ' AND ':'WHERE ') . ' host_id IN (' . $hfilter . ')';
+		$mhosts_nwhere = ($hosts_where != '' ? $hosts_where . ' AND ':'WHERE ') . ' host_id NOT IN (' . $hfilter . ')';
+	}
 
-								$ac_rows = read_config_option('autocomplete_rows');
-								if ($ac_rows <= 0) {
-									$ac_rows = 100;
-								}
+	$ac_rows = read_config_option('autocomplete_rows');
+	if ($ac_rows <= 0) {
+		$ac_rows = 100;
+	}
 
-								if (syslog_db_table_exists('host', false)) {
-									if ($hfilter != '0' && $hfilter != '' && $hfilter != '-1') {
-										$hosts = syslog_db_fetch_assoc("SELECT *
+	if (syslog_db_table_exists('host', false)) {
+		if ($hfilter != '0' && $hfilter != '' && $hfilter != '-1') {
+			$hosts = syslog_db_fetch_assoc("SELECT *
 											FROM (
 												SELECT DISTINCT sh.host_id, sh.host, h.id, '1' AS selected
 												FROM `" . $syslogdb_default . "`.`syslog_hosts` AS sh
@@ -1294,9 +1344,9 @@ function syslog_filter($sql_where, $tab) {
 											) AS rs
 											ORDER BY selected DESC, host
 											LIMIT $ac_rows");
-									} else {
-										$hosts = syslog_db_fetch_assoc("SELECT DISTINCT sh.host_id, sh.host, h.id
-											FROM `" . $syslogdb_default . "`.`syslog_hosts` AS sh
+		} else {
+			$hosts = syslog_db_fetch_assoc('SELECT DISTINCT sh.host_id, sh.host, h.id
+											FROM `' . $syslogdb_default . "`.`syslog_hosts` AS sh
 											LEFT JOIN host AS h
 											ON sh.host = h.hostname
 											OR sh.host = h.description
@@ -1305,10 +1355,10 @@ function syslog_filter($sql_where, $tab) {
 											$hosts_where
 											ORDER BY host
 											LIMIT $ac_rows");
-									}
-								} else {
-									if ($hfilter != '0' && $hfilter != '' && $hfilter != '-1') {
-										$hosts = syslog_db_fetch_assoc("SELECT *
+		}
+	} else {
+		if ($hfilter != '0' && $hfilter != '' && $hfilter != '-1') {
+			$hosts = syslog_db_fetch_assoc("SELECT *
 											FROM (
 												SELECT DISTINCT sh.host_id, sh.host, '0' AS id, '1' AS selected
 												FROM `" . $syslogdb_default . "`.`syslog_hosts` AS sh
@@ -1320,39 +1370,39 @@ function syslog_filter($sql_where, $tab) {
 											) AS rs
 											ORDER BY selected DESC, host
 											LIMIT $ac_rows");
-									} else {
-										$hosts = syslog_db_fetch_assoc('SELECT DISTINCT sh.host_id, sh.host, "0" AS id
+		} else {
+			$hosts = syslog_db_fetch_assoc('SELECT DISTINCT sh.host_id, sh.host, "0" AS id
 											FROM `' . $syslogdb_default . "`.`syslog_hosts` AS sh
 											$hosts_where
 											ORDER BY host
 											LIMIT $ac_rows");
-									}
-								}
+		}
+	}
 
-								$selected = explode(',', $hfilter);
+	$selected = explode(',', $hfilter);
 
-								if (cacti_sizeof($hosts)) {
-									foreach ($hosts as $host) {
-										$host['host'] = syslog_strip_domain($host['host']);
+	if (cacti_sizeof($hosts)) {
+		foreach ($hosts as $host) {
+			$host['host'] = syslog_strip_domain($host['host']);
 
-										if (!empty($host['id'])) {
-											$class = get_device_leaf_class($host['id']);
-										} else {
-											$class = 'deviceUp';
-										}
+			if (!empty($host['id'])) {
+				$class = get_device_leaf_class($host['id']);
+			} else {
+				$class = 'deviceUp';
+			}
 
-										print "<option class='$class' value='" . $host['host_id'] . "'";
+			print "<option class='$class' value='" . $host['host_id'] . "'";
 
-										if (cacti_sizeof($selected)) {
-											if (in_array($host['host_id'], $selected)) {
-												print ' selected';
-											}
-										}
-										print '>';
-										print $host['host'] . '</option>';
-									}
-								}
-								?>
+			if (cacti_sizeof($selected)) {
+				if (in_array($host['host_id'], $selected)) {
+					print ' selected';
+				}
+			}
+			print '>';
+			print $host['host'] . '</option>';
+		}
+	}
+	?>
 							</select>
 						</td>
 						<td>
@@ -1362,10 +1412,13 @@ function syslog_filter($sql_where, $tab) {
 							<select id='rows' onChange='applyFilter()' title='<?php print __esc('Display Rows', 'syslog');?>'>
 								<option value='-1'<?php if (get_request_var('rows') == '-1') { ?> selected<?php } ?>><?php print __('Default', 'syslog');?></option>
 								<?php
-								foreach($item_rows AS $rows => $display_text) {
-									print "<option value='" . $rows . "'"; if (get_request_var('rows') == $rows) { print ' selected'; } print '>' . $display_text . '</option>';
-								}
-								?>
+	foreach ($item_rows as $rows => $display_text) {
+		print "<option value='" . $rows . "'";
+		if (get_request_var('rows') == $rows) {
+			print ' selected';
+		} print '>' . $display_text . '</option>';
+	}
+	?>
 							</select>
 						</td>
 						<td>
@@ -1374,10 +1427,13 @@ function syslog_filter($sql_where, $tab) {
 						<td>
 							<select id='trimval' onChange='applyFilter()' title='<?php print __esc('Message Trim', 'syslog');?>'>
 								<?php
-								foreach($trimvals AS $seconds => $display_text) {
-									print "<option value='" . $seconds . "'"; if (get_request_var('trimval') == $seconds) { print ' selected'; } print '>' . $display_text . "</option>\n";
-								}
-								?>
+	foreach ($trimvals as $seconds => $display_text) {
+		print "<option value='" . $seconds . "'";
+		if (get_request_var('trimval') == $seconds) {
+			print ' selected';
+		} print '>' . $display_text . "</option>\n";
+	}
+	?>
 							</select>
 						</td>
 						<td>
@@ -1386,10 +1442,13 @@ function syslog_filter($sql_where, $tab) {
 						<td>
 							<select id='refresh' onChange='applyFilter()'>
 								<?php
-								foreach($page_refresh_interval AS $seconds => $display_text) {
-									print "<option value='" . $seconds . "'"; if (get_request_var('refresh') == $seconds) { print ' selected'; } print '>' . $display_text . '</option>';
-								}
-								?>
+	foreach ($page_refresh_interval as $seconds => $display_text) {
+		print "<option value='" . $seconds . "'";
+		if (get_request_var('refresh') == $seconds) {
+			print ' selected';
+		} print '>' . $display_text . '</option>';
+	}
+	?>
 							</select>
 						</td>
 					</tr>
@@ -1405,19 +1464,24 @@ function syslog_filter($sql_where, $tab) {
 							<select id='efacility' onChange='applyFilter()' title='<?php print __esc('Facilities to filter on', 'syslog');?>'>
 								<option value='-1'<?php if (get_request_var('efacility') == '0') { ?> selected<?php } ?>><?php print __('All Facilities', 'syslog');?></option>
 								<?php
-								if (!isset($hostfilter)) $hostfilter = '';
-								$efacilities = syslog_db_fetch_assoc('SELECT DISTINCT f.facility_id, f.facility
+	if (!isset($hostfilter)) {
+		$hostfilter = '';
+	}
+	$efacilities = syslog_db_fetch_assoc('SELECT DISTINCT f.facility_id, f.facility
 									FROM `' . $syslogdb_default . '`.`syslog_host_facilities` AS fh
 									INNER JOIN `' . $syslogdb_default . '`.`syslog_facilities` AS f
 									ON f.facility_id=fh.facility_id ' . ($hostfilter != '' ? 'WHERE ':'') . $hostfilter . '
 									ORDER BY facility');
 
-								if (cacti_sizeof($efacilities)) {
-									foreach ($efacilities as $efacility) {
-										print "<option value='" . $efacility['facility_id'] . "'"; if (get_request_var('efacility') == $efacility['facility_id']) { print ' selected'; } print '>' . ucfirst($efacility['facility']) . '</option>';
-									}
-								}
-								?>
+	if (cacti_sizeof($efacilities)) {
+		foreach ($efacilities as $efacility) {
+			print "<option value='" . $efacility['facility_id'] . "'";
+			if (get_request_var('efacility') == $efacility['facility_id']) {
+				print ' selected';
+			} print '>' . ucfirst($efacility['facility']) . '</option>';
+		}
+	}
+	?>
 							</select>
 						</td>
 						<td>
@@ -1484,14 +1548,15 @@ function syslog_filter($sql_where, $tab) {
  *
  * @param string hostname
  */
-function syslog_strip_domain($hostname) {
+function syslog_strip_domain($hostname)
+{
 	if (strpos($hostname, '.') === false) {
 		return $hostname;
 	} elseif (filter_var($hostname, FILTER_VALIDATE_IP)) {
 		return $hostname;
 	} else {
 		$parts = explode('.', $hostname);
-		foreach($parts as $part) {
+		foreach ($parts as $part) {
 			if (is_numeric($part)) {
 				return $hostname;
 			}
@@ -1505,36 +1570,38 @@ function syslog_strip_domain($hostname) {
  * function syslog_syslog_legend()
  *
  * This function displays the foreground and background colors for the syslog syslog legend
-*/
-function syslog_syslog_legend() {
+ */
+function syslog_syslog_legend()
+{
 	global $disabled_color, $notmon_color, $database_default;
 
 	html_start_box('', '100%', '', '3', 'center', '');
 	print '<tr class="">';
 	print "<td width='10%' class='logEmergency'>" . __('Emergency', 'syslog') . '</td>';
-	print "<td width='10%' class='logCritical'>"  . __('Critical', 'syslog')  . '</td>';
-	print "<td width='10%' class='logAlert'>"     . __('Alert', 'syslog')     . '</td>';
-	print "<td width='10%' class='logError'>"     . __('Error', 'syslog')     . '</td>';
-	print "<td width='10%' class='logWarning'>"   . __('Warning', 'syslog')   . '</td>';
-	print "<td width='10%' class='logNotice'>"    . __('Notice', 'syslog')    . '</td>';
-	print "<td width='10%' class='logInfo'>"      . __('Info', 'syslog')      . '</td>';
-	print "<td width='10%' class='logDebug'>"     . __('Debug', 'syslog')     . '</td>';
+	print "<td width='10%' class='logCritical'>" . __('Critical', 'syslog') . '</td>';
+	print "<td width='10%' class='logAlert'>" . __('Alert', 'syslog') . '</td>';
+	print "<td width='10%' class='logError'>" . __('Error', 'syslog') . '</td>';
+	print "<td width='10%' class='logWarning'>" . __('Warning', 'syslog') . '</td>';
+	print "<td width='10%' class='logNotice'>" . __('Notice', 'syslog') . '</td>';
+	print "<td width='10%' class='logInfo'>" . __('Info', 'syslog') . '</td>';
+	print "<td width='10%' class='logDebug'>" . __('Debug', 'syslog') . '</td>';
 	print '</tr>';
 	html_end_box(false);
 }
 
 /** function syslog_log_legend()
  *  This function displays the foreground and background colors for the syslog log legend
-*/
-function syslog_log_legend() {
+ */
+function syslog_log_legend()
+{
 	global $disabled_color, $notmon_color, $database_default;
 
 	html_start_box('', '100%', '', '3', 'center', '');
 	print '<tr class="">';
-	print "<td width='10%' class='logCritical'>" . __('Critical', 'syslog')      . '</td>';
-	print "<td width='10%' class='logWarning'>"  . __('Warning', 'syslog')       . '</td>';
-	print "<td width='10%' class='logNotice'>"   . __('Notice', 'syslog')        . '</td>';
-	print "<td width='10%' class='logInfo'>"     . __('Informational', 'syslog') . '</td>';
+	print "<td width='10%' class='logCritical'>" . __('Critical', 'syslog') . '</td>';
+	print "<td width='10%' class='logWarning'>" . __('Warning', 'syslog') . '</td>';
+	print "<td width='10%' class='logNotice'>" . __('Notice', 'syslog') . '</td>';
+	print "<td width='10%' class='logInfo'>" . __('Informational', 'syslog') . '</td>';
 	print '</tr>';
 	html_end_box(false);
 }
@@ -1542,17 +1609,18 @@ function syslog_log_legend() {
 /** function syslog_messages()
  *  This is the main page display function in Syslog.  Displays all the
  *  syslog messages that are relevant to Syslog.
-*/
-function syslog_messages($tab = 'syslog') {
+ */
+function syslog_messages($tab = 'syslog')
+{
 	global $sql_where, $hostfilter, $severities;
 	global $config, $syslog_incoming_config, $reset_multi, $syslog_levels;
 	global $syslogdb_default;
 
 	if (defined('SYSLOG_CONFIG')) {
-		include(SYSLOG_CONFIG);
+		include SYSLOG_CONFIG;
 	}
 
-	include('./include/global_arrays.php');
+	include './include/global_arrays.php';
 
 	/* force the initial timespan to be 30 minutes for performance reasons */
 	if (!isset($_SESSION['sess_syslog_init'])) {
@@ -1579,7 +1647,7 @@ function syslog_messages($tab = 'syslog') {
 	if ($tab == 'syslog') {
 		// Check if grouping is enabled for row count
 		$grouping_enabled = isset_request_var('grouping') && get_request_var('grouping') == '1';
-		
+
 		if ($grouping_enabled) {
 			// When grouping, count distinct groups instead of individual rows
 			if (get_request_var('removal') == 1) {
@@ -1605,10 +1673,10 @@ function syslog_messages($tab = 'syslog') {
 		} else {
 			// Original non-grouped row counting
 			if (get_request_var('removal') == 1) {
-				$total_rows = syslog_db_fetch_cell("SELECT SUM(totals)
+				$total_rows = syslog_db_fetch_cell('SELECT SUM(totals)
 					FROM (
 						SELECT count(*) AS totals
-						FROM `" . $syslogdb_default . "`.`syslog` AS syslog
+						FROM `' . $syslogdb_default . "`.`syslog` AS syslog
 						$sql_where
 						UNION
 						SELECT count(*) AS totals
@@ -1616,59 +1684,59 @@ function syslog_messages($tab = 'syslog') {
 						$sql_where
 					) AS rowcount");
 			} elseif (get_request_var('removal') == -1) {
-				$total_rows = syslog_db_fetch_cell("SELECT count(*)
-					FROM `" . $syslogdb_default . "`.`syslog` AS syslog
+				$total_rows = syslog_db_fetch_cell('SELECT count(*)
+					FROM `' . $syslogdb_default . "`.`syslog` AS syslog
 					$sql_where");
 			} else {
-				$total_rows = syslog_db_fetch_cell("SELECT count(*)
-					FROM `" . $syslogdb_default . "`.`syslog_removed` AS syslog
+				$total_rows = syslog_db_fetch_cell('SELECT count(*)
+					FROM `' . $syslogdb_default . "`.`syslog_removed` AS syslog
 					$sql_where");
 			}
 		}
 	} else {
-		$total_rows = syslog_db_fetch_cell("SELECT count(*)
-			FROM `" . $syslogdb_default . "`.`syslog_logs` AS syslog
-			LEFT JOIN `" . $syslogdb_default . "`.`syslog_facilities` AS sf
+		$total_rows = syslog_db_fetch_cell('SELECT count(*)
+			FROM `' . $syslogdb_default . '`.`syslog_logs` AS syslog
+			LEFT JOIN `' . $syslogdb_default . '`.`syslog_facilities` AS sf
 			ON syslog.facility_id=sf.facility_id
-			LEFT JOIN `" . $syslogdb_default . "`.`syslog_priorities` AS sp
+			LEFT JOIN `' . $syslogdb_default . '`.`syslog_priorities` AS sp
 			ON syslog.priority_id=sp.priority_id
-			LEFT JOIN `" . $syslogdb_default . "`.`syslog_alert` AS sa
+			LEFT JOIN `' . $syslogdb_default . '`.`syslog_alert` AS sa
 			ON syslog.alert_id=sa.id
-			LEFT JOIN `" . $syslogdb_default . "`.`syslog_programs` AS spr
-			ON syslog.program_id=spr.program_id " .
+			LEFT JOIN `' . $syslogdb_default . '`.`syslog_programs` AS spr
+			ON syslog.program_id=spr.program_id ' .
 			$sql_where);
 	}
 
 	if ($tab == 'syslog') {
 		// Check if grouping is enabled for display
 		$grouping_enabled = isset_request_var('grouping') && get_request_var('grouping') == '1';
-		
+
 		if (api_plugin_user_realm_auth('syslog_alerts.php')) {
-			$display_text = array(
-				'nosortt'     => array(__('Actions', 'syslog'), 'ASC'),
-				'logtime'     => array(__('Date', 'syslog'), 'ASC'),
-				'host_id'     => array(__('Device', 'syslog'), 'ASC'),
-				'program'     => array(__('Program', 'syslog'), 'ASC'),
-				'message'     => array(__('Message', 'syslog'), 'ASC'),
-				'facility_id' => array(__('Facility', 'syslog'), 'ASC'),
-				'priority_id' => array(__('Priority', 'syslog'), 'ASC'));
-			
+			$display_text = [
+				'nosortt' => [__('Actions', 'syslog'), 'ASC'],
+				'logtime' => [__('Date', 'syslog'), 'ASC'],
+				'host_id' => [__('Device', 'syslog'), 'ASC'],
+				'program' => [__('Program', 'syslog'), 'ASC'],
+				'message' => [__('Message', 'syslog'), 'ASC'],
+				'facility_id' => [__('Facility', 'syslog'), 'ASC'],
+				'priority_id' => [__('Priority', 'syslog'), 'ASC']];
+
 			// Add count column if grouping is enabled
 			if ($grouping_enabled) {
-				$display_text['occurrence_count'] = array(__('Count', 'syslog'), 'DESC');
+				$display_text['occurrence_count'] = [__('Count', 'syslog'), 'DESC'];
 			}
 		} else {
-			$display_text = array(
-				'logtime'     => array(__('Date', 'syslog'), 'ASC'),
-				'host_id'     => array(__('Device', 'syslog'), 'ASC'),
-				'program'     => array(__('Program', 'syslog'), 'ASC'),
-				'message'     => array(__('Message', 'syslog'), 'ASC'),
-				'facility_id' => array(__('Facility', 'syslog'), 'ASC'),
-				'priority_id' => array(__('Priority', 'syslog'), 'ASC'));
-			
+			$display_text = [
+				'logtime' => [__('Date', 'syslog'), 'ASC'],
+				'host_id' => [__('Device', 'syslog'), 'ASC'],
+				'program' => [__('Program', 'syslog'), 'ASC'],
+				'message' => [__('Message', 'syslog'), 'ASC'],
+				'facility_id' => [__('Facility', 'syslog'), 'ASC'],
+				'priority_id' => [__('Priority', 'syslog'), 'ASC']];
+
 			// Add count column if grouping is enabled
 			if ($grouping_enabled) {
-				$display_text['occurrence_count'] = array(__('Count', 'syslog'), 'DESC');
+				$display_text['occurrence_count'] = [__('Count', 'syslog'), 'DESC'];
 			}
 		}
 
@@ -1683,19 +1751,22 @@ function syslog_messages($tab = 'syslog') {
 		$hosts = array_rekey(
 			syslog_db_fetch_assoc('SELECT host_id, host
 				FROM `' . $syslogdb_default . '`.`syslog_hosts`'),
-			'host_id', 'host'
+			'host_id',
+			'host'
 		);
 
 		$facilities = array_rekey(
 			syslog_db_fetch_assoc('SELECT facility_id, facility
 				FROM `' . $syslogdb_default . '`.`syslog_facilities`'),
-			'facility_id', 'facility'
+			'facility_id',
+			'facility'
 		);
 
 		$priorities = array_rekey(
 			syslog_db_fetch_assoc('SELECT priority_id, priority
 				FROM `' . $syslogdb_default . '`.`syslog_priorities`'),
-			'priority_id', 'priority'
+			'priority_id',
+			'priority'
 		);
 
 		if (cacti_sizeof($syslog_messages)) {
@@ -1727,7 +1798,7 @@ function syslog_messages($tab = 'syslog') {
 				} else {
 					form_selectable_cell($sm['logtime'], $sm['seq'], '', 'left');
 				}
-				
+
 				form_selectable_cell(isset($hosts[$sm['host_id']]) ? $hosts[$sm['host_id']]:__('Unknown', 'syslog'), $sm['seq'], '', 'left');
 				form_selectable_cell($sm['program'], $sm['seq'], '', 'left');
 				form_selectable_cell(filter_value(title_trim($sm[$syslog_incoming_config['textField']], get_request_var_request('trimval')), get_request_var('rfilter')), $sm['seq'], '', 'left syslogMessage');
@@ -1740,50 +1811,50 @@ function syslog_messages($tab = 'syslog') {
 				}
 
 				form_end_row();
-				
+
 				// If grouping is enabled and there are multiple occurrences, add hidden detail rows
 				if ($grouping_enabled && isset($sm['occurrence_count']) && $sm['occurrence_count'] > 1 && isset($sm['seq_list'])) {
 					$seq_array = explode(',', $sm['seq_list']);
-					
+
 					// Get individual messages for this group
-					$detail_messages = syslog_db_fetch_assoc("SELECT syslog.*, syslog_programs.program
-						FROM `" . $syslogdb_default . "`.`" . (($sm['mtype'] == 'main') ? 'syslog' : 'syslog_removed') . "` AS syslog
-						LEFT JOIN `" . $syslogdb_default . "`.`syslog_programs`
+					$detail_messages = syslog_db_fetch_assoc('SELECT syslog.*, syslog_programs.program
+						FROM `' . $syslogdb_default . '`.`' . (($sm['mtype'] == 'main') ? 'syslog' : 'syslog_removed') . '` AS syslog
+						LEFT JOIN `' . $syslogdb_default . '`.`syslog_programs`
 						ON syslog.program_id=syslog_programs.program_id
-						WHERE syslog.seq IN (" . implode(',', array_map('intval', $seq_array)) . ")
-						ORDER BY syslog.logtime DESC");
-					
+						WHERE syslog.seq IN (' . implode(',', array_map('intval', $seq_array)) . ')
+						ORDER BY syslog.logtime DESC');
+
 					if (cacti_sizeof($detail_messages)) {
 						foreach ($detail_messages as $dm) {
-							$severity_class = syslog_row_color($dm['priority_id'], $dm['message']);	
-							print "<tr class='tableRow syslog-detail-row syslog-detail-" . html_escape($sm['seq']) . " " . $severity_class . "' style='display:none;' data-parent='" . html_escape($sm['seq']) . "'>";
+							$severity_class = syslog_row_color($dm['priority_id'], $dm['message']);
+							print "<tr class='tableRow syslog-detail-row syslog-detail-" . html_escape($sm['seq']) . ' ' . $severity_class . "' style='display:none;' data-parent='" . html_escape($sm['seq']) . "'>";
 							if (api_plugin_user_realm_auth('syslog_alerts.php')) {
 								$url = '';
 								if ($sm['mtype'] == 'main') {
 									$url .= "<a style='padding:1px' href='" . html_escape('syslog_alerts.php?id=' . $dm[$syslog_incoming_config['id']] . '&action=newedit&type=0') . "'><i class='deviceUp fas fa-plus-circle'></i>";
 									$url .= "<a style='padding:1px' href='" . html_escape('syslog_removal.php?id=' . $dm[$syslog_incoming_config['id']] . '&action=newedit&type=new') . "'><i class='deviceDown fas fa-minus-circle'></i>";
 								}
-								print "<td class='left' style='padding-left:30px;'>" . $url . "</td>";
+								print "<td class='left' style='padding-left:30px;'>" . $url . '</td>';
 							}
-							
-							print "<td class='left' style='padding-left:30px;'>" . html_escape($dm['logtime']) . "</td>";
-							print "<td class='left'>" . html_escape(isset($hosts[$dm['host_id']]) ? $hosts[$dm['host_id']] : __('Unknown', 'syslog')) . "</td>";
-							print "<td class='left'>" . html_escape($dm['program']) . "</td>";
-							print "<td class='left syslogMessage'>" . filter_value(title_trim($dm[$syslog_incoming_config['textField']], get_request_var_request('trimval')), get_request_var('rfilter')) . "</td>";
-							print "<td class='left'>" . html_escape(isset($facilities[$dm['facility_id']]) ? $facilities[$dm['facility_id']] : __('Unknown', 'syslog')) . "</td>";
-							print "<td class='left'>" . html_escape(isset($priorities[$dm['priority_id']]) ? $priorities[$dm['priority_id']] : __('Unknown', 'syslog')) . "</td>";
-							
+
+							print "<td class='left' style='padding-left:30px;'>" . html_escape($dm['logtime']) . '</td>';
+							print "<td class='left'>" . html_escape(isset($hosts[$dm['host_id']]) ? $hosts[$dm['host_id']] : __('Unknown', 'syslog')) . '</td>';
+							print "<td class='left'>" . html_escape($dm['program']) . '</td>';
+							print "<td class='left syslogMessage'>" . filter_value(title_trim($dm[$syslog_incoming_config['textField']], get_request_var_request('trimval')), get_request_var('rfilter')) . '</td>';
+							print "<td class='left'>" . html_escape(isset($facilities[$dm['facility_id']]) ? $facilities[$dm['facility_id']] : __('Unknown', 'syslog')) . '</td>';
+							print "<td class='left'>" . html_escape(isset($priorities[$dm['priority_id']]) ? $priorities[$dm['priority_id']] : __('Unknown', 'syslog')) . '</td>';
+
 							if ($grouping_enabled) {
 								print "<td class='right'></td>";
 							}
-							
-							print "</tr>";
+
+							print '</tr>';
 						}
 					}
 				}
 			}
 		} else {
-			print "<tr><td class='center' colspan='" . (cacti_sizeof($display_text)) . "'><em>" . __('No Syslog Messages', 'syslog') . "</em></td></tr>";
+			print "<tr><td class='center' colspan='" . (cacti_sizeof($display_text)) . "'><em>" . __('No Syslog Messages', 'syslog') . '</em></td></tr>';
 		}
 
 		html_end_box(false);
@@ -1800,16 +1871,16 @@ function syslog_messages($tab = 'syslog') {
 		</script>
 		<?php
 	} else {
-		$display_text = array(
-			'name'        => array('display' => __('Alert Name', 'syslog'), 'sort' => 'ASC', 'align' => 'left'),
-			'severity'    => array('display' => __('Severity', 'syslog'),   'sort' => 'ASC', 'align' => 'left'),
-			'logtime'     => array('display' => __('Date', 'syslog'),       'sort' => 'ASC', 'align' => 'left'),
-			'logmsg'      => array('display' => __('Message', 'syslog'),    'sort' => 'ASC', 'align' => 'left'),
-			'count'       => array('display' => __('Count', 'syslog'),      'sort' => 'ASC', 'align' => 'right'),
-			'host'        => array('display' => __('Device', 'syslog'),     'sort' => 'ASC', 'align' => 'right'),
-			'facility_id' => array('display' => __('Facility', 'syslog'),   'sort' => 'ASC', 'align' => 'right'),
-			'priority_id' => array('display' => __('Priority', 'syslog'),   'sort' => 'ASC', 'align' => 'right')
-		);
+		$display_text = [
+			'name' => ['display' => __('Alert Name', 'syslog'), 'sort' => 'ASC', 'align' => 'left'],
+			'severity' => ['display' => __('Severity', 'syslog'),   'sort' => 'ASC', 'align' => 'left'],
+			'logtime' => ['display' => __('Date', 'syslog'),       'sort' => 'ASC', 'align' => 'left'],
+			'logmsg' => ['display' => __('Message', 'syslog'),    'sort' => 'ASC', 'align' => 'left'],
+			'count' => ['display' => __('Count', 'syslog'),      'sort' => 'ASC', 'align' => 'right'],
+			'host' => ['display' => __('Device', 'syslog'),     'sort' => 'ASC', 'align' => 'right'],
+			'facility_id' => ['display' => __('Facility', 'syslog'),   'sort' => 'ASC', 'align' => 'right'],
+			'priority_id' => ['display' => __('Priority', 'syslog'),   'sort' => 'ASC', 'align' => 'right'],
+		];
 
 		$nav = html_nav_bar("syslog.php?tab=$tab", MAX_DISPLAY_PAGES, get_request_var_request('page'), $rows, $total_rows, cacti_sizeof($display_text), __('Alert Log Rows', 'syslog'), 'page', 'main');
 
@@ -1821,7 +1892,7 @@ function syslog_messages($tab = 'syslog') {
 
 		if (cacti_sizeof($syslog_messages)) {
 			foreach ($syslog_messages as $log) {
-				$title   = html_escape($log['logmsg']);
+				$title = html_escape($log['logmsg']);
 
 				syslog_log_row_color($log['severity'], $title);
 
@@ -1839,7 +1910,7 @@ function syslog_messages($tab = 'syslog') {
 				form_end_row();
 			}
 		} else {
-			print "<tr><td colspan='" . (cacti_sizeof($display_text)) . "'><em>" . __('No Alert Log Messages', 'syslog') . "</em></td></tr>";
+			print "<tr><td colspan='" . (cacti_sizeof($display_text)) . "'><em>" . __('No Alert Log Messages', 'syslog') . '</em></td></tr>';
 		}
 
 		html_end_box(false);
@@ -1852,12 +1923,13 @@ function syslog_messages($tab = 'syslog') {
 	}
 }
 
-function save_settings() {
+function save_settings()
+{
 	global $current_tab;
 
-//	syslog_request_validation($current_tab);
+	//	syslog_request_validation($current_tab);
 
-	$variables = array(
+	$variables = [
 		'rows',
 		'refresh',
 		'removal',
@@ -1868,9 +1940,9 @@ function save_settings() {
 		'grouping',
 		'predefined_timespan',
 		'predefined_timeshift',
-	);
+	];
 
-	foreach($variables as $v) {
+	foreach ($variables as $v) {
 		if (isset_request_var($v)) {
 			// Accommodate predefined
 			if (strpos($v, 'predefined') !== false) {
@@ -1885,7 +1957,8 @@ function save_settings() {
 	syslog_request_validation($current_tab, true);
 }
 
-function html_program_filter($program_id = '-1', $none_entry = '', $action = 'ajax_programs', $call_back = 'applyFilter', $sql_where = '') {
+function html_program_filter($program_id = '-1', $none_entry = '', $action = 'ajax_programs', $call_back = 'applyFilter', $sql_where = '')
+{
 	if (strpos($call_back, '()') === false) {
 		$call_back .= '()';
 	}
@@ -1928,29 +2001,30 @@ function html_program_filter($program_id = '-1', $none_entry = '', $action = 'aj
 	print '</td>';
 }
 
-function get_ajax_programs($include_any = true, $include_none = false, $sql_where = '') {
-	$return    = array();
+function get_ajax_programs($include_any = true, $include_none = false, $sql_where = '')
+{
+	$return = [];
 
-	$term = get_filter_request_var('term', FILTER_CALLBACK, array('options' => 'sanitize_search_string'));
+	$term = get_filter_request_var('term', FILTER_CALLBACK, ['options' => 'sanitize_search_string']);
 	if ($term != '') {
 		$sql_where .= ($sql_where != '' ? ' AND ' : 'WHERE ') . "program LIKE '%$term%'";
 	}
 
 	if (get_request_var('term') == '') {
 		if ($include_any) {
-			$return[] = array(
+			$return[] = [
 				'label' => __('All Programs', 'syslog'),
 				'value' => __('All Programs', 'syslog'),
-				'id' => '-1'
-			);
+				'id' => '-1',
+			];
 		}
 
 		if ($include_none) {
-			$return[] = array(
+			$return[] = [
 				'label' => __('None', 'syslog'),
 				'value' => __('None', 'syslog'),
-				'id' => '-2'
-			);
+				'id' => '-2',
+			];
 		}
 	}
 
@@ -1961,19 +2035,20 @@ function get_ajax_programs($include_any = true, $include_none = false, $sql_wher
 		LIMIT 20");
 
 	if (cacti_sizeof($programs)) {
-		foreach($programs as $program) {
-			$return[] = array(
+		foreach ($programs as $program) {
+			$return[] = [
 				'label' => $program['program'],
 				'value' => $program['program'],
-				'id' => $program['program_id']
-			);
+				'id' => $program['program_id'],
+			];
 		}
 	}
 
 	print json_encode($return);
 }
 
-function syslog_form_callback($form_name, $classic_sql, $column_display, $column_id, $callback, $previous_id, $previous_value, $none_entry, $default_value, $class = '', $on_change = '') {
+function syslog_form_callback($form_name, $classic_sql, $column_display, $column_id, $callback, $previous_id, $previous_value, $none_entry, $default_value, $class = '', $on_change = '')
+{
 	if ($previous_value == '') {
 		$previous_value = $default_value;
 	}
@@ -2017,13 +2092,13 @@ function syslog_form_callback($form_name, $classic_sql, $column_display, $column
 		print "<span id='$form_name" . "_click' style='z-index:4' class='ui-selectmenu-icon ui-icon ui-icon-triangle-1-s'></span>";
 		print "<span class='ui-select-text'>";
 		print "<input type='text' class='ui-state-default ui-corner-all' id='$form_name" . "_input' value='" . html_escape($previous_value) . "'>";
-		print "</span>";
+		print '</span>';
 
 		if (!empty($none_entry) && empty($previous_value)) {
 			$previous_value = $none_entry;
 		}
 
-		print "</span>";
+		print '</span>';
 		print "<input type='hidden' id='" . $form_name . "' name='" . $form_name . "' value='" . html_escape($previous_id) . "'>";
 		?>
 		<style type='text/css'>
@@ -2037,4 +2112,3 @@ function syslog_form_callback($form_name, $classic_sql, $column_display, $column
 		<?php
 	}
 }
-

@@ -1,4 +1,5 @@
 <?php
+
 /*
  +-------------------------------------------------------------------------+
  | Copyright (C) 2004-2026 The Cacti Group                                 |
@@ -23,10 +24,10 @@
 */
 
 chdir('../../');
-include('./include/cli_check.php');
-include_once('./lib/poller.php');
-include_once('./plugins/syslog/functions.php');
-include_once('./plugins/syslog/database.php');
+include './include/cli_check.php';
+include_once './lib/poller.php';
+include_once './plugins/syslog/functions.php';
+include_once './plugins/syslog/database.php';
 
 syslog_connect();
 
@@ -45,7 +46,7 @@ $parms = $_SERVER['argv'];
 
 array_shift($parms);
 if (cacti_sizeof($parms)) {
-	foreach($parms as $parameter) {
+	foreach ($parms as $parameter) {
 		if (strpos($parameter, '=')) {
 			list($arg, $value) = explode('=', $parameter);
 		} else {
@@ -87,7 +88,7 @@ if (empty($syslog_cnn)) {
 		($database_default == $syslogdb_default)) {
 		/* move on, using Cacti */
 		$syslog_cnn = $cnn_id;
-	}else{
+	} else {
 		if (!isset($syslogdb_port)) {
 			$syslogdb_port = '3306';
 		}
@@ -97,19 +98,19 @@ if (empty($syslog_cnn)) {
 		}
 
 		if (!isset($syslogdb_ssl)) {
-		    $syslogdb_ssl = false;
+			$syslogdb_ssl = false;
 		}
 
 		if (!isset($syslogdb_ssl_key)) {
-		    $syslogdb_ssl_key = '';
+			$syslogdb_ssl_key = '';
 		}
 
 		if (!isset($syslogdb_ssl_cert)) {
-		    $syslogdb_ssl_cert = '';
+			$syslogdb_ssl_cert = '';
 		}
 
 		if (!isset($syslogdb_ssl_ca)) {
-		    $syslogdb_ssl_ca = '';
+			$syslogdb_ssl_ca = '';
 		}
 
 		$syslog_cnn = syslog_db_connect_real($syslogdb_hostname, $syslogdb_username, $syslogdb_password, $syslogdb_default, $syslogdb_type, $syslogdb_port, $syslogdb_retries, $syslogdb_ssl, $syslogdb_ssl_key, $syslogdb_ssl_cert, $syslogdb_ssl_ca);
@@ -124,31 +125,31 @@ if (read_config_option('syslog_enabled') == '') {
 
 /* remove records that don't need to to be transferred */
 syslog_debug('Syslog Batch Transfer / Remove Process started ...... ');
-$syslog_items   = syslog_manage_items('syslog', 'syslog_removed');
+$syslog_items = syslog_manage_items('syslog', 'syslog_removed');
 $syslog_removed = $syslog_items['removed'];
 $syslog_xferred = $syslog_items['xferred'];
-syslog_debug("Removed     " . $syslog_removed . ",  Message(s) from the 'syslog' table");
-syslog_debug("Xferred     " . $syslog_xferred . ",  Message(s) to the 'syslog_removed' table");
+syslog_debug('Removed     ' . $syslog_removed . ",  Message(s) from the 'syslog' table");
+syslog_debug('Xferred     ' . $syslog_xferred . ",  Message(s) to the 'syslog_removed' table");
 
 syslog_debug('Finished processing...');
 
-function display_version() {
+function display_version()
+{
 	global $config;
 
 	if (!function_exists('plugin_syslog_version')) {
-		include_once($config['base_path'] . '/plugins/syslog/setup.php');
+		include_once $config['base_path'] . '/plugins/syslog/setup.php';
 	}
 
 	$info = plugin_syslog_version();
-	echo "Syslog Batch Process, Version " . $info['version'] . ", " . COPYRIGHT_YEARS . "\n";
+	echo 'Syslog Batch Process, Version ' . $info['version'] . ', ' . COPYRIGHT_YEARS . "\n";
 }
 
-function display_help() {
+function display_help()
+{
 	display_version();
 
 	echo "\nusage: syslog_batch_transfer.php [--debug|-d]\n\n";
 	echo "The Syslog batch process script for Cacti Syslogging.\n";
 	echo "This script removes old messages from main view.\n";
 }
-
-
