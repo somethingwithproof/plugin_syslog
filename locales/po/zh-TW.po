@@ -4,7 +4,19 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 msgid ""
-msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: developers@cacti.net\nPOT-Creation-Date: 2025-03-07 14:31-0500\nPO-Revision-Date: 2026-01-16 03:18+0000\nLast-Translator: sucharlie <su.charlie@gmail.com>\nLanguage-Team: Chinese (Traditional Han script) <https://translate.cacti.net/projects/cacti/syslog/zh_Hant/>\nLanguage: zh-TW\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=1; plural=0;\nX-Generator: Weblate 5.11.4\n"
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: developers@cacti.net\n"
+"POT-Creation-Date: 2025-03-07 14:31-0500\n"
+"PO-Revision-Date: 2026-01-16 03:18+0000\n"
+"Last-Translator: sucharlie <su.charlie@gmail.com>\n"
+"Language-Team: Chinese (Traditional Han script) <https://translate.cacti.net/projects/cacti/syslog/zh_Hant/>\n"
+"Language: zh-TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 5.11.4\n"
 
 #: functions.php:72
 #, fuzzy
@@ -19,12 +31,12 @@ msgstr "請使用HTML電子郵件客戶端"
 #: functions.php:1304
 #, fuzzy, php-format
 msgid "Cacti Syslog Threshold Alert '%s' for Host '%s'"
-msgstr "Cacti Syslog插件閾值警報'％s'"
+msgstr "Cacti Syslog插件閾值警報'%s'"
 
 #: functions.php:1306
 #, fuzzy, php-format
 msgid "Cacti Syslog Threshold Alert '%s'"
-msgstr "Cacti Syslog插件閾值警報'％s'"
+msgstr "Cacti Syslog插件閾值警報'%s'"
 
 #: functions.php:1314 syslog.php:1896 syslog_alerts.php:874
 #, fuzzy
@@ -55,12 +67,12 @@ msgstr "匹配字符串"
 #: functions.php:1329 functions.php:1368
 #, fuzzy, php-format
 msgid "Cacti Syslog Alert '%s' for Host '%s'"
-msgstr "Cacti Syslog插件閾值警報'％s'"
+msgstr "Cacti Syslog插件閾值警報'%s'"
 
 #: functions.php:1331 functions.php:1370
 #, fuzzy, php-format
 msgid "Cacti Syslog Alert '%s'"
-msgstr "Cacti Syslog插件警報'％s'"
+msgstr "Cacti Syslog插件警報'%s'"
 
 #: functions.php:1340
 #, fuzzy
@@ -148,7 +160,7 @@ msgstr "西弗："
 #: functions.php:1490 functions.php:1544
 #, fuzzy, php-format
 msgid "Event Alert - %s"
-msgstr "事件警報 - ％s"
+msgstr "事件警報 - %s"
 
 #: functions.php:1548
 #, fuzzy
@@ -163,7 +175,7 @@ msgstr "主機"
 #: functions.php:2116
 #, fuzzy, php-format
 msgid "Event Report - %s"
-msgstr "活動報告 - ％s"
+msgstr "活動報告 - %s"
 
 #: setup.php:34
 #, fuzzy
@@ -262,7 +274,7 @@ msgstr "選擇您希望每天創建的分區數。"
 #: setup.php:918 setup.php:919 setup.php:920 setup.php:921 setup.php:922
 #, fuzzy, php-format
 msgid "%d Per Day"
-msgstr "％d每天"
+msgstr "%d每天"
 
 #: setup.php:927 setup.php:1015
 #, fuzzy
@@ -277,7 +289,7 @@ msgstr "安裝"
 #: setup.php:933
 #, fuzzy, php-format
 msgid "Syslog %s Advisor"
-msgstr "Syslog％s顧問"
+msgstr "Syslog%s顧問"
 
 #: setup.php:937
 #, fuzzy
@@ -307,7 +319,7 @@ msgstr "安裝Syslog時有幾個選項可供選擇。第一個是數據庫架構
 #: setup.php:945
 #, fuzzy, php-format
 msgid "Syslog %s Settings"
-msgstr "Syslog％s設置"
+msgstr "Syslog%s設置"
 
 #: setup.php:972
 #, fuzzy
@@ -419,7 +431,7 @@ msgstr "對於基於閾值的警報，您希望在報告中顯示的最大數量
 #: setup.php:1117
 #, fuzzy, php-format
 msgid "%d Records"
-msgstr "％d記錄"
+msgstr "%d記錄"
 
 #: setup.php:1121
 #, fuzzy
@@ -712,7 +724,7 @@ msgstr "在範圍內顯示Syslog"
 #: setup.php:1548
 #, fuzzy, php-format
 msgid "There were %s Device records removed from the Syslog database"
-msgstr "從Syslog數據庫中刪除了％s設備記錄"
+msgstr "從Syslog數據庫中刪除了%s設備記錄"
 
 #: setup.php:1564
 #, fuzzy
@@ -872,12 +884,12 @@ msgstr "默认"
 #: syslog.php:1066
 #, fuzzy, php-format
 msgid " [ Start: '%s' to End: '%s', Unprocessed Messages: %s ]"
-msgstr "[開始：'％s'到結尾：'％s'，未處理的消息：％s]"
+msgstr "[開始：'%s'到結尾：'%s'，未處理的消息：%s]"
 
 #: syslog.php:1068
 #, fuzzy, php-format
 msgid "[ Unprocessed Messages: %s ]"
-msgstr "[未處理的消息：％s]"
+msgstr "[未處理的消息：%s]"
 
 #: syslog.php:1078
 #, fuzzy
@@ -902,7 +914,7 @@ msgstr "選擇所有設備"
 #: syslog.php:1329
 #, fuzzy, php-format
 msgid "Syslog Message Filter %s"
-msgstr "系統日誌消息過濾器％s"
+msgstr "系統日誌消息過濾器%s"
 
 #: syslog.php:1336
 #, fuzzy
@@ -1245,7 +1257,7 @@ msgstr "1個月"
 #: syslog_alerts.php:449
 #, fuzzy, php-format
 msgid "Alert Edit [edit: %s]"
-msgstr "警報編輯[編輯：％s]"
+msgstr "警報編輯[編輯：%s]"
 
 #: syslog_alerts.php:451 syslog_alerts.php:458 syslog_alerts.php:465
 #, fuzzy
@@ -1528,7 +1540,7 @@ msgstr "已匯入"
 #: syslog_alerts.php:1039
 #, fuzzy, php-format
 msgid "NOTE: Alert '%s' %s!"
-msgstr "注意：提醒'％s'％s！"
+msgstr "注意：提醒'%s'%s！"
 
 #: syslog_alerts.php:1039 syslog_removal.php:861 syslog_reports.php:903
 msgid "Updated"
@@ -1537,7 +1549,7 @@ msgstr "已更新"
 #: syslog_alerts.php:1041
 #, fuzzy, php-format
 msgid "ERROR: Alert '%s' %s Failed!"
-msgstr "錯誤：警報'％s'％s失敗！"
+msgstr "錯誤：警報'%s'%s失敗！"
 
 #: syslog_alerts.php:1041 syslog_removal.php:863 syslog_reports.php:905
 #, fuzzy
@@ -1602,12 +1614,12 @@ msgstr "導出Syslog刪除規則"
 #: syslog_removal.php:342
 #, fuzzy, php-format
 msgid "Rule '%s' resulted in %s/%s messages removed/transferred"
-msgstr "刪除了％s消息，並傳輸了％s消息"
+msgstr "刪除了%s消息，並傳輸了%s消息"
 
 #: syslog_removal.php:398
 #, fuzzy, php-format
 msgid "Removal Rule Edit [edit: %s]"
-msgstr "刪除規則編輯[編輯：％s]"
+msgstr "刪除規則編輯[編輯：%s]"
 
 #: syslog_removal.php:400 syslog_removal.php:407
 #, fuzzy
@@ -1734,12 +1746,12 @@ msgstr "導入刪除規則"
 #: syslog_removal.php:861
 #, fuzzy, php-format
 msgid "NOTE: Removal Rule '%s' %s!"
-msgstr "注意：刪除規則'％s'％s！"
+msgstr "注意：刪除規則'%s'%s！"
 
 #: syslog_removal.php:863
 #, fuzzy, php-format
 msgid "ERROR: Removal Rule '%s' %s Failed!"
-msgstr "錯誤：刪除規則'％s'％s失敗！"
+msgstr "錯誤：刪除規則'%s'%s失敗！"
 
 #: syslog_reports.php:169
 #, fuzzy
@@ -1794,7 +1806,7 @@ msgstr "返回"
 #: syslog_reports.php:391
 #, fuzzy, php-format
 msgid "Report Edit [edit: %s]"
-msgstr "報告編輯[編輯：％s]"
+msgstr "報告編輯[編輯：%s]"
 
 #: syslog_reports.php:393 syslog_reports.php:398
 #, fuzzy
@@ -1913,9 +1925,9 @@ msgstr "導入報告數據"
 #: syslog_reports.php:903
 #, fuzzy, php-format
 msgid "NOTE: Report Rule '%s' %s!"
-msgstr "注意：報告規則'％s'％s！"
+msgstr "注意：報告規則'%s'%s！"
 
 #: syslog_reports.php:905
 #, fuzzy, php-format
 msgid "ERROR: Report Rule '%s' %s Failed!"
-msgstr "錯誤：報告規則'％s'％s失敗！"
+msgstr "錯誤：報告規則'%s'%s失敗！"

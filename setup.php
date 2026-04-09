@@ -817,6 +817,7 @@ function syslog_replace_data($table, &$data) {
 		$sqlData  = array();
 		$sqlQuery = array();
 		$columns  = array_keys($data[0]);
+		$create_sql = '';
 
 		$create = db_fetch_row('SHOW CREATE TABLE ' . $table);
 		if (isset($create["CREATE TABLE `$table`"]) || isset($create['Create Table'])) {
@@ -828,7 +829,12 @@ function syslog_replace_data($table, &$data) {
 		}
 
 		if (!syslog_db_table_exists($table)) {
-			syslog_db_execute($create);
+			if ($create_sql == '') {
+				cacti_log('WARNING: Unable to derive CREATE TABLE SQL for `' . $table . '` during Syslog replication.', false, 'REPLICATE');
+				return;
+			}
+
+			syslog_db_execute($create_sql);
 			syslog_db_execute("TRUNCATE TABLE $table");
 		}
 
@@ -960,10 +966,11 @@ function syslog_install_advisor($syslog_exists) {
 		$type = __('Install', 'syslog');
 	}
 
-	$database = db_fetch_row('SHOW GLOBAL VARIABLES LIKE "version"');
+	syslog_connect();
+	$database = syslog_db_fetch_row('SHOW GLOBAL VARIABLES LIKE "version"');
 
-	/* remove Aria as a storage enging if this is mysql */
-	if (stripos($database['Value'], 'mariadb') == false) {
+	/* remove Aria as a storage engine if this is mysql */
+	if (stripos($database['Value'], 'mariadb') === false) {
 		unset($fields_syslog_update['engine']['array']['aria']);
 	} else {
 		$fields_syslog_update['engine']['value'] = 'aria';
@@ -1626,4 +1633,3 @@ function syslog_utilities_list() {
 	</tr>
 	<?php
 }
-

@@ -116,24 +116,19 @@ function form_actions() {
 	/* if we are to save this form, instead of display it */
 	if (isset_request_var('selected_items')) {
 		$selected_items = sanitize_unserialize_selected_items(get_request_var('selected_items'));
+		$drp_action     = get_request_var('drp_action');
 
-		if ($selected_items != false) {
-			if (get_request_var('drp_action') == '1') { /* delete */
-				for ($i=0; $i<count($selected_items); $i++) {
-					api_syslog_alert_remove($selected_items[$i]);
-				}
-			} elseif (get_request_var('drp_action') == '2') { /* disable */
-				for ($i=0; $i<count($selected_items); $i++) {
-					api_syslog_alert_disable($selected_items[$i]);
-				}
-			} elseif (get_request_var('drp_action') == '3') { /* enable */
-				for ($i=0; $i<count($selected_items); $i++) {
-					api_syslog_alert_enable($selected_items[$i]);
-				}
-			} elseif (get_request_var('drp_action') == '4') { /* export */
-				$_SESSION['exporter'] = get_nfilter_request_var('selected_items');
-			}
-		}
+		syslog_apply_selected_items_action(
+			$selected_items,
+			$drp_action,
+			array(
+				'1' => 'api_syslog_alert_remove',
+				'2' => 'api_syslog_alert_disable',
+				'3' => 'api_syslog_alert_enable'
+			),
+			'4',
+			get_nfilter_request_var('selected_items')
+		);
 
 		header('Location: syslog_alerts.php?header=false');
 
@@ -998,4 +993,3 @@ function alert_import() {
 
 	header('Location: syslog_alerts.php');
 }
-
