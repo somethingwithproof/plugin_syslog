@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * Regression test for issue #269 -- branch-logic invariants.
  *

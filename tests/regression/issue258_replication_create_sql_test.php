@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 $existing_functions = array(
 	'db_fetch_row',
 	'syslog_db_table_exists',

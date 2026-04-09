@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 $setup = file_get_contents(dirname(__DIR__, 2) . '/setup.php');
 
 if ($setup === false) {

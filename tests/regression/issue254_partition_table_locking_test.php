@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 $functions = file_get_contents(dirname(__DIR__, 2) . '/functions.php');
 
 if ($functions === false) {

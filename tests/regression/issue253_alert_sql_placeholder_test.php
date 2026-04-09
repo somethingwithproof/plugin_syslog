@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 $GLOBALS['syslogdb_default'] = 'syslogdb';
 $GLOBALS['syslog_incoming_config'] = array(
 	'hostField'    => 'host',
