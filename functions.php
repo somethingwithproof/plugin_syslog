@@ -306,8 +306,8 @@ function syslog_partition_create($table) {
 	try {
 		/* determine the format of the table name */
 		$time    = time();
-		$cformat = 'd' . date('Ymd', $time);
-		$lnow    = date('Y-m-d', strtotime('+1 day', $time));
+		$cformat = 'd' . gmdate('Ymd', $time);
+		$lnow    = gmdate('Y-m-d', strtotime('+1 day', $time));
 
 		$exists = syslog_db_fetch_row_prepared("SELECT *
 			FROM `information_schema`.`partitions`
@@ -2054,7 +2054,8 @@ function syslog_postprocess_tables() {
  * syslog_csv_safe - Escapes a value for safe inclusion in a CSV field.
  *
  * Prevents formula injection by prefixing cells that start with a trigger
- * character, and escapes embedded double-quotes per RFC 4180.
+ * character (=, +, -, @, /, tab, CR, LF), and escapes embedded
+ * double-quotes per RFC 4180.
  *
  * @param  (mixed) $value  The value to sanitize
  *
@@ -2068,7 +2069,7 @@ function syslog_csv_safe($value) {
 	$value = (string) $value;
 	$value = str_replace('"', '""', $value);
 
-	if (preg_match('/^[=+\-@\t\r]/', $value)) {
+	if (preg_match('/^[=+\-@\/\t\r\n]/', $value)) {
 		$value = "'" . $value;
 	}
 

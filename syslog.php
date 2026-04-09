@@ -289,6 +289,7 @@ function syslog_statistics() {
 
 	$sql_where   = '';
 	$sql_groupby = '';
+	$sql_params  = array();
 
 	if (get_request_var('rows') == -1) {
 		$rows = read_config_option('num_rows_table');
@@ -298,14 +299,14 @@ function syslog_statistics() {
 		$rows = get_request_var('rows');
 	}
 
-	$records = get_stats_records($sql_where, $sql_groupby, $rows);
+	$records = get_stats_records($sql_where, $sql_groupby, $rows, $sql_params);
 
 	$rows_query_string = "SELECT COUNT(*)
 		FROM `" . $syslogdb_default . "`.`syslog_statistics` AS ss
 		$sql_where
 		$sql_groupby";
 
-	$total_rows = syslog_db_fetch_cell('SELECT COUNT(*) FROM ('. $rows_query_string  . ') as temp');
+	$total_rows = syslog_db_fetch_cell_prepared('SELECT COUNT(*) FROM ('. $rows_query_string  . ') as temp', $sql_params);
 
 	$nav = html_nav_bar('syslog.php?tab=stats', MAX_DISPLAY_PAGES, get_request_var_request('page'), $rows, $total_rows, 4, __('Messages', 'syslog'), 'page', 'main');
 
@@ -387,14 +388,16 @@ function syslog_statistics() {
 	}
 }
 
-function get_stats_records(&$sql_where, &$sql_groupby, $rows) {
+function get_stats_records(&$sql_where, &$sql_groupby, $rows, &$sql_params) {
 	global $syslogdb_default;
 
 	/* form the 'where' clause for our main sql query */
-	if (!isempty_request_var('rfilter')) {
+	if (!isempty_request_var('rfilter') && strlen(get_request_var('rfilter')) <= 255) {
 		$sql_where .= ($sql_where == '' ? 'WHERE ' : ' AND ') .
-			"sh.host RLIKE "       . db_qstr(get_request_var('rfilter')) . "
-			OR spr.program RLIKE " . db_qstr(get_request_var('rfilter'));
+			"(sh.host RLIKE ?
+			OR spr.program RLIKE ?)";
+		$sql_params[] = get_request_var('rfilter');
+		$sql_params[] = get_request_var('rfilter');
 	}
 
 	if (get_request_var('host') == '-2') {
@@ -470,7 +473,7 @@ function get_stats_records(&$sql_where, &$sql_groupby, $rows) {
 
 	//cacti_log(str_replace("\n", "", $query_sql));
 
-	return syslog_db_fetch_assoc($query_sql);
+	return syslog_db_fetch_assoc_prepared($query_sql, $sql_params);
 }
 
 function syslog_stats_filter() {
@@ -848,11 +851,12 @@ function set_shift_span($shift_span, $session_prefix) {
 	}
 }
 
-function get_syslog_messages(&$sql_where, $rows, $tab) {
+function get_syslog_messages(&$sql_where, $rows, $tab, &$sql_params = array()) {
 	global $sql_where, $hostfilter, $hostfilter_log, $current_tab, $syslog_incoming_config;
 	global $syslogdb_default;
 
-	$sql_where = '';
+	$sql_where  = '';
+	$sql_params = array();
 
 	if ($tab == 'alerts') {
 		if (get_request_var('host') == 0) {
@@ -908,20 +912,23 @@ function get_syslog_messages(&$sql_where, $rows, $tab) {
 			'sa.id=' . get_request_var('id');
 	}
 
-	if (!isempty_request_var('rfilter')) {
+	if (!isempty_request_var('rfilter') && strlen(get_request_var('rfilter')) <= 255) {
 		if ($tab == 'syslog') {
-			$sql_where .= ($sql_where == '' ? 'WHERE ' : ' AND ') . "message RLIKE " . db_qstr(get_request_var('rfilter'));
+			$sql_where .= ($sql_where == '' ? 'WHERE ' : ' AND ') . "message RLIKE ?";
 		} else {
-			$sql_where .= ($sql_where == '' ? 'WHERE ' : ' AND ') . "logmsg RLIKE " . db_qstr(get_request_var('rfilter'));
+			$sql_where .= ($sql_where == '' ? 'WHERE ' : ' AND ') . "logmsg RLIKE ?";
 		}
+		$sql_params[] = get_request_var('rfilter');
 	}
 
 	if (get_request_var('eprogram') != '-1') {
-		$sql_where .= ($sql_where == '' ? 'WHERE ' : ' AND ') . 'syslog.program_id = ' . db_qstr(get_request_var('eprogram'));
+		$sql_where .= ($sql_where == '' ? 'WHERE ' : ' AND ') . 'syslog.program_id = ?';
+		$sql_params[] = get_request_var('eprogram');
 	}
 
 	if (get_request_var('efacility') != '-1') {
-		$sql_where .= ($sql_where == '' ? 'WHERE ' : ' AND ') . 'syslog.facility_id = ' . db_qstr(get_request_var('efacility'));
+		$sql_where .= ($sql_where == '' ? 'WHERE ' : ' AND ') . 'syslog.facility_id = ?';
+		$sql_params[] = get_request_var('efacility');
 	}
 
 	if (isset_request_var('epriority') && get_request_var('epriority') != '-1') {
