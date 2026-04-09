@@ -913,7 +913,7 @@ function syslog_log_alert($alert_id, $alert_name, $severity, $msg, $count = 1, $
 		$save['alert_name'] = $alert_name;
 		api_plugin_hook_function('syslog_update_hostsalarm', $save);
 
-		cacti_log("WARNING: The Syslog Alert '$alert_name' with Severity '" . $severities[$severity] . "', has been Triggered on Host '" . $msg['host'] . "', and Sequence '$id'", false, 'SYSLOG');
+		cacti_log("WARNING: The Syslog Alert '$alert_name' with Severity '" . $severities[$severity] . "', has been Triggered on Host '" . $msg['host'] . "', and Sequence '$id'", false, 'SYSLOG', POLLER_VERBOSITY_LOW);
 
 		return $id;
 	} else {
@@ -941,7 +941,7 @@ function syslog_log_alert($alert_id, $alert_name, $severity, $msg, $count = 1, $
 			}
 		}
 
-		cacti_log("WARNING: The Syslog Instance Alert '$alert_name' with Severity '" . $severities[$severity] . "', has been Triggered, Count was '" . $count . "', and Sequence '$id'", false, 'SYSLOG');
+		cacti_log("WARNING: The Syslog Instance Alert '$alert_name' with Severity '" . $severities[$severity] . "', has been Triggered, Count was '" . $count . "', and Sequence '$id'", false, 'SYSLOG', POLLER_VERBOSITY_LOW);
 
 		return $id;
 	}

@@ -914,7 +914,7 @@ function syslog_poller_bottom()
 		$extra_args = ' -q ' . $config['base_path'] . '/plugins/syslog/syslog_process.php';
 		exec_background($command_string, $extra_args);
 	} else {
-		cacti_log('WARNING: You have installed the Syslog plugin, but you have not properly set a config.php or config_local.php', false, 'POLLER');
+		cacti_log('WARNING: You have installed the Syslog plugin, but you have not properly set a config.php or config_local.php', false, 'POLLER', POLLER_VERBOSITY_LOW);
 	}
 }
 
