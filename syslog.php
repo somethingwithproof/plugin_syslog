@@ -290,13 +290,7 @@ function syslog_statistics() {
 	$sql_where   = '';
 	$sql_groupby = '';
 
-	if (get_request_var('rows') == -1) {
-		$rows = read_config_option('num_rows_table');
-	} elseif (get_request_var('rows') == -2) {
-		$rows = 999999;
-	} else {
-		$rows = get_request_var('rows');
-	}
+	$rows = plugin_get_rows_per_page();
 
 	$records = get_stats_records($sql_where, $sql_groupby, $rows);
 
@@ -1582,13 +1576,7 @@ function syslog_messages($tab = 'syslog') {
 
 	$sql_where = '';
 
-	if (get_request_var('rows') == -1) {
-		$rows = read_config_option('num_rows_table');
-	} elseif (get_request_var('rows') == -2) {
-		$rows = 999999;
-	} else {
-		$rows = get_request_var('rows');
-	}
+	$rows = plugin_get_rows_per_page();
 
 	$syslog_messages = get_syslog_messages($sql_where, $rows, $tab);
 
