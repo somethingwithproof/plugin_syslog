@@ -939,18 +939,7 @@ function import() {
 }
 
 function alert_import() {
-	if (trim(get_nfilter_request_var('import_text') != '')) {
-		/* textbox input */
-		$xml_data = get_nfilter_request_var('import_text');
-	} elseif (($_FILES['import_file']['tmp_name'] != 'none') && ($_FILES['import_file']['tmp_name'] != '')) {
-		/* file upload */
-		$fp = fopen($_FILES['import_file']['tmp_name'],'r');
-		$xml_data = fread($fp, filesize($_FILES['import_file']['tmp_name']));
-		fclose($fp);
-	} else {
-		header('Location: syslog_alerts.php?header=false');
-		exit;
-	}
+	$xml_data = syslog_get_import_xml_payload('syslog_alerts.php?header=false');
 
 	$xml_array = xml2array($xml_data);
 
