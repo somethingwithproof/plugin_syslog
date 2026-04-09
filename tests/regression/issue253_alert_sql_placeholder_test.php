@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 $GLOBALS['syslogdb_default'] = 'syslogdb';
-$GLOBALS['syslog_incoming_config'] = array(
+$GLOBALS['syslog_incoming_config'] = [
 	'hostField'    => 'host',
 	'programField' => 'program',
 	'facilityField'=> 'facility',
 	'textField'    => 'message'
-);
+];
 
 require_once dirname(__DIR__, 2) . '/functions.php';
 
@@ -19,15 +19,15 @@ function issue253_assert($condition, $message) {
 	}
 }
 
-$hostAlert = array(
+$hostAlert = [
 	'type'    => 'host',
 	'message' => 'router1'
-);
+];
 
-$programAlert = array(
+$programAlert = [
 	'type'    => 'program',
 	'message' => 'sshd'
-);
+];
 
 $hostSql = syslog_get_alert_sql($hostAlert, 55);
 $progSql = syslog_get_alert_sql($programAlert, 66);

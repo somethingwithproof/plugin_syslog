@@ -123,11 +123,11 @@ function form_actions() {
 		syslog_apply_selected_items_action(
 			$selected_items,
 			$drp_action,
-			array(
+			[
 				'1' => 'api_syslog_alert_remove',
 				'2' => 'api_syslog_alert_disable',
 				'3' => 'api_syslog_alert_enable'
-			),
+			],
 			'4',
 			get_nfilter_request_var('selected_items')
 		);
@@ -144,7 +144,7 @@ function form_actions() {
 	html_start_box($syslog_actions[get_request_var('drp_action')], '60%', '', '3', 'center', '');
 
 	/* setup some variables */
-	$alert_array = array(); $alert_list = '';
+	$alert_array = []; $alert_list = '';
 
 	/* loop through each of the clusters selected on the previous page and get more info about them */
 	foreach ($_POST as $var => $val) {
@@ -239,7 +239,7 @@ function alert_export() {
 					$data = syslog_db_fetch_row_prepared('SELECT *
 						FROM `' . $syslogdb_default . '`.`syslog_alert`
 						WHERE id = ?',
-						array($id));
+						[$id]);
 
 					if (cacti_sizeof($data)) {
 						unset($data['id']);
@@ -373,7 +373,7 @@ function syslog_get_alert_records(&$sql_where, $rows) {
 	return syslog_db_fetch_assoc($query_string);
 }
 
-function get_repeat_array() {
+function get_repeat_[] {
 	$poller_interval = read_config_option('poller_interval');
 
 	$multiplier = 300 / $poller_interval;
@@ -473,7 +473,7 @@ function syslog_action_edit() {
 		$lists = array('0' => __('N/A', 'syslog'));
 	}
 
-	$repeatarray = get_repeat_array();
+	$repeatarray = get_repeat_[];
 
 	$fields_syslog_alert_edit = array(
 		'spacer0' => array(
@@ -621,18 +621,18 @@ function syslog_action_edit() {
 			'value' => '|arg1:command|',
 			'default' => '',
 		),
-		'id' => array(
+		'id' => [
 			'method' => 'hidden_zero',
 			'value' => '|arg1:id|'
-		),
-		'_id' => array(
+		],
+		'_id' => [
 			'method' => 'hidden_zero',
 			'value' => '|arg1:id|'
-		),
-		'save_component_alert' => array(
+		],
+		'save_component_alert' => [
 			'method' => 'hidden',
 			'value' => '1'
-		)
+		]
 	);
 
 	form_start('syslog_alerts.php', 'syslog_edit');
@@ -641,8 +641,8 @@ function syslog_action_edit() {
 
 	draw_edit_form(
 		array(
-			'config' => array('no_form_tag' => true),
-			'fields' => inject_form_variables($fields_syslog_alert_edit, (cacti_sizeof($alert) ? $alert : array()))
+			'config' => ['no_form_tag' => true],
+			'fields' => inject_form_variables($fields_syslog_alert_edit, (cacti_sizeof($alert) ? $alert : []))
 		)
 	);
 
@@ -762,38 +762,38 @@ function syslog_alerts() {
 
     /* ================= input validation and session storage ================= */
     $filters = array(
-        'rows' => array(
+        'rows' => [
             'filter' => FILTER_VALIDATE_INT,
             'pageset' => true,
             'default' => '-1',
-            ),
-        'page' => array(
+            ],
+        'page' => [
             'filter' => FILTER_VALIDATE_INT,
             'default' => '1'
-            ),
-        'id' => array(
+            ],
+        'id' => [
             'filter' => FILTER_VALIDATE_INT,
             'default' => '1'
-            ),
-        'enabled' => array(
+            ],
+        'enabled' => [
             'filter' => FILTER_VALIDATE_INT,
 			'pageset' => true,
             'default' => '-1'
-			),
-        'filter' => array(
+			],
+        'filter' => [
             'filter' => FILTER_DEFAULT,
             'pageset' => true,
             'default' => ''
-            ),
+            ],
         'sort_column' => array(
             'filter' => FILTER_CALLBACK,
             'default' => 'name',
-            'options' => array('options' => 'sanitize_search_string')
+            'options' => ['options' => 'sanitize_search_string']
             ),
         'sort_direction' => array(
             'filter' => FILTER_CALLBACK,
             'default' => 'ASC',
-            'options' => array('options' => 'sanitize_search_string')
+            'options' => ['options' => 'sanitize_search_string']
             )
     );
 
@@ -923,7 +923,7 @@ function import() {
 
 	draw_edit_form(
 		array(
-			'config' => array('no_form_tag' => true),
+			'config' => ['no_form_tag' => true],
 			'fields' => $form_data
 		)
 	);
@@ -938,14 +938,14 @@ function import() {
 function alert_import() {
 	$xml_data = syslog_get_import_xml_payload('syslog_alerts.php?header=false');
 
-	$xml_array = xml2array($xml_data);
+	$xml_array = xml2[$xml_data];
 
-	$debug_data = array();
+	$debug_data = [];
 
 	if (cacti_sizeof($xml_array)) {
 		foreach ($xml_array as $template => $contents) {
 			$error = false;
-			$save  = array();
+			$save  = [];
 
 			if (cacti_sizeof($contents)) {
 				foreach ($contents as $name => $value) {
@@ -955,7 +955,7 @@ function alert_import() {
 						$found = db_fetch_cell_prepared('SELECT id
 							FROM syslog_alert
 							WHERE hash = ?',
-							array($value));
+							[$value]);
 
 						if (!empty($found)) {
 							$save['hash'] = $value;

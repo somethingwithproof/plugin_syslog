@@ -242,7 +242,7 @@ function syslog_connect() {
 			cacti_log('Setting Up Database Tables Since they do not exist', false, 'SYSLOG');
 
 			if (!isset($syslog_install_options)) {
-				$syslog_install_options = array();
+				$syslog_install_options = [];
 			}
 
 			syslog_setup_table_new($syslog_install_options);
@@ -258,7 +258,7 @@ function syslog_check_upgrade() {
 	syslog_connect();
 
 	// Let's only run this check if we are on a page that actually needs the data
-	$files = array('plugins.php', 'syslog.php', 'syslog_removal.php', 'syslog_alerts.php', 'syslog_reports.php');
+	$files = ['plugins.php', 'syslog.php', 'syslog_removal.php', 'syslog_alerts.php', 'syslog_reports.php'];
 	if (substr($_SERVER['SCRIPT_FILENAME'], -18) != 'syslog_process.php' &&  !in_array(get_current_page(), $files)) {
 		return;
 	}
@@ -282,13 +282,13 @@ function syslog_check_upgrade() {
 			db_execute_prepared("UPDATE plugin_config SET
 				version = ?, name = ?, author = ?, webpage = ?
 				WHERE directory = ?",
-				array(
+				[
 					$version['version'],
 					$version['longname'],
 					$version['author'],
 					$version['homepage'],
 					$version['name']
-				)
+				]
 			);
 		} else {
 			// No upgrade required
@@ -346,7 +346,7 @@ function syslog_check_upgrade() {
 			syslog_db_execute_prepared('UPDATE syslog_alert
 				SET hash = ?
 				WHERE id = ?',
-				array($hash, $a['id']));
+				[$hash, $a['id']]);
 		}
 	}
 
@@ -360,7 +360,7 @@ function syslog_check_upgrade() {
 			syslog_db_execute_prepared('UPDATE syslog_remove
 				SET hash = ?
 				WHERE id = ?',
-				array($hash, $r['id']));
+				[$hash, $r['id']]);
 		}
 	}
 
@@ -374,7 +374,7 @@ function syslog_check_upgrade() {
 			syslog_db_execute_prepared('UPDATE syslog_reports
 				SET hash = ?
 				WHERE id = ?',
-				array($hash, $r['id']));
+				[$hash, $r['id']]);
 		}
 	}
 
@@ -473,9 +473,9 @@ function syslog_setup_table_new($options) {
 
 	syslog_connect();
 
-	$tables  = array();
+	$tables  = [];
 
-	$syslog_levels = array(
+	$syslog_levels = [
 		0 => 'emerg',
 		1 => 'crit',
 		2 => 'alert',
@@ -485,7 +485,7 @@ function syslog_setup_table_new($options) {
 		6 => 'info',
 		7 => 'debug',
 		8 => 'other'
-	);
+	];
 
 	// Set default if they are not set.
 	if (!cacti_sizeof($options)) {
@@ -816,8 +816,8 @@ function syslog_replicate_in() {
 
 function syslog_replace_data($table, &$data) {
 	if (cacti_sizeof($data)) {
-		$sqlData  = array();
-		$sqlQuery = array();
+		$sqlData  = [];
+		$sqlQuery = [];
 		$columns  = array_keys($data[0]);
 		$create_sql = '';
 
@@ -934,18 +934,18 @@ function syslog_install_advisor($syslog_exists) {
 			'value' => '30',
 			'array' => $syslog_retentions
 		),
-		'mode' => array(
+		'mode' => [
 			'method' => 'hidden',
 			'value' => 'install'
-		),
-		'install' => array(
+		],
+		'install' => [
 			'method' => 'hidden',
 			'value' => 'true'
-		),
-		'id' => array(
+		],
+		'id' => [
 			'method' => 'hidden',
 			'value' => 'syslog'
-		)
+		]
 	);
 
 	$fields_syslog_update['dayparts'] = array(
@@ -996,8 +996,8 @@ function syslog_install_advisor($syslog_exists) {
 	html_start_box(__('Syslog %s Settings', $type, 'syslog'), '100%', '', '3', 'center', '');
 
 	draw_edit_form(array(
-		'config' => array(),
-		'fields' => inject_form_variables($fields_syslog_update, array()))
+		'config' => [],
+		'fields' => inject_form_variables($fields_syslog_update, []))
 	);
 
 	html_end_box();
@@ -1025,18 +1025,18 @@ function syslog_uninstall_advisor() {
 			'value' => 'all',
 			'array' => array('all' => __('Remove Everything (Logs, Tables, Settings)', 'syslog'), 'syslog' => __('Syslog Data Only', 'syslog')),
 		),
-		'mode' => array(
+		'mode' => [
 			'method' => 'hidden',
 			'value' => 'uninstall'
-		),
-		'uninstall' => array(
+		],
+		'uninstall' => [
 			'method' => 'hidden',
 			'value' => 'true'
-		),
-		'id' => array(
+		],
+		'id' => [
 			'method' => 'hidden',
 			'value' => 'syslog'
-		)
+		]
 	);
 
 	form_start('plugins.php');
@@ -1046,8 +1046,8 @@ function syslog_uninstall_advisor() {
 	html_start_box(__('Syslog Uninstall Preferences', 'syslog'), '100%', '', '3', 'center', '');
 
 	draw_edit_form(array(
-		'config' => array(),
-		'fields' => inject_form_variables($fields_syslog_update, array()))
+		'config' => [],
+		'fields' => inject_form_variables($fields_syslog_update, []))
 	);
 
 	html_end_box();
@@ -1117,7 +1117,7 @@ function syslog_config_settings() {
 	if (get_nfilter_request_var('tab') == 'syslog') {
 		$formats = reports_get_format_files();
 	} elseif (empty($formats)) {
-		$formats = array();
+		$formats = [];
 	}
 
 	$tabs['syslog'] = __('Syslog', 'syslog');
@@ -1318,7 +1318,7 @@ function syslog_config_arrays () {
 		4 => __('Export', 'syslog')
 	);
 
-	$syslog_levels = array(
+	$syslog_levels = [
 		0 => 'emerg',
 		1 => 'crit',
 		2 => 'alert',
@@ -1328,9 +1328,9 @@ function syslog_config_arrays () {
 		6 => 'info',
 		7 => 'debug',
 		8 => 'other'
-	);
+	];
 
-	$syslog_facilities = array(
+	$syslog_facilities = [
 		0 => 'kernel',
 		1 => 'user',
 		2 => 'mail',
@@ -1355,7 +1355,7 @@ function syslog_config_arrays () {
 		21 => 'local5',
 		22 => 'local6',
 		23 => 'local7'
-	);
+	];
 
 	$syslog_retentions = array(
 		'0'   => __('Indefinite', 'syslog'),
@@ -1457,16 +1457,16 @@ function syslog_config_arrays () {
 	}
 
 	if (function_exists('auth_augment_roles')) {
-		auth_augment_roles(__('Normal User'), array('syslog.php'));
-		auth_augment_roles(__('System Administration'), array('syslog_alerts.php', 'syslog_removal.php', 'syslog_reports.php'));
+		auth_augment_roles(__('Normal User'), ['syslog.php']);
+		auth_augment_roles(__('System Administration'), ['syslog_alerts.php', 'syslog_removal.php', 'syslog_reports.php']);
 	}
 
 	if (isset($_SESSION['syslog_info']) && $_SESSION['syslog_info'] != '') {
-		$messages['syslog_info'] = array('message' => $_SESSION['syslog_info'], 'type' => 'info');
+		$messages['syslog_info'] = ['message' => $_SESSION['syslog_info'], 'type' => 'info'];
 	}
 
 	if (isset($_SESSION['syslog_error']) && $_SESSION['syslog_error'] != '') {
-		$messages['syslog_error'] = array('message' => $_SESSION['syslog_error'], 'type' => 'error');
+		$messages['syslog_error'] = ['message' => $_SESSION['syslog_error'], 'type' => 'error'];
 	}
 }
 
@@ -1502,7 +1502,7 @@ function syslog_config_insert() {
 	syslog_check_upgrade();
 }
 
-function syslog_graph_buttons($graph_elements = array()) {
+function syslog_graph_buttons($graph_elements = []) {
 	global $config, $timespan, $graph_timeshifts;
 
 	if (!syslog_config_safe()) {
@@ -1531,14 +1531,14 @@ function syslog_graph_buttons($graph_elements = array()) {
 		$host_id = db_fetch_cell_prepared('SELECT host_id
 			FROM graph_local
 			WHERE id = ?',
-			array($graph_elements[1]['local_graph_id']));
+			[$graph_elements[1]['local_graph_id']]);
 
 		$sql_where   = '';
 
 		if (!empty($host_id)) {
 			$host  = db_fetch_row_prepared('SELECT id, description, hostname
 				FROM host WHERE id = ?',
-				array($host_id));
+				[$host_id]);
 
 			if (cacti_sizeof($host)) {
 				if (!is_ipaddress($host['description'])) {

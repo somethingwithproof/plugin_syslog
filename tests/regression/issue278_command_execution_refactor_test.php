@@ -107,7 +107,7 @@ if (substr_count($functions, 'SYSLOG ERROR:') < 2) {
 }
 
 /* cacti_escapeshellarg must wrap all four --arg values in ticket command */
-$ticket_fn_match = array();
+$ticket_fn_match = [];
 if (preg_match('/function syslog_execute_ticket_command\b.*?^}/ms', $functions, $ticket_fn_match)) {
 	$ticket_body = $ticket_fn_match[0];
 	$esc_count   = substr_count($ticket_body, 'cacti_escapeshellarg(');

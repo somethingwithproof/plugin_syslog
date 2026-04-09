@@ -3,11 +3,11 @@
 declare(strict_types=1);
 
 $root = dirname(__DIR__, 2);
-$targets = array(
+$targets = [
 	$root . '/syslog_alerts.php',
 	$root . '/syslog_reports.php',
 	$root . '/syslog_removal.php'
-);
+];
 
 $legacy = "trim(get_nfilter_request_var('import_text') != '')";
 

@@ -79,7 +79,7 @@ function syslog_db_execute($sql, $log = TRUE) {
  *
  * @return '1' for success, '0' for error
  */
-function syslog_db_execute_prepared($sql, $parms = array(), $log = TRUE) {
+function syslog_db_execute_prepared($sql, $parms = [], $log = TRUE) {
 	global $syslog_cnn;
 	return db_execute_prepared($sql, $parms, $log, $syslog_cnn);
 }
@@ -110,7 +110,7 @@ function syslog_db_fetch_cell($sql, $col_name = '', $log = TRUE) {
  *
  * @return (bool) the output of the sql query as a single variable
  */
-function syslog_db_fetch_cell_prepared($sql, $params = array(), $col_name = '', $log = TRUE) {
+function syslog_db_fetch_cell_prepared($sql, $params = [], $col_name = '', $log = TRUE) {
 	global $syslog_cnn;
 	return db_fetch_cell_prepared($sql, $params, $col_name, $log, $syslog_cnn);
 }
@@ -137,7 +137,7 @@ function syslog_db_fetch_row($sql, $log = TRUE) {
  *
  * @return the first row of the result as a hash
  */
-function syslog_db_fetch_row_prepared($sql, $params = array(), $log = TRUE) {
+function syslog_db_fetch_row_prepared($sql, $params = [], $log = TRUE) {
 	global $syslog_cnn;
 	return db_fetch_row_prepared($sql, $params, $log, $syslog_cnn);
 }
@@ -164,7 +164,7 @@ function syslog_db_fetch_assoc($sql, $log = TRUE) {
  *
  * @return the entire result set as a multi-dimensional hash
  */
-function syslog_db_fetch_assoc_prepared($sql, $params = array(), $log = TRUE) {
+function syslog_db_fetch_assoc_prepared($sql, $params = [], $log = TRUE) {
 	global $syslog_cnn;
 	return db_fetch_assoc_prepared($sql, $params, $log, $syslog_cnn);
 }

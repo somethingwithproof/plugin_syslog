@@ -42,11 +42,11 @@ if (strpos($functions, "trim(get_nfilter_request_var('import_text')) != ''") ===
 	exit(1);
 }
 
-$targets = array(
+$targets = [
 	$root . '/syslog_alerts.php',
 	$root . '/syslog_reports.php',
 	$root . '/syslog_removal.php'
-);
+];
 
 foreach ($targets as $target) {
 	$content = file_get_contents($target);

@@ -128,12 +128,12 @@ function form_actions() {
 		syslog_apply_selected_items_action(
 			$selected_items,
 			$drp_action,
-			array(
+			[
 				'1' => 'api_syslog_removal_remove',
 				'2' => 'api_syslog_removal_disable',
 				'3' => 'api_syslog_removal_enable',
 				'4' => 'api_syslog_removal_reprocess'
-			),
+			],
 			'5',
 			get_nfilter_request_var('selected_items')
 		);
@@ -150,7 +150,7 @@ function form_actions() {
 	html_start_box($syslog_actions[get_request_var('drp_action')], '60%', '', '3', 'center', '');
 
 	/* setup some variables */
-	$removal_array = array(); $removal_list = '';
+	$removal_array = []; $removal_list = '';
 
 	/* loop through each of the clusters selected on the previous page and get more info about them */
 	foreach ($_POST as $var => $val) {
@@ -258,7 +258,7 @@ function removal_export() {
 					$data = syslog_db_fetch_row_prepared('SELECT *
 						FROM `' . $syslogdb_default . '`.`syslog_remove`
 						WHERE id = ?',
-						array($id));
+						[$id]);
 
 					if (cacti_sizeof($data)) {
 						unset($data['id']);
@@ -330,7 +330,7 @@ function api_syslog_removal_reprocess($id) {
 	$name = syslog_db_fetch_cell_prepared('SELECT name
 		FROM syslog_remove
 		WHERE id = ?',
-		array($id));
+		[$id]);
 
 	raise_message('syslog_info' . $id, __('Rule \'%s\' resulted in %s/%s messages removed/transferred', $name, $syslog_removed, $syslog_xferred, 'syslog'), MESSAGE_LEVEL_INFO);
 }
@@ -464,18 +464,18 @@ function syslog_action_edit() {
 			'value' => '|arg1:notes|',
 			'default' => '',
 		),
-		'id' => array(
+		'id' => [
 			'method' => 'hidden_zero',
 			'value' => '|arg1:id|'
-		),
-		'_id' => array(
+		],
+		'_id' => [
 			'method' => 'hidden_zero',
 			'value' => '|arg1:id|'
-		),
-		'save_component_removal' => array(
+		],
+		'save_component_removal' => [
 			'method' => 'hidden',
 			'value' => '1'
-		)
+		]
 	);
 
 	form_start('syslog_removal.php', 'syslog_edit');
@@ -484,8 +484,8 @@ function syslog_action_edit() {
 
 	draw_edit_form(
 		array(
-			'config' => array('no_form_tag' => true),
-			'fields' => inject_form_variables($fields_syslog_removal_edit, (isset($removal) ? $removal : array()))
+			'config' => ['no_form_tag' => true],
+			'fields' => inject_form_variables($fields_syslog_removal_edit, ($removal ?? []))
 		)
 	);
 
@@ -565,38 +565,38 @@ function syslog_removal() {
 
     /* ================= input validation and session storage ================= */
     $filters = array(
-        'rows' => array(
+        'rows' => [
             'filter' => FILTER_VALIDATE_INT,
             'pageset' => true,
             'default' => '-1',
-            ),
-        'page' => array(
+            ],
+        'page' => [
             'filter' => FILTER_VALIDATE_INT,
             'default' => '1'
-            ),
-        'id' => array(
+            ],
+        'id' => [
             'filter' => FILTER_VALIDATE_INT,
             'default' => '1'
-            ),
-        'enabled' => array(
+            ],
+        'enabled' => [
             'filter' => FILTER_VALIDATE_INT,
 			'pageset' => true,
             'default' => '-1'
-			),
-        'filter' => array(
+			],
+        'filter' => [
             'filter' => FILTER_DEFAULT,
             'pageset' => true,
             'default' => ''
-            ),
+            ],
         'sort_column' => array(
             'filter' => FILTER_CALLBACK,
             'default' => 'name',
-            'options' => array('options' => 'sanitize_search_string')
+            'options' => ['options' => 'sanitize_search_string']
             ),
         'sort_direction' => array(
             'filter' => FILTER_CALLBACK,
             'default' => 'ASC',
-            'options' => array('options' => 'sanitize_search_string')
+            'options' => ['options' => 'sanitize_search_string']
             )
     );
 
@@ -720,7 +720,7 @@ function import() {
 
 	draw_edit_form(
 		array(
-			'config' => array('no_form_tag' => true),
+			'config' => ['no_form_tag' => true],
 			'fields' => $form_data
 		)
 	);
@@ -736,14 +736,14 @@ function removal_import() {
 	$xml_data = syslog_get_import_xml_payload('syslog_removal.php?header=false');
 
 	/* obtain debug information if it's set */
-	$xml_array = xml2array($xml_data);
+	$xml_array = xml2[$xml_data];
 
-	$debug_data = array();
+	$debug_data = [];
 
 	if (cacti_sizeof($xml_array)) {
 		foreach ($xml_array as $template => $contents) {
 			$error = false;
-			$save  = array();
+			$save  = [];
 
 			if (cacti_sizeof($contents)) {
 				foreach ($contents as $name => $value) {
@@ -753,7 +753,7 @@ function removal_import() {
 						$found = syslog_db_fetch_cell_prepared('SELECT id
 							FROM syslog_remove
 							WHERE hash = ?',
-							array($value));
+							[$value]);
 
 						if (!empty($found)) {
 							$save['hash'] = $value;

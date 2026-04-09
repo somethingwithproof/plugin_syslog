@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-$existing_functions = array(
+$existing_functions = [
 	'db_fetch_row',
 	'syslog_db_table_exists',
 	'syslog_db_execute',
 	'syslog_db_execute_prepared'
-);
+];
 
 foreach ($existing_functions as $existing_function) {
 	if (function_exists($existing_function)) {
@@ -18,7 +18,7 @@ foreach ($existing_functions as $existing_function) {
 
 if (!function_exists('cacti_sizeof')) {
 	function cacti_sizeof($value) {
-		if (is_array($value) || $value instanceof Countable) {
+		if (is_[$value] || $value instanceof Countable) {
 			return count($value);
 		}
 
@@ -26,9 +26,9 @@ if (!function_exists('cacti_sizeof')) {
 	}
 }
 
-$GLOBALS['syslog_replace_data_execute_calls'] = array();
-$GLOBALS['syslog_replace_data_prepared_calls'] = array();
-$GLOBALS['issue258_logs'] = array();
+$GLOBALS['syslog_replace_data_execute_calls'] = [];
+$GLOBALS['syslog_replace_data_prepared_calls'] = [];
+$GLOBALS['issue258_logs'] = [];
 $GLOBALS['issue258_show_create'] = array('Create Table' => 'CREATE TABLE `syslog_alert` (`id` INT NOT NULL)');
 
 if (!function_exists('db_fetch_row')) {
@@ -53,10 +53,10 @@ if (!function_exists('syslog_db_execute')) {
 
 if (!function_exists('syslog_db_execute_prepared')) {
 	function syslog_db_execute_prepared($sql, $params) {
-		$GLOBALS['syslog_replace_data_prepared_calls'][] = array(
+		$GLOBALS['syslog_replace_data_prepared_calls'][] = [
 			'sql'    => $sql,
 			'params' => $params
-		);
+		];
 
 		return true;
 	}
@@ -71,11 +71,11 @@ if (!function_exists('cacti_log')) {
 require_once dirname(__DIR__, 2) . '/setup.php';
 
 $data = array(
-	array(
+	[
 		'id'   => 1,
 		'hash' => 'abc123',
 		'name' => 'sample'
-	)
+	]
 );
 
 syslog_replace_data('syslog_alert', $data);
@@ -104,8 +104,8 @@ if (cacti_sizeof($prepared) !== 1) {
 	exit(1);
 }
 
-$GLOBALS['syslog_replace_data_execute_calls']  = array();
-$GLOBALS['syslog_replace_data_prepared_calls'] = array();
+$GLOBALS['syslog_replace_data_execute_calls']  = [];
+$GLOBALS['syslog_replace_data_prepared_calls'] = [];
 $GLOBALS['issue258_show_create'] = false;
 
 syslog_replace_data('syslog_alert', $data);

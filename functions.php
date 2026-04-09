@@ -260,7 +260,7 @@ function syslog_partition_manage() {
  * parameter binding for identifiers).
  */
 function syslog_partition_table_allowed($table) {
-	if (!in_array($table, array('syslog', 'syslog_removed'), true)) {
+	if (!in_array($table, ['syslog', 'syslog_removed'], true)) {
 		return false;
 	}
 
@@ -292,7 +292,7 @@ function syslog_partition_create($table) {
 	 * poller cycle (typically 5 minutes), so sustained contention is not
 	 * expected. A failure is logged so monitoring can detect repeated misses.
 	 */
-	$locked    = syslog_db_fetch_cell_prepared('SELECT GET_LOCK(?, 10)', array($lock_name));
+	$locked    = syslog_db_fetch_cell_prepared('SELECT GET_LOCK(?, 10)', [$lock_name]);
 
 	if ($locked === null) {
 		/* NULL means the GET_LOCK call itself failed, not just contention. */
@@ -317,7 +317,7 @@ function syslog_partition_create($table) {
 			AND partition_name = ?
 			AND table_name = ?
 			ORDER BY partition_ordinal_position",
-			array($syslogdb_default, $cformat, $table));
+			[$syslogdb_default, $cformat, $table]);
 
 		if (!cacti_sizeof($exists)) {
 			cacti_log("SYSLOG: Creating new partition '$cformat'", false, 'SYSTEM');
@@ -336,7 +336,7 @@ function syslog_partition_create($table) {
 				PARTITION dMaxValue VALUES LESS THAN MAXVALUE)");
 		}
 	} finally {
-		syslog_db_fetch_cell_prepared('SELECT RELEASE_LOCK(?)', array($lock_name));
+		syslog_db_fetch_cell_prepared('SELECT RELEASE_LOCK(?)', [$lock_name]);
 	}
 
 	return true;
@@ -355,7 +355,7 @@ function syslog_partition_remove($table) {
 
 	$lock_name = substr(hash('sha256', $syslogdb_default . '.syslog_partition_remove.' . $table), 0, 60);
 
-	$locked = syslog_db_fetch_cell_prepared('SELECT GET_LOCK(?, 10)', array($lock_name));
+	$locked = syslog_db_fetch_cell_prepared('SELECT GET_LOCK(?, 10)', [$lock_name]);
 
 	if ($locked === null) {
 		cacti_log("SYSLOG: GET_LOCK call failed for partition remove on '$table'", false, 'SYSTEM');
@@ -374,7 +374,7 @@ function syslog_partition_remove($table) {
 			FROM `information_schema`.`partitions`
 			WHERE table_schema = ? AND table_name = ?
 			ORDER BY partition_ordinal_position",
-			array($syslogdb_default, $table));
+			[$syslogdb_default, $table]);
 
 		$days = read_config_option('syslog_retention');
 
@@ -400,7 +400,7 @@ function syslog_partition_remove($table) {
 			}
 		}
 	} finally {
-		syslog_db_fetch_cell_prepared('SELECT RELEASE_LOCK(?)', array($lock_name));
+		syslog_db_fetch_cell_prepared('SELECT RELEASE_LOCK(?)', [$lock_name]);
 	}
 
 	return $syslog_deleted;
@@ -430,7 +430,7 @@ function syslog_partition_check($table) {
 		WHERE table_schema = ? AND table_name = ?
 		ORDER BY partition_ordinal_position DESC
 		LIMIT 1,1",
-		array($syslogdb_default, $table));
+		[$syslogdb_default, $table]);
 
 	$lformat   = str_replace('d', '', $last_part);
 	$cformat   = date('Ymd');
@@ -477,7 +477,7 @@ function syslog_remove_items($table, $max_seq) {
 			FROM `' . $syslogdb_default . '`.`syslog_incoming`
 			WHERE `status` = 1
 			AND `seq` <= ?',
-			array($max_seq));
+			[$max_seq]);
 	} else {
 		$total = 0;
 	}
@@ -485,7 +485,7 @@ function syslog_remove_items($table, $max_seq) {
 	if (cacti_sizeof($rows)) {
 		foreach($rows as $remove) {
 			$sql_where = '';
-			$params    = array();
+			$params    = [];
 
 			if ($remove['type'] == 'facility') {
 				if ($table == 'syslog_incoming') {
@@ -498,7 +498,7 @@ function syslog_remove_items($table, $max_seq) {
 				} else {
 					$facility_id = syslog_db_fetch_cell_prepared('SELECT facility_id
 						FROM `' . $syslogdb_default . '`.`syslog_facilities`
-						WHERE facility = ?', array($remove['message']));
+						WHERE facility = ?', [$remove['message']]);
 
 					if (!empty($facility_id)) {
 						$sql_where = 'WHERE facility_id = ?';
@@ -516,7 +516,7 @@ function syslog_remove_items($table, $max_seq) {
 				} else {
 					$program_id = syslog_db_fetch_cell_prepared('SELECT program_id
 						FROM `' . $syslogdb_default . '`.`syslog_programs`
-						WHERE program = ?', array($remove['message']));
+						WHERE program = ?', [$remove['message']]);
 
 					if (!empty($program_id)) {
 						$sql_where = 'WHERE program_id = ?';
@@ -534,7 +534,7 @@ function syslog_remove_items($table, $max_seq) {
 				} else {
 					$host_id = syslog_db_fetch_cell_prepared('SELECT host_id
 						FROM `' . $syslogdb_default . '`.`syslog_hosts`
-						WHERE host = ?', array($remove['message']));
+						WHERE host = ?', [$remove['message']]);
 
 					if (!empty($host_id)) {
 						$sql_where = 'WHERE host_id = ?';
@@ -624,7 +624,7 @@ function syslog_remove_items($table, $max_seq) {
 	syslog_debug(sprintf('Removed %5s - Record(s) from ' . $table, $removed));
 	syslog_debug(sprintf('Xferred %5s - Record(s) to the syslog_removed table', $xferred));
 
-	return array('removed' => $removed, 'xferred' => $xferred);
+	return ['removed' => $removed, 'xferred' => $xferred];
 }
 
 /** function syslog_log_row_color()
@@ -692,7 +692,7 @@ function sql_hosts_where($tab) {
 
 	$hostfilter     = '';
 	$hostfilter_log = '';
-	$hosts_array    = array();
+	$hosts_array    = [];
 
 	if (!isempty_request_var('host') && get_nfilter_request_var('host') != 'null') {
 		$hostarray = explode(',', trim(get_nfilter_request_var('host')));
@@ -704,7 +704,7 @@ function sql_hosts_where($tab) {
 					$log_host = syslog_db_fetch_cell_prepared('SELECT host
 						FROM `' . $syslogdb_default . '`.`syslog_hosts`
 						WHERE host_id = ?',
-						array($host_id));
+						[$host_id]);
 
 					if (!empty($log_host)) {
 						$hosts_array[] = db_qstr($log_host);
@@ -838,7 +838,7 @@ function syslog_debug($message) {
 	}
 }
 
-function syslog_log_alert($alert_id, $alert_name, $severity, $msg, $count = 1, $html = '', $hosts = array()) {
+function syslog_log_alert($alert_id, $alert_name, $severity, $msg, $count = 1, $html = '', $hosts = []) {
 	global $config, $severities;
 	global $syslogdb_default;
 
@@ -1025,7 +1025,7 @@ function syslog_manage_items($from_table, $to_table) {
 		}
 	}
 
-	return array('removed' => $removed, 'xferred' => $xferred);
+	return ['removed' => $removed, 'xferred' => $xferred];
 }
 
 /* get_hash_syslog - returns the current unique hash for an alert
@@ -1035,7 +1035,7 @@ function get_hash_syslog($id, $table) {
     $hash = syslog_db_fetch_cell_prepared('SELECT hash
 		FROM ' . $table . '
 		WHERE id = ?',
-		array($id));
+		[$id]);
 
 	if (empty($hash)) {
         return generate_hash();
@@ -1051,7 +1051,7 @@ function syslog_ia2xml($array) {
 
 	if (cacti_sizeof($array)) {
 		foreach ($array as $key=>$value) {
-			if (is_array($value)) {
+			if (is_[$value]) {
 				$xml .= "\t<$key>" . syslog_ia2xml($value) . "</$key>\n";
 			} else {
 				$xml .= "\t<$key>" . html_escape($value) . "</$key>\n";
@@ -1100,7 +1100,7 @@ function syslog_execute_ticket_command($alert, $hostlist, $error_message) {
 				' --hostlist='   . cacti_escapeshellarg(implode(',', $hostlist)) .
 				' --message='    . cacti_escapeshellarg($alert['message']);
 
-			$output = array();
+			$output = [];
 			$return = 0;
 
 			exec($command, $output, $return);
@@ -1138,7 +1138,7 @@ function syslog_execute_alert_command($alert, $results, $hostname) {
 	$cparts     = preg_split('/\s+/', trim($command));
 	$executable = trim($cparts[0], '"\'');
 
-	$output = array();
+	$output = [];
 	$return = 0;
 
 	if (cacti_sizeof($cparts) && is_executable($executable)) {
@@ -1203,7 +1203,7 @@ function syslog_process_alerts($max_seq) {
 	if (cacti_sizeof($alerts)) {
 		foreach($alerts as $alert) {
 			$sql      = '';
-			$params   = array();
+			$params   = [];
 
 			/* we roll up statistics depending on the level */
 			if ($alert['level'] == 1) {
@@ -1249,7 +1249,7 @@ function syslog_process_alerts($max_seq) {
 		}
 	}
 
-	return array('syslog_alerts' => $syslog_alerts, 'syslog_alarms' => $syslog_alarms);
+	return ['syslog_alerts' => $syslog_alerts, 'syslog_alarms' => $syslog_alarms];
 }
 
 /**
@@ -1275,7 +1275,7 @@ function syslog_process_alert($alert, $sql, $params, $count, $hostname = '') {
 
 	$alert_count   = 0;
 	$syslog_alarms = 0;
-	$hostlist      = array();
+	$hostlist      = [];
 	$max_alerts    = read_config_option('syslog_maxrecords');
 	$report_tag    = false;
 	$theme         = false;
@@ -1306,7 +1306,7 @@ function syslog_process_alert($alert, $sql, $params, $count, $hostname = '') {
 		$from_name = 'Cacti Reporting';
 	}
 
-	$from = array($from_email, $from_name);
+	$from = [$from_email, $from_name];
 
 	/**
 	 * format the destination Email addresses
@@ -1316,7 +1316,7 @@ function syslog_process_alert($alert, $sql, $params, $count, $hostname = '') {
 		$additional = db_fetch_cell_prepared('SELECT emails
 			FROM plugin_notification_lists
 			WHERE id = ?',
-			array($alert['notify']));
+			[$alert['notify']]);
 
 		if ($additional != '') {
 			$alert['email'] .= ', ' . trim($additional, ' ,');
@@ -1346,7 +1346,7 @@ function syslog_process_alert($alert, $sql, $params, $count, $hostname = '') {
 		/**
 		 * A list of all messages from the alert
 		 */
-		$results = array();
+		$results = [];
 
 		syslog_debug(sprintf('Found   %5s - Matching Records.', cacti_sizeof($at)));
 
@@ -1500,14 +1500,14 @@ function syslog_process_alert($alert, $sql, $params, $count, $hostname = '') {
 						WHERE alert_id = ?
 						AND logtime > ?
 						AND host = ?',
-						array($alert['id'], $date, $hostname));
+						[$alert['id'], $date, $hostname]);
 				} else {
 					$found = syslog_db_fetch_cell_prepared('SELECT COUNT(*)
 						FROM syslog_logs
 						WHERE alert_id = ?
 						AND logtime > ?
 						AND host = "system"',
-						array($alert['id'], $date));
+						[$alert['id'], $date]);
 				}
 			}
 
@@ -1610,7 +1610,7 @@ function syslog_get_alert_sql(&$alert, $max_seq) {
 		$syslog_incoming_config['programField'] = 'program';
 	}
 
-	$params = array();
+	$params = [];
 	$sql    = '';
 
 	if ($alert['type'] == 'facility') {
@@ -1677,7 +1677,7 @@ function syslog_get_alert_sql(&$alert, $max_seq) {
 		$params[] = $max_seq;
 	}
 
-	return array('sql' => $sql, 'params' => $params);
+	return ['sql' => $sql, 'params' => $params];
 }
 
 /**
@@ -1700,7 +1700,7 @@ function syslog_preprocess_incoming_records() {
 			SET `status` = 1
 			WHERE `status` = 0
 			AND `seq` <= ?',
-			array($max_seq));
+			[$max_seq]);
 
 		syslog_debug('Max Sequence ID = ' . $max_seq);
 		syslog_debug('-------------------------------------------------------------------------------------');
@@ -1709,7 +1709,7 @@ function syslog_preprocess_incoming_records() {
 			FROM `' . $syslogdb_default . '`.`syslog_incoming`
 			WHERE `status` = 1
 			AND `seq` <= ?',
-			array($max_seq));
+			[$max_seq]);
 
 		syslog_debug(sprintf('Found   %5s - New Message(s) to process', $syslog_incoming));
 
@@ -1718,10 +1718,10 @@ function syslog_preprocess_incoming_records() {
 
 		api_plugin_hook('plugin_syslog_before_processing');
 
-		return array('max_seq' => $max_seq, 'incoming' => $syslog_incoming);
+		return ['max_seq' => $max_seq, 'incoming' => $syslog_incoming];
 	}
 
-	return array('max_seq' => 0, 'incoming' => 0);
+	return ['max_seq' => 0, 'incoming' => 0];
 }
 
 /**
@@ -1746,7 +1746,7 @@ function syslog_strip_incoming_domains($max_seq) {
 				WHERE host LIKE ?
 				AND `status` = 1
 				AND `seq` <= ?',
-				array('%' . $domain, $max_seq));
+				['%' . $domain, $max_seq]);
 		}
 	}
 }
@@ -1774,7 +1774,7 @@ function syslog_check_cacti_hosts($host, $max_seq) {
 		FROM host
 		WHERE hostname = ?
 		LIMIT 1',
-		array($host));
+		[$host]);
 
 	if (cacti_sizeof($cacti_host) && !empty($cacti_host['description'])) {
 		syslog_db_execute_prepared('UPDATE `' . $syslogdb_default . '`.`syslog_incoming`
@@ -1782,7 +1782,7 @@ function syslog_check_cacti_hosts($host, $max_seq) {
 			WHERE host = ?
 			AND `status` = 1
 			AND `seq` <= ?',
-			array($cacti_host['description'], $host, $max_seq));
+			[$cacti_host['description'], $host, $max_seq]);
 		
 		return true;
 	}
@@ -1814,7 +1814,7 @@ function syslog_update_reference_tables($max_seq) {
             FROM `' . $syslogdb_default . '`.`syslog_incoming`
             WHERE `status` = 1
 			AND `seq` <= ?',
-            array($max_seq));
+            [$max_seq]);
 
         foreach($hosts as $host) {
             if (!isset($host['host']) || empty($host['host'])) {
@@ -1845,7 +1845,7 @@ function syslog_update_reference_tables($max_seq) {
                     WHERE host = ?
                     AND `status` = 1
 					AND `seq` <= ?",
-                    array($unresolved_host, $host['host'], $max_seq));
+                    [$unresolved_host, $host['host'], $max_seq]);
             }
         }
     }
@@ -1859,7 +1859,7 @@ function syslog_update_reference_tables($max_seq) {
 		ON DUPLICATE KEY UPDATE
 			program=VALUES(program),
 			last_updated=VALUES(last_updated)',
-		array($max_seq));
+		[$max_seq]);
 
 	syslog_db_execute_prepared('INSERT INTO `' . $syslogdb_default . '`.`syslog_hosts`
 		(host, last_updated)
@@ -1870,7 +1870,7 @@ function syslog_update_reference_tables($max_seq) {
 		ON DUPLICATE KEY UPDATE
 			host=VALUES(host),
 			last_updated=NOW()',
-		array($max_seq));
+		[$max_seq]);
 
 	syslog_db_execute_prepared('INSERT INTO `' . $syslogdb_default . '`.`syslog_host_facilities`
 		(host_id, facility_id)
@@ -1888,7 +1888,7 @@ function syslog_update_reference_tables($max_seq) {
 		ON DUPLICATE KEY UPDATE
 			host_id=VALUES(host_id),
 			last_updated=NOW()',
-		array($max_seq));
+		[$max_seq]);
 }
 
 /**
@@ -1916,7 +1916,7 @@ function syslog_update_statistics($max_seq) {
 				AND si.`seq` <= ?
 				GROUP BY host_id, priority_id, facility_id, program_id) AS merge
 			GROUP BY host_id, priority_id, facility_id, program_id',
-			array($max_seq));
+			[$max_seq]);
 
 		$stats = db_affected_rows($syslog_cnn);
 
@@ -1951,7 +1951,7 @@ function syslog_incoming_to_syslog($max_seq) {
 			WHERE si.`status` = 1
 			AND si.`seq` <= ?
 		) AS merge',
-		array($max_seq));
+		[$max_seq]);
 
 	$moved = db_affected_rows($syslog_cnn);
 
@@ -1963,7 +1963,7 @@ function syslog_incoming_to_syslog($max_seq) {
 	syslog_db_execute_prepared('DELETE FROM `' . $syslogdb_default . '`.`syslog_incoming`
 		WHERE `status` = 1
 		AND `seq` <= ?',
-		array($max_seq));
+		[$max_seq]);
 
 	syslog_debug(sprintf('Deleted %5s - Already Processed Message(s) from incoming', db_affected_rows($syslog_cnn)));
 
@@ -1973,7 +1973,7 @@ function syslog_incoming_to_syslog($max_seq) {
 
 	syslog_debug(sprintf('Deleted %5s - Stale Message(s) from incoming', $stale));
 
-	return array('moved' => $moved, 'stale' => $stale);
+	return ['moved' => $moved, 'stale' => $stale];
 }
 
 /**
@@ -1996,7 +1996,7 @@ function syslog_postprocess_tables() {
 		if (read_config_option('syslog_retention') > 0) {
 			syslog_db_execute_prepared('DELETE FROM `' . $syslogdb_default . '`.`syslog_statistics`
 				WHERE insert_time < ?',
-				array($delete_date));
+				[$delete_date]);
 
 			syslog_debug(sprintf('Deleted %5s - Syslog Statistics Record(s)', db_affected_rows($syslog_cnn)));
 		}
@@ -2010,25 +2010,25 @@ function syslog_postprocess_tables() {
 
 		syslog_db_execute_prepared('DELETE FROM `' . $syslogdb_default . '`.`syslog_logs`
 			WHERE logtime < ?',
-			array($delete_date));
+			[$delete_date]);
 
 		syslog_debug(sprintf('Deleted %5s - Syslog alarm log Record(s)', db_affected_rows($syslog_cnn)));
 
 		syslog_db_execute_prepared('DELETE FROM `' . $syslogdb_default . '`.`syslog_hosts`
 			WHERE last_updated < ?',
-			array($delete_date));
+			[$delete_date]);
 
 		syslog_debug(sprintf('Deleted %5s - Syslog Host Record(s)', db_affected_rows($syslog_cnn)));
 
 		syslog_db_execute_prepared('DELETE FROM `' . $syslogdb_default . '`.`syslog_programs`
 			WHERE last_updated < ?',
-			array($delete_date));
+			[$delete_date]);
 
 		syslog_debug(sprintf('Deleted %5s - Old programs from programs table', db_affected_rows($syslog_cnn)));
 
 		syslog_db_execute_prepared('DELETE FROM `' . $syslogdb_default . '`.`syslog_host_facilities`
 			WHERE last_updated < ?',
-			array($delete_date));
+			[$delete_date]);
 
 		syslog_debug(sprintf('Deleted %5s - Syslog Host/Facility Record(s)', db_affected_rows($syslog_cnn)));
 	}
@@ -2143,7 +2143,7 @@ function syslog_process_reports() {
 
 					syslog_debug('We have ' . db_affected_rows($syslog_cnn) . ' items for the Report');
 
-					$classes = array('even', 'odd');
+					$classes = ['even', 'odd'];
 
 					if (cacti_sizeof($items)) {
 						$i = 0;
@@ -2209,7 +2209,7 @@ function syslog_process_reports() {
 		}
 	}
 
-	return array('total_reports' => $total_reports, 'sent_reports' => $sent_reports);
+	return ['total_reports' => $total_reports, 'sent_reports' => $sent_reports];
 }
 
 /**
@@ -2372,7 +2372,7 @@ function syslog_init_variables() {
  *
  * @return (void)
  */
-function alert_setup_environment(&$alert, $results, $hostlist = array(), $hostname = '') {
+function alert_setup_environment(&$alert, $results, $hostlist = [], $hostname = '') {
 	global $severities, $syslog_levels, $syslog_facilities;
 
 	putenv('ALERT_ALERTID='       . cacti_escapeshellarg($alert['id']));

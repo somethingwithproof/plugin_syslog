@@ -109,7 +109,7 @@ if (isset_request_var('export')) {
 	bottom_footer();
 }
 
-$_SESSION['sess_nav_level_cache'] = array();
+$_SESSION['sess_nav_level_cache'] = [];
 
 function get_ajax_hosts() {
 	global $syslogdb_default;
@@ -133,14 +133,14 @@ function get_ajax_hosts() {
 			OR h.description LIKE ?
 			ORDER BY host
 			LIMIT $ac_rows",
-			array($term, $term));
+			[$term, $term]);
 	} else {
 		$hosts = syslog_db_fetch_assoc_prepared("SELECT DISTINCT sh.host_id, sh.host, '0' AS id
 			FROM `" . $syslogdb_default . "`.`syslog_hosts` AS sh
 			WHERE sh.host LIKE ?
 			ORDER BY host
 			LIMIT $ac_rows",
-			array($term));
+			[$term]);
 	}
 
 	if (cacti_sizeof($hosts)) {
@@ -151,16 +151,16 @@ function get_ajax_hosts() {
 				$class = 'deviceUp';
 			}
 
-			$rhosts[$host['host_id']] = array(
+			$rhosts[$host['host_id']] = [
 				'host'    => $host['host'],
 				'host_id' => $host['id'],
 				'class'   => $class
-			);
+			];
 		}
 
 		return json_encode($rhosts);
 	} else {
-		return json_encode(array());
+		return json_encode([]);
 	}
 }
 
@@ -224,59 +224,59 @@ function syslog_statistics() {
 
     /* ================= input validation and session storage ================= */
     $filters = array(
-        'rows' => array(
+        'rows' => [
             'filter' => FILTER_VALIDATE_INT,
             'pageset' => true,
             'default' => '-1',
-            ),
+            ],
         'refresh' => array(
             'filter' => FILTER_VALIDATE_INT,
             'default' => read_config_option('syslog_refresh'),
             ),
-        'timespan' => array(
+        'timespan' => [
             'filter' => FILTER_VALIDATE_INT,
 			'pageset' => true,
             'default' => '300',
-            ),
-        'page' => array(
+            ],
+        'page' => [
             'filter' => FILTER_VALIDATE_INT,
             'default' => '1'
-            ),
-        'rfilter' => array(
+            ],
+        'rfilter' => [
             'filter' => FILTER_VALIDATE_IS_REGEX,
             'pageset' => true,
             'default' => ''
-            ),
-        'host' => array(
+            ],
+        'host' => [
             'filter' => FILTER_VALIDATE_IS_NUMERIC_LIST,
             'pageset' => true,
             'default' => '',
-            ),
-        'facility' => array(
+            ],
+        'facility' => [
             'filter' => FILTER_VALIDATE_INT,
             'pageset' => true,
             'default' => '',
-            ),
-        'priority' => array(
+            ],
+        'priority' => [
             'filter' => FILTER_VALIDATE_INT,
             'pageset' => true,
             'default' => '',
-            ),
+            ],
         'program' => array(
             'filter' => FILTER_VALIDATE_INT,
             'pageset' => true,
             'default' => '',
-            'options' => array('options' => 'sanitize_search_string')
+            'options' => ['options' => 'sanitize_search_string']
             ),
         'sort_column' => array(
             'filter' => FILTER_CALLBACK,
             'default' => 'host',
-            'options' => array('options' => 'sanitize_search_string')
+            'options' => ['options' => 'sanitize_search_string']
             ),
         'sort_direction' => array(
             'filter' => FILTER_CALLBACK,
             'default' => 'ASC',
-            'options' => array('options' => 'sanitize_search_string')
+            'options' => ['options' => 'sanitize_search_string']
             )
     );
 
@@ -669,14 +669,14 @@ function syslog_request_validation($current_tab, $force = false) {
             'pageset' => true,
             'default' => read_user_setting('syslog_rows', '-1', $force)
             ),
-        'page' => array(
+        'page' => [
             'filter' => FILTER_VALIDATE_INT,
             'default' => '1'
-            ),
-        'id' => array(
+            ],
+        'id' => [
             'filter' => FILTER_VALIDATE_INT,
             'default' => ''
-            ),
+            ],
         'removal' => array(
             'filter' => FILTER_VALIDATE_INT,
             'default' => read_user_setting('syslog_removal', '1', $force)
@@ -699,27 +699,27 @@ function syslog_request_validation($current_tab, $force = false) {
             'filter' => FILTER_VALIDATE_INT,
             'default' => read_user_setting('syslog_trimval', '75', $force)
             ),
-        'enabled' => array(
+        'enabled' => [
             'filter' => FILTER_VALIDATE_INT,
 			'pageset' => true,
             'default' => '-1'
-			),
-        'host' => array(
+			],
+        'host' => [
             'filter' => FILTER_VALIDATE_IS_NUMERIC_LIST,
             'pageset' => true,
             'default' => '',
-            ),
+            ],
         'efacility' => array(
             'filter' => FILTER_CALLBACK,
             'pageset' => true,
             'default' => read_user_setting('syslog_efacility', '-1', $force),
-            'options' => array('options' => 'sanitize_search_string')
+            'options' => ['options' => 'sanitize_search_string']
             ),
         'epriority' => array(
             'filter' => FILTER_CALLBACK,
             'pageset' => true,
             'default' => read_user_setting('syslog_epriority', '-1', $force),
-            'options' => array('options' => 'sanitize_search_string')
+            'options' => ['options' => 'sanitize_search_string']
             ),
         'eprogram' => array(
             'filter' => FILTER_VALIDATE_INT,
@@ -731,33 +731,33 @@ function syslog_request_validation($current_tab, $force = false) {
             'pageset' => true,
             'default' => read_user_setting('syslog_grouping', '0', $force),
             ),
-        'rfilter' => array(
+        'rfilter' => [
             'filter' => FILTER_VALIDATE_IS_REGEX,
             'pageset' => true,
             'default' => ''
-            ),
+            ],
 
         'date1' => array(
             'filter' => FILTER_CALLBACK,
             'pageset' => true,
             'default' => '',
-            'options' => array('options' => 'sanitize_search_string')
+            'options' => ['options' => 'sanitize_search_string']
 			),
         'date2' => array(
             'filter' => FILTER_CALLBACK,
             'pageset' => true,
             'default' => '',
-            'options' => array('options' => 'sanitize_search_string')
+            'options' => ['options' => 'sanitize_search_string']
 			),
         'sort_column' => array(
             'filter' => FILTER_CALLBACK,
             'default' => 'logtime',
-            'options' => array('options' => 'sanitize_search_string')
+            'options' => ['options' => 'sanitize_search_string']
             ),
         'sort_direction' => array(
             'filter' => FILTER_CALLBACK,
             'default' => 'DESC',
-            'options' => array('options' => 'sanitize_search_string')
+            'options' => ['options' => 'sanitize_search_string']
             )
     );
 
@@ -782,7 +782,7 @@ function set_shift_span($shift_span, $session_prefix) {
 	global $graph_timeshifts;
 
 	if ($shift_span == 'span' || ($shift_span === false && (!isset($_SESSION[$session_prefix . '_date1']) || !isset($_SESSION[$session_prefix . '_date2'])))) {
-		$span = array();
+		$span = [];
 
 		// Calculate the timespan
 		$first_weekdayid = read_user_setting('first_weekdayid');
@@ -806,14 +806,14 @@ function set_shift_span($shift_span, $session_prefix) {
 		} else {
 			// Session keys missing; fall back to a fresh span calculation.
 			$first_weekdayid = read_user_setting('first_weekdayid');
-			$span = array();
+			$span = [];
 			get_timespan($span, time(), get_request_var('predefined_timespan'), $first_weekdayid);
 			set_request_var('date1', date('Y-m-d H:i:s', $span['begin_now']));
 			set_request_var('date2', date('Y-m-d H:i:s', $span['end_now']));
 			set_request_var('custom', false);
 		}
 	} elseif ($shift_span == 'shift') {
-		$span = array();
+		$span = [];
 
 		$span['current_value_date1'] = get_request_var('date1');
 		$span['current_value_date2'] = get_request_var('date2');
@@ -1364,7 +1364,7 @@ function syslog_filter($sql_where, $tab) {
 										print "<option class='$class' value='" . $host['host_id'] . "'";
 
 										if (cacti_sizeof($selected)) {
-											if (in_array($host['host_id'], $selected)) {
+											if (in_[$host['host_id'], $selected]) {
 												print ' selected';
 											}
 										}
@@ -1748,15 +1748,15 @@ function syslog_messages($tab = 'syslog') {
 					form_selectable_cell($sm['logtime'], $sm['seq'], '', 'left');
 				}
 				
-				form_selectable_cell(isset($hosts[$sm['host_id']]) ? $hosts[$sm['host_id']]:__('Unknown', 'syslog'), $sm['seq'], '', 'left');
+				form_selectable_cell($hosts[$sm['host_id']] ?? __('Unknown', 'syslog'), $sm['seq'], '', 'left');
 				form_selectable_cell($sm['program'], $sm['seq'], '', 'left');
 				form_selectable_cell(filter_value(title_trim($sm[$syslog_incoming_config['textField']], get_request_var_request('trimval')), get_request_var('rfilter')), $sm['seq'], '', 'left syslogMessage');
-				form_selectable_cell(isset($facilities[$sm['facility_id']]) ? $facilities[$sm['facility_id']]:__('Unknown', 'syslog'), $sm['seq'], '', 'left');
-				form_selectable_cell(isset($priorities[$sm['priority_id']]) ? $priorities[$sm['priority_id']]:__('Unknown', 'syslog'), $sm['seq'], '', 'left');
+				form_selectable_cell($facilities[$sm['facility_id']] ?? __('Unknown', 'syslog'), $sm['seq'], '', 'left');
+				form_selectable_cell($priorities[$sm['priority_id']] ?? __('Unknown', 'syslog'), $sm['seq'], '', 'left');
 
 				// Add occurrence count if grouping is enabled
 				if ($grouping_enabled) {
-					form_selectable_cell(isset($sm['occurrence_count']) ? $sm['occurrence_count'] : 1, $sm['seq'], '', 'right');
+					form_selectable_cell($sm['occurrence_count'] ?? 1, $sm['seq'], '', 'right');
 				}
 
 				form_end_row();
@@ -1787,11 +1787,11 @@ function syslog_messages($tab = 'syslog') {
 							}
 							
 							print "<td class='left' style='padding-left:30px;'>" . html_escape($dm['logtime']) . "</td>";
-							print "<td class='left'>" . html_escape(isset($hosts[$dm['host_id']]) ? $hosts[$dm['host_id']] : __('Unknown', 'syslog')) . "</td>";
+							print "<td class='left'>" . html_escape($hosts[$dm['host_id']] ?? __('Unknown', 'syslog')) . "</td>";
 							print "<td class='left'>" . html_escape($dm['program']) . "</td>";
 							print "<td class='left syslogMessage'>" . filter_value(title_trim($dm[$syslog_incoming_config['textField']], get_request_var_request('trimval')), get_request_var('rfilter')) . "</td>";
-							print "<td class='left'>" . html_escape(isset($facilities[$dm['facility_id']]) ? $facilities[$dm['facility_id']] : __('Unknown', 'syslog')) . "</td>";
-							print "<td class='left'>" . html_escape(isset($priorities[$dm['priority_id']]) ? $priorities[$dm['priority_id']] : __('Unknown', 'syslog')) . "</td>";
+							print "<td class='left'>" . html_escape($facilities[$dm['facility_id']] ?? __('Unknown', 'syslog')) . "</td>";
+							print "<td class='left'>" . html_escape($priorities[$dm['priority_id']] ?? __('Unknown', 'syslog')) . "</td>";
 							
 							if ($grouping_enabled) {
 								print "<td class='right'></td>";
@@ -1847,7 +1847,7 @@ function syslog_messages($tab = 'syslog') {
 
 				form_selectable_cell(filter_value($log['name'] != '' ? $log['name']:__('Alert Removed', 'syslog'), get_request_var('rfilter'), $config['url_path'] . 'plugins/syslog/syslog.php?id=' . $log['seq'] . '&tab=current'), $log['seq'], '', 'left');
 
-				form_selectable_cell(isset($severities[$log['severity']]) ? $severities[$log['severity']]:__('Unknown', 'syslog'), $log['seq'], '', 'left');
+				form_selectable_cell($severities[$log['severity']] ?? __('Unknown', 'syslog'), $log['seq'], '', 'left');
 				form_selectable_cell($log['logtime'], $log['seq'], '', 'left');
 				form_selectable_cell(filter_value(title_trim($log['logmsg'], get_request_var_request('trimval')), get_request_var('rfilter')), $log['seq'], '', 'syslogMessage left');
 
@@ -1877,7 +1877,7 @@ function save_settings() {
 
 //	syslog_request_validation($current_tab);
 
-	$variables = array(
+	$variables = [
 		'rows',
 		'refresh',
 		'removal',
@@ -1888,7 +1888,7 @@ function save_settings() {
 		'grouping',
 		'predefined_timespan',
 		'predefined_timeshift',
-	);
+	];
 
 	foreach($variables as $v) {
 		if (isset_request_var($v)) {
@@ -1949,9 +1949,9 @@ function html_program_filter($program_id = '-1', $none_entry = '', $action = 'aj
 }
 
 function get_ajax_programs($include_any = true, $include_none = false, $sql_where = '') {
-	$return    = array();
+	$return    = [];
 
-	$term = get_filter_request_var('term', FILTER_CALLBACK, array('options' => 'sanitize_search_string'));
+	$term = get_filter_request_var('term', FILTER_CALLBACK, ['options' => 'sanitize_search_string']);
 	if ($term != '') {
 		$sql_where .= ($sql_where != '' ? ' AND ' : 'WHERE ') . "program LIKE '%$term%'";
 	}
@@ -1982,11 +1982,11 @@ function get_ajax_programs($include_any = true, $include_none = false, $sql_wher
 
 	if (cacti_sizeof($programs)) {
 		foreach($programs as $program) {
-			$return[] = array(
+			$return[] = [
 				'label' => $program['program'],
 				'value' => $program['program'],
 				'id' => $program['program_id']
-			);
+			];
 		}
 	}
 

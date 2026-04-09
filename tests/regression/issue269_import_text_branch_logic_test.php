@@ -13,11 +13,11 @@ declare(strict_types=1);
  */
 
 $root = dirname(__DIR__, 2);
-$targets = array(
+$targets = [
 	'alert_import'   => $root . '/syslog_alerts.php',
 	'removal_import' => $root . '/syslog_removal.php',
 	'report_import'  => $root . '/syslog_reports.php',
-);
+];
 
 foreach ($targets as $func => $target) {
 	$content = file_get_contents($target);

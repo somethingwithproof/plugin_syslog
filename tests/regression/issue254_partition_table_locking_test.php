@@ -82,7 +82,7 @@ if (!preg_match('/syslog_db_fetch_(?:row|assoc|cell)_prepared[^)]*information_sc
 /* ---- Allowlist acceptance / rejection tests ---- */
 
 /* syslog_partition_table_allowed must accept exactly these two values. */
-$allowed_tables = array('syslog', 'syslog_removed');
+$allowed_tables = ['syslog', 'syslog_removed'];
 foreach ($allowed_tables as $t) {
 	if (!preg_match("/in_array\(\s*\\\$table\s*,\s*array\s*\(\s*'syslog'\s*,\s*'syslog_removed'\s*\)/", $functions)) {
 		fwrite(STDERR, "Allowlist does not contain expected table '$t'.\n");
