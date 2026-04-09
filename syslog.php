@@ -1173,7 +1173,7 @@ function syslog_filter($sql_where, $tab) {
 							<?php print __('From', 'syslog');?>
 						</td>
 						<td>
-							<input type='text' id='date1' size='18' value='<?php print get_request_var('date1');?>'>
+							<input type='text' id='date1' size='18' value='<?php print html_escape_request_var('date1'); ?>'>
 						</td>
 						<td>
 							<i title='<?php print __esc('Start Date Selector', 'syslog');?>' class='calendar fa fa-calendar-alt' id='startDate'></i>
@@ -1182,7 +1182,7 @@ function syslog_filter($sql_where, $tab) {
 							<?php print __('To', 'syslog');?>
 						</td>
 						<td>
-							<input type='text' id='date2' size='18' value='<?php print get_request_var('date2');?>'>
+							<input type='text' id='date2' size='18' value='<?php print html_escape_request_var('date2'); ?>'>
 						</td>
 						<td>
 							<i title='<?php print __esc('End Date Selector', 'syslog');?>' class='calendar fa fa-calendar-alt' id='endDate'></i>
@@ -1454,7 +1454,7 @@ function syslog_filter($sql_where, $tab) {
 							</select>
 						</td>
 						<?php } else { ?>
-						<input type='hidden' id='removal' value='<?php print get_request_var('removal');?>'>
+						<input type='hidden' id='removal' value='<?php print html_escape_request_var('removal'); ?>'>
 						<?php } ?>
 						<?php if (get_nfilter_request_var('tab') == 'syslog') { ?>
 						<td>
