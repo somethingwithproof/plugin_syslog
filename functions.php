@@ -699,12 +699,6 @@ function syslog_remove_items($table, $max_seq) {
 					$params[]  = '%' . $remove['message'];
 				}
 			} elseif ($remove['type'] == 'sql') {
-				if (read_config_option('syslog_allow_sql_rules') != 'on') {
-					cacti_log("SYSLOG: Skipping SQL removal rule '" . $remove['name'] . "'; set 'Allow SQL-type rules' in Syslog settings to enable", false, 'SYSLOG');
-
-					continue;
-				}
-
 				if ($table == 'syslog_incoming') {
 					$sql_where = 'WHERE (' . $remove['message'] . ')
 						AND `status` = 1
@@ -1181,19 +1175,6 @@ function syslog_manage_items($from_table, $to_table) {
 						WHERE message LIKE " . db_qstr('%' . $remove['message']);
 				}
 			} elseif ($remove['type'] == 'sql') {
-				/*
-				 * Raw SQL rules are admin-defined expressions interpolated
-				 * into the WHERE clause. They are dangerous by design and
-				 * gated behind an explicit opt-in. The previous syntax
-				 * ("WHERE message (expr)") was also invalid MySQL and could
-				 * never have executed successfully.
-				 */
-				if (read_config_option('syslog_allow_sql_rules') != 'on') {
-					cacti_log("SYSLOG: Skipping SQL removal rule '" . $remove['name'] . "'; set 'Allow SQL-type rules' in Syslog settings to enable", false, 'SYSLOG');
-
-					continue;
-				}
-
 				if ($remove['method'] != 'del') {
 					$sql_sel = "SELECT seq FROM `$syslogdb_default`.`$from_table`
 						WHERE (" . $remove['message'] . ')';
@@ -1909,18 +1890,6 @@ function syslog_get_alert_sql(&$alert, $max_seq) {
 		$params[] = $alert['message'];
 		$params[] = $max_seq;
 	} elseif ($alert['type'] == 'sql') {
-		/*
-		 * Raw SQL alert expressions are admin-defined fragments inlined
-		 * into the WHERE clause. They cannot be parameterised and are
-		 * gated behind an explicit opt-in. When disabled, the alert is
-		 * skipped rather than silently matching everything.
-		 */
-		if (read_config_option('syslog_allow_sql_rules') != 'on') {
-			cacti_log("SYSLOG: Skipping SQL alert '" . $alert['name'] . "'; set 'Allow SQL-type rules' in Syslog settings to enable", false, 'SYSLOG');
-
-			return [];
-		}
-
 		$sql = "SELECT *
 			FROM `$syslogdb_default`.`syslog_incoming`
 			WHERE ({$alert['message']})
@@ -2527,18 +2496,6 @@ function syslog_get_report_sql(&$report) {
 	}
 
 	if ($report['type'] == 'sql') {
-		/*
-		 * Raw SQL report expressions are admin-defined fragments inlined
-		 * into the WHERE clause. They cannot be parameterised and are
-		 * gated behind an explicit opt-in. When disabled, the report is
-		 * skipped rather than silently returning every row.
-		 */
-		if (read_config_option('syslog_allow_sql_rules') != 'on') {
-			cacti_log("SYSLOG: Skipping SQL report '" . $report['name'] . "'; set 'Allow SQL-type rules' in Syslog settings to enable", false, 'SYSLOG');
-
-			return '';
-		}
-
 		$sql = "SELECT *
 			FROM `$syslogdb_default`.`syslog`
 			WHERE (" . $report['message'] . ')';

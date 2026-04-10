@@ -1266,16 +1266,6 @@ function syslog_config_settings() {
 			'method'        => 'checkbox',
 			'default'       => ''
 		],
-		'syslog_security_header' => [
-			'friendly_name' => __('Security Settings', 'syslog'),
-			'method'        => 'spacer',
-		],
-		'syslog_allow_sql_rules' => [
-			'friendly_name' => __('Allow SQL-type Rules', 'syslog'),
-			'description'   => __('When enabled, Alert, Removal, and Report rules of type SQL will execute their raw SQL fragments as WHERE clauses. These rules are inlined into queries and cannot be parameterised, so a rule author can run arbitrary SQL against the Syslog database. Leave this disabled unless you understand the impact and trust every user who can edit rules.', 'syslog'),
-			'method'        => 'checkbox',
-			'default'       => ''
-		],
 	];
 
 	if (isset($settings['syslog'])) {
