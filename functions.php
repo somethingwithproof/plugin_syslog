@@ -475,7 +475,13 @@ function syslog_partition_remove($table) {
 
 					syslog_debug("Removing partition '" . $part_name . "'");
 
-					syslog_db_execute("ALTER TABLE `$syslogdb_default`.`$table` DROP PARTITION `$part_name`");
+					/* $table passed syslog_partition_table_allowed() at function entry; $part_name is regex-validated above. */
+					$result = syslog_db_execute("ALTER TABLE `$syslogdb_default`.`$table` DROP PARTITION `$part_name`");
+
+					if ($result == 0) {
+						cacti_log("SYSLOG ERROR: Failed to drop partition '$part_name' from '$table'; aborting further drops", false, 'SYSLOG');
+						break;
+					}
 
 					$i++;
 					$user_partitions--;
