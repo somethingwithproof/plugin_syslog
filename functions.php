@@ -318,10 +318,19 @@ function syslog_partition_create($table, $time = null) {
 		return false;
 	}
 
+	$success = false;
+
 	try {
-		// determine the format of the table name
-		$cformat = 'd' . gmdate('Ymd', $time);
-		$lnow    = gmdate('Y-m-d', strtotime('+1 day', $time));
+		/*
+		 * Boundary arithmetic is done in PHP against the UTC epoch so the
+		 * result is independent of both the PHP and MySQL session time zones.
+		 * $boundary_epoch is the next UTC midnight strictly after $time; it
+		 * becomes the VALUES LESS THAN literal for UNIX_TIMESTAMP partitions
+		 * and the source for the date string passed to TO_DAYS.
+		 */
+		$boundary_epoch = ((int)($time / 86400) + 1) * 86400;
+		$cformat        = 'd' . gmdate('Ymd', $time);
+		$boundary_date  = gmdate('Y-m-d', $boundary_epoch);
 
 		$exists = syslog_db_fetch_row_prepared('SELECT *
 			FROM `information_schema`.`partitions`
@@ -340,30 +349,41 @@ function syslog_partition_create($table, $time = null) {
 			 * MySQL does not support parameter binding for DDL identifiers
 			 * or partition definitions. $table is safe because it passed
 			 * syslog_partition_table_allowed() (two-value allowlist plus
-			 * regex guard). $cformat and $lnow derive from date() and
-			 * contain only digits, hyphens, and the letter 'd'.
+			 * regex guard). $cformat, $boundary_epoch, and $boundary_date
+			 * derive from integer arithmetic and gmdate(), so they contain
+			 * only digits, hyphens, and the letter 'd'.
 			 */
 			$create_syntax = syslog_db_fetch_row("SHOW CREATE TABLE `$syslogdb_default`.`$table`");
 
-			if (cacti_sizeof($create_syntax)) {
-				if (str_contains($create_syntax['Create Table'], 'TO_DAYS')) {
-					syslog_db_execute("ALTER TABLE `$syslogdb_default`.`$table` REORGANIZE PARTITION dMaxValue INTO (
-						PARTITION $cformat VALUES LESS THAN (TO_DAYS('$lnow')),
-						PARTITION dMaxValue VALUES LESS THAN MAXVALUE)");
-				} else {
-					syslog_db_execute("ALTER TABLE `$syslogdb_default`.`$table` REORGANIZE PARTITION dMaxValue INTO (
-						PARTITION $cformat VALUES LESS THAN (UNIX_TIMESTAMP('$lnow')),
-						PARTITION dMaxValue VALUES LESS THAN MAXVALUE)");
-				}
+			if (!cacti_sizeof($create_syntax) || empty($create_syntax['Create Table'])) {
+				cacti_log("SYSLOG ERROR: SHOW CREATE TABLE returned no rows for '$table'; partition rotation aborted", false, 'SYSLOG');
+
+				return false;
+			}
+
+			$create_sql = $create_syntax['Create Table'];
+
+			if (strpos($create_sql, 'TO_DAYS') !== false) {
+				syslog_db_execute("ALTER TABLE `$syslogdb_default`.`$table` REORGANIZE PARTITION dMaxValue INTO (
+					PARTITION $cformat VALUES LESS THAN (TO_DAYS('$boundary_date')),
+					PARTITION dMaxValue VALUES LESS THAN MAXVALUE)");
+			} elseif (strpos($create_sql, 'UNIX_TIMESTAMP') !== false) {
+				syslog_db_execute("ALTER TABLE `$syslogdb_default`.`$table` REORGANIZE PARTITION dMaxValue INTO (
+					PARTITION $cformat VALUES LESS THAN ($boundary_epoch),
+					PARTITION dMaxValue VALUES LESS THAN MAXVALUE)");
 			} else {
-				cacti_log('WARNING: Unable to determine Partition type for rotation', false, 'SYSLOG');
+				cacti_log("SYSLOG ERROR: Unable to determine partition expression (neither TO_DAYS nor UNIX_TIMESTAMP) for '$table'; rotation aborted", false, 'SYSLOG');
+
+				return false;
 			}
 		}
+
+		$success = true;
 	} finally {
 		syslog_db_fetch_cell_prepared('SELECT RELEASE_LOCK(?)', [$lock_name]);
 	}
 
-	return true;
+	return $success;
 }
 
 /**
@@ -785,6 +805,31 @@ function sql_hosts_where($tab) {
 	}
 }
 
+/**
+ * Defuse CSV formula injection without mutating content.
+ *
+ * Spreadsheet applications (Excel, LibreOffice, Google Sheets) interpret any
+ * cell starting with =, +, -, @, TAB, or CR as a formula. Prepending a
+ * single quote tells them to treat the cell as literal text. The quote is
+ * visible in the cell but does not alter the underlying data, unlike
+ * trimming which loses characters.
+ *
+ * See OWASP CSV Injection Prevention Cheat Sheet.
+ */
+function syslog_csv_safe($value) {
+	if (!is_string($value) || $value === '') {
+		return $value;
+	}
+
+	$first = $value[0];
+
+	if ($first === '=' || $first === '+' || $first === '-' || $first === '@' || $first === "\t" || $first === "\r") {
+		return "'" . $value;
+	}
+
+	return $value;
+}
+
 function syslog_export($tab) {
 	global $syslog_incoming_config, $severities;
 	global $syslogdb_default;
@@ -851,20 +896,20 @@ function syslog_export($tab) {
 				}
 
 				if (isset($hosts[$message['host_id']])) {
-					$host = trim($hosts[$message['host_id']], ' =+-@');
+					$host = $hosts[$message['host_id']];
 				} else {
 					$host = 'Unknown';
 				}
 
-				$logmsg = trim($message[$syslog_incoming_config['textField']], ' =+-@');
+				$logmsg = $message[$syslog_incoming_config['textField']];
 
 				$line = [
-					$host,
-					ucfirst($facility),
-					ucfirst($priority),
-					ucfirst($program),
+					syslog_csv_safe($host),
+					syslog_csv_safe(ucfirst($facility)),
+					syslog_csv_safe(ucfirst($priority)),
+					syslog_csv_safe(ucfirst($program)),
 					$message['logtime'],
-					$logmsg
+					syslog_csv_safe($logmsg)
 				];
 
 				fputcsv($fp, $line);
@@ -894,17 +939,14 @@ function syslog_export($tab) {
 					$severity = 'Unknown';
 				}
 
-				$host   = trim($message['host'], ' =+-@');
-				$logmsg = trim($message['logmsg'], ' =+-@');
-
 				$line = [
-					$message['name'],
-					$severity,
+					syslog_csv_safe($message['name']),
+					syslog_csv_safe($severity),
 					$message['logtime'],
-					$logmsg,
-					$host,
-					ucfirst($message['facility']),
-					ucfirst($message['priority']),
+					syslog_csv_safe($message['logmsg']),
+					syslog_csv_safe($message['host']),
+					syslog_csv_safe(ucfirst($message['facility'])),
+					syslog_csv_safe(ucfirst($message['priority'])),
 					$message['count']
 				];
 
@@ -985,6 +1027,19 @@ function syslog_manage_items($from_table, $to_table) {
 	global $config, $syslog_cnn, $syslog_incoming_config;
 	global $syslogdb_default;
 
+	/*
+	 * Table names are interpolated into DDL/DML below because MySQL does
+	 * not bind identifiers. Reject anything outside the static allowlist
+	 * so a future caller cannot turn this into a SQL injection surface.
+	 */
+	$allowed_tables = ['syslog', 'syslog_incoming', 'syslog_removed'];
+
+	if (!in_array($from_table, $allowed_tables, true) || !in_array($to_table, $allowed_tables, true)) {
+		cacti_log("SYSLOG ERROR: syslog_manage_items called with disallowed tables from='$from_table' to='$to_table'", false, 'SYSLOG');
+
+		return ['removed' => 0, 'xferred' => 0];
+	}
+
 	// Select filters to work on
 	$rows = syslog_db_fetch_assoc("SELECT * FROM `$syslogdb_default`.`syslog_remove` WHERE enabled = 'on'");
 
@@ -1052,12 +1107,25 @@ function syslog_manage_items($from_table, $to_table) {
 						WHERE message LIKE " . db_qstr('%' . $remove['message']);
 				}
 			} elseif ($remove['type'] == 'sql') {
+				/*
+				 * Raw SQL rules are admin-defined expressions interpolated
+				 * into the WHERE clause. They are dangerous by design and
+				 * gated behind an explicit opt-in. The previous syntax
+				 * ("WHERE message (expr)") was also invalid MySQL and could
+				 * never have executed successfully.
+				 */
+				if (read_config_option('syslog_allow_sql_rules') != 'on') {
+					cacti_log("SYSLOG: Skipping SQL removal rule '" . $remove['name'] . "'; set 'Allow SQL-type rules' in Syslog settings to enable", false, 'SYSLOG');
+
+					continue;
+				}
+
 				if ($remove['method'] != 'del') {
 					$sql_sel = "SELECT seq FROM `$syslogdb_default`.`$from_table`
-						WHERE message (" . $remove['message'] . ') ';
+						WHERE (" . $remove['message'] . ')';
 				} else {
 					$sql_dlt = "DELETE FROM `$syslogdb_default`.`$from_table`
-						WHERE message (" . $remove['message'] . ') ';
+						WHERE (" . $remove['message'] . ')';
 				}
 			}
 
@@ -1767,7 +1835,18 @@ function syslog_get_alert_sql(&$alert, $max_seq) {
 		$params[] = $alert['message'];
 		$params[] = $max_seq;
 	} elseif ($alert['type'] == 'sql') {
-		// TODO: Make Injection proof
+		/*
+		 * Raw SQL alert expressions are admin-defined fragments inlined
+		 * into the WHERE clause. They cannot be parameterised and are
+		 * gated behind an explicit opt-in. When disabled, the alert is
+		 * skipped rather than silently matching everything.
+		 */
+		if (read_config_option('syslog_allow_sql_rules') != 'on') {
+			cacti_log("SYSLOG: Skipping SQL alert '" . $alert['name'] . "'; set 'Allow SQL-type rules' in Syslog settings to enable", false, 'SYSLOG');
+
+			return [];
+		}
+
 		$sql = "SELECT *
 			FROM `$syslogdb_default`.`syslog_incoming`
 			WHERE ({$alert['message']})
@@ -2374,6 +2453,18 @@ function syslog_get_report_sql(&$report) {
 	}
 
 	if ($report['type'] == 'sql') {
+		/*
+		 * Raw SQL report expressions are admin-defined fragments inlined
+		 * into the WHERE clause. They cannot be parameterised and are
+		 * gated behind an explicit opt-in. When disabled, the report is
+		 * skipped rather than silently returning every row.
+		 */
+		if (read_config_option('syslog_allow_sql_rules') != 'on') {
+			cacti_log("SYSLOG: Skipping SQL report '" . $report['name'] . "'; set 'Allow SQL-type rules' in Syslog settings to enable", false, 'SYSLOG');
+
+			return '';
+		}
+
 		$sql = "SELECT *
 			FROM `$syslogdb_default`.`syslog`
 			WHERE (" . $report['message'] . ')';

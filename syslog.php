@@ -2136,7 +2136,7 @@ function syslog_form_callback($form_name, $classic_sql, $column_display, $column
 		}
 		</style>
 		<script type='text/javascript'>
-		initSyslogAutocomplete('<?php print $form_name; ?>', '<?php print $callback; ?>', '<?php print $on_change; ?>');
+		initSyslogAutocomplete(<?php print json_encode($form_name); ?>, <?php print json_encode($callback); ?>, <?php print json_encode($on_change); ?>);
 		</script>
 		<?php
 	}
