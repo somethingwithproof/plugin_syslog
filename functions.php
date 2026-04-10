@@ -241,14 +241,23 @@ function syslog_partition_manage() {
 	// Always create the partition an hour ahead of time
 	$time = time() + 3600;
 
+	/*
+	 * Only run the retention prune when the new partition was created
+	 * successfully. Otherwise a hard failure in syslog_partition_create
+	 * (unknown partition expression, empty SHOW CREATE, invalid $time)
+	 * would combine with syslog_partition_remove to silently drop old
+	 * partitions on every poller cycle without adding a replacement.
+	 */
 	if (syslog_partition_check('syslog', $time)) {
-		syslog_partition_create('syslog', $time);
-		$syslog_deleted = syslog_partition_remove('syslog');
+		if (syslog_partition_create('syslog', $time)) {
+			$syslog_deleted = syslog_partition_remove('syslog');
+		}
 	}
 
 	if (syslog_partition_check('syslog_removed', $time)) {
-		syslog_partition_create('syslog_removed', $time);
-		$syslog_deleted += syslog_partition_remove('syslog_removed');
+		if (syslog_partition_create('syslog_removed', $time)) {
+			$syslog_deleted += syslog_partition_remove('syslog_removed');
+		}
 	}
 
 	return $syslog_deleted;
@@ -838,7 +847,17 @@ function syslog_csv_safe($value) {
 		return $value;
 	}
 
-	$first = $value[0];
+	// Some CSV importers strip leading spaces before parsing as a
+	// formula, so " =SUM(A1)" is still dangerous. Only strip literal
+	// spaces here; tabs and carriage returns are themselves triggers
+	// and must remain detectable as the first character.
+	$stripped = ltrim($value, ' ');
+
+	if ($stripped === '') {
+		return $value;
+	}
+
+	$first = $stripped[0];
 
 	if ($first === '=' || $first === '+' || $first === '-' || $first === '@' || $first === "\t" || $first === "\r") {
 		return "'" . $value;
@@ -979,7 +998,7 @@ function syslog_debug($message) {
 	global $debug;
 
 	if ($debug) {
-		print date('H:m:s') . ' SYSLOG DEBUG: ' . trim($message) . PHP_EOL;
+		print date('H:i:s') . ' SYSLOG DEBUG: ' . trim($message) . PHP_EOL;
 	}
 }
 

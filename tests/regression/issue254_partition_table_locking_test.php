@@ -241,15 +241,58 @@ if (!preg_match('/SHOW CREATE TABLE.*Unable to determine partition expression/s'
 	exit(1);
 }
 
+// ---- syslog_partition_manage must gate syslog_partition_remove on syslog_partition_create's return ----
+
+$manage_start = strpos($functions, 'function syslog_partition_manage');
+
+if ($manage_start === false) {
+	fwrite(STDERR, "Could not locate syslog_partition_manage.\n");
+	exit(1);
+}
+
+$manage_end = strpos($functions, 'function syslog_partition_table_allowed', $manage_start);
+
+if ($manage_end === false) {
+	fwrite(STDERR, "Could not bound syslog_partition_manage.\n");
+	exit(1);
+}
+
+$manage_body = substr($functions, $manage_start, $manage_end - $manage_start);
+
+// The remove() call must be inside an if that checks create()'s return.
+if (!preg_match('/if\s*\(\s*syslog_partition_create\s*\(\s*\'syslog\'\s*,[^)]*\)\s*\)\s*\{\s*\$syslog_deleted\s*=\s*syslog_partition_remove\s*\(\s*\'syslog\'\s*\)/s', $manage_body)) {
+	fwrite(STDERR, "syslog_partition_manage does not gate syslog_partition_remove('syslog') on syslog_partition_create's return value.\n");
+	exit(1);
+}
+
+if (!preg_match('/if\s*\(\s*syslog_partition_create\s*\(\s*\'syslog_removed\'\s*,[^)]*\)\s*\)\s*\{\s*\$syslog_deleted\s*\+\=\s*syslog_partition_remove\s*\(\s*\'syslog_removed\'\s*\)/s', $manage_body)) {
+	fwrite(STDERR, "syslog_partition_manage does not gate syslog_partition_remove('syslog_removed') on syslog_partition_create's return value.\n");
+	exit(1);
+}
+
 // ---- syslog_manage_items must validate $from_table and $to_table against an allowlist ----
 
-if (!preg_match('/function\s+syslog_manage_items\s*\(\s*\$from_table\s*,\s*\$to_table\s*\)\s*\{(.{0,1000})/s', $functions, $m_manage)) {
+if (!preg_match('/function\s+syslog_manage_items\s*\(\s*\$from_table\s*,\s*\$to_table\s*\)\s*\{(.{0,800})/s', $functions, $m_manage)) {
 	fwrite(STDERR, "syslog_manage_items function not found.\n");
 	exit(1);
 }
 
-if (!preg_match('/in_array\s*\(\s*\$from_table.*in_array\s*\(\s*\$to_table/s', $m_manage[1])) {
-	fwrite(STDERR, "syslog_manage_items does not validate from_table/to_table against an allowlist.\n");
+$manage_head = $m_manage[1];
+
+// The allowlist literal must appear explicitly in the guard block.
+if (!preg_match("/\\\$allowed_tables\s*=\s*\[\s*'syslog'\s*,\s*'syslog_incoming'\s*,\s*'syslog_removed'\s*\]/", $manage_head)) {
+	fwrite(STDERR, "syslog_manage_items does not declare the expected \$allowed_tables literal.\n");
+	exit(1);
+}
+
+// Both $from_table and $to_table must be checked with in_array against the allowlist, and the guard must fail closed.
+if (!preg_match('/!in_array\(\$from_table,\s*\$allowed_tables,\s*true\).*!in_array\(\$to_table,\s*\$allowed_tables,\s*true\)/s', $manage_head)) {
+	fwrite(STDERR, "syslog_manage_items does not check both \$from_table and \$to_table with in_array(..., true).\n");
+	exit(1);
+}
+
+if (!preg_match("/return\s*\[\s*'removed'\s*=>\s*0\s*,\s*'xferred'\s*=>\s*0\s*\]/", $manage_head)) {
+	fwrite(STDERR, "syslog_manage_items guard does not fail closed with ['removed' => 0, 'xferred' => 0].\n");
 	exit(1);
 }
 

@@ -2135,8 +2135,13 @@ function syslog_form_callback($form_name, $classic_sql, $column_display, $column
 			white-space: normal !important;
 		}
 		</style>
+		<?php
+		// JSON_HEX_TAG escapes </script>; the other flags block HTML context
+		// escapes if the script block ever runs under unusual content types.
+		$js_flags = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT;
+		?>
 		<script type='text/javascript'>
-		initSyslogAutocomplete(<?php print json_encode($form_name); ?>, <?php print json_encode($callback); ?>, <?php print json_encode($on_change); ?>);
+		initSyslogAutocomplete(<?php print json_encode($form_name, $js_flags); ?>, <?php print json_encode($callback, $js_flags); ?>, <?php print json_encode($on_change, $js_flags); ?>);
 		</script>
 		<?php
 	}
