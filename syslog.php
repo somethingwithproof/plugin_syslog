@@ -990,10 +990,10 @@ function get_syslog_messages(&$sql_where, $rows, $tab) {
 	if ($tab == 'syslog') {
 		// Check if grouping is enabled
 		$grouping_enabled = isset_request_var('grouping') && get_request_var('grouping') == '1';
-	
+
 		if ($grouping_enabled) {
 			if (get_request_var('removal') == '-1') {
-				$query_sql = "SELECT 
+				$query_sql = "SELECT
 					syslog.host_id,
 					syslog.message,
 					syslog.program_id,
@@ -1015,7 +1015,7 @@ function get_syslog_messages(&$sql_where, $rows, $tab) {
 					$sql_limit";
 			} elseif (get_request_var('removal') == '1') {
 				$query_sql = "SELECT * FROM (
-					(SELECT 
+					(SELECT
 						syslog.host_id,
 						syslog.message,
 						syslog.program_id,
@@ -1033,7 +1033,7 @@ function get_syslog_messages(&$sql_where, $rows, $tab) {
 						ON syslog.program_id=syslog_programs.program_id " .
 						$sql_where . "
 						GROUP BY syslog.host_id, syslog.message, syslog.program_id, syslog.facility_id, syslog.priority_id
-					) UNION (SELECT 
+					) UNION (SELECT
 						syslog.host_id,
 						syslog.message,
 						syslog.program_id,
@@ -1056,7 +1056,7 @@ function get_syslog_messages(&$sql_where, $rows, $tab) {
 				$sql_order
 				$sql_limit";
 			} else {
-				$query_sql = "SELECT 
+				$query_sql = "SELECT
 					syslog.host_id,
 					syslog.message,
 					syslog.program_id,
@@ -1364,7 +1364,7 @@ function syslog_filter($sql_where, $tab) {
 										print "<option class='$class' value='" . $host['host_id'] . "'";
 
 										if (cacti_sizeof($selected)) {
-											if (in_[$host['host_id'], $selected]) {
+											if (in_array[$host['host_id'], $selected]) {
 												print ' selected';
 											}
 										}
@@ -1599,7 +1599,7 @@ function syslog_messages($tab = 'syslog') {
 	if ($tab == 'syslog') {
 		// Check if grouping is enabled for row count
 		$grouping_enabled = isset_request_var('grouping') && get_request_var('grouping') == '1';
-		
+
 		if ($grouping_enabled) {
 			// When grouping, count distinct groups instead of individual rows
 			if (get_request_var('removal') == 1) {
@@ -1662,7 +1662,7 @@ function syslog_messages($tab = 'syslog') {
 	if ($tab == 'syslog') {
 		// Check if grouping is enabled for display
 		$grouping_enabled = isset_request_var('grouping') && get_request_var('grouping') == '1';
-		
+
 		if (api_plugin_user_realm_auth('syslog_alerts.php')) {
 			$display_text = array(
 				'nosortt'     => array(__('Actions', 'syslog'), 'ASC'),
@@ -1672,7 +1672,7 @@ function syslog_messages($tab = 'syslog') {
 				'message'     => array(__('Message', 'syslog'), 'ASC'),
 				'facility_id' => array(__('Facility', 'syslog'), 'ASC'),
 				'priority_id' => array(__('Priority', 'syslog'), 'ASC'));
-			
+
 			// Add count column if grouping is enabled
 			if ($grouping_enabled) {
 				$display_text['occurrence_count'] = array(__('Count', 'syslog'), 'DESC');
@@ -1685,7 +1685,7 @@ function syslog_messages($tab = 'syslog') {
 				'message'     => array(__('Message', 'syslog'), 'ASC'),
 				'facility_id' => array(__('Facility', 'syslog'), 'ASC'),
 				'priority_id' => array(__('Priority', 'syslog'), 'ASC'));
-			
+
 			// Add count column if grouping is enabled
 			if ($grouping_enabled) {
 				$display_text['occurrence_count'] = array(__('Count', 'syslog'), 'DESC');
@@ -1747,7 +1747,7 @@ function syslog_messages($tab = 'syslog') {
 				} else {
 					form_selectable_cell($sm['logtime'], $sm['seq'], '', 'left');
 				}
-				
+
 				form_selectable_cell($hosts[$sm['host_id']] ?? __('Unknown', 'syslog'), $sm['seq'], '', 'left');
 				form_selectable_cell($sm['program'], $sm['seq'], '', 'left');
 				form_selectable_cell(filter_value(title_trim($sm[$syslog_incoming_config['textField']], get_request_var_request('trimval')), get_request_var('rfilter')), $sm['seq'], '', 'left syslogMessage');
@@ -1760,11 +1760,11 @@ function syslog_messages($tab = 'syslog') {
 				}
 
 				form_end_row();
-				
+
 				// If grouping is enabled and there are multiple occurrences, add hidden detail rows
 				if ($grouping_enabled && isset($sm['occurrence_count']) && $sm['occurrence_count'] > 1 && isset($sm['seq_list'])) {
 					$seq_array = explode(',', $sm['seq_list']);
-					
+
 					// Get individual messages for this group
 					$detail_messages = syslog_db_fetch_assoc("SELECT syslog.*, syslog_programs.program
 						FROM `" . $syslogdb_default . "`.`" . (($sm['mtype'] == 'main') ? 'syslog' : 'syslog_removed') . "` AS syslog
@@ -1772,10 +1772,10 @@ function syslog_messages($tab = 'syslog') {
 						ON syslog.program_id=syslog_programs.program_id
 						WHERE syslog.seq IN (" . implode(',', array_map('intval', $seq_array)) . ")
 						ORDER BY syslog.logtime DESC");
-					
+
 					if (cacti_sizeof($detail_messages)) {
 						foreach ($detail_messages as $dm) {
-							$severity_class = syslog_row_color($dm['priority_id'], $dm['message']);	
+							$severity_class = syslog_row_color($dm['priority_id'], $dm['message']);
 							print "<tr class='tableRow syslog-detail-row syslog-detail-" . html_escape($sm['seq']) . " " . $severity_class . "' style='display:none;' data-parent='" . html_escape($sm['seq']) . "'>";
 							if (api_plugin_user_realm_auth('syslog_alerts.php')) {
 								$url = '';
@@ -1785,18 +1785,18 @@ function syslog_messages($tab = 'syslog') {
 								}
 								print "<td class='left' style='padding-left:30px;'>" . $url . "</td>";
 							}
-							
+
 							print "<td class='left' style='padding-left:30px;'>" . html_escape($dm['logtime']) . "</td>";
 							print "<td class='left'>" . html_escape($hosts[$dm['host_id']] ?? __('Unknown', 'syslog')) . "</td>";
 							print "<td class='left'>" . html_escape($dm['program']) . "</td>";
 							print "<td class='left syslogMessage'>" . filter_value(title_trim($dm[$syslog_incoming_config['textField']], get_request_var_request('trimval')), get_request_var('rfilter')) . "</td>";
 							print "<td class='left'>" . html_escape($facilities[$dm['facility_id']] ?? __('Unknown', 'syslog')) . "</td>";
 							print "<td class='left'>" . html_escape($priorities[$dm['priority_id']] ?? __('Unknown', 'syslog')) . "</td>";
-							
+
 							if ($grouping_enabled) {
 								print "<td class='right'></td>";
 							}
-							
+
 							print "</tr>";
 						}
 					}
