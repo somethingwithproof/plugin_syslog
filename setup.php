@@ -38,7 +38,7 @@ function plugin_syslog_install() {
 
 	syslog_connect();
 
-	$syslog_exists = sizeof(syslog_db_fetch_row('SHOW TABLES FROM `' . $syslogdb_default . "` LIKE 'syslog'"));
+	$syslog_exists = sizeof(syslog_db_fetch_row("SHOW TABLES FROM `$syslogdb_default` LIKE 'syslog'"));
 
 	// ================= input validation =================
 	get_filter_request_var('days');
@@ -122,23 +122,23 @@ function plugin_syslog_uninstall() {
 	if (isset_request_var('uninstall_method')) {
 		if (get_nfilter_request_var('uninstall_method') == 'all') {
 			// do the big tables first
-			syslog_db_execute('DROP TABLE IF EXISTS `' . $syslogdb_default . '`.`syslog`');
-			syslog_db_execute('DROP TABLE IF EXISTS `' . $syslogdb_default . '`.`syslog_removed`');
+			syslog_db_execute("DROP TABLE IF EXISTS `$syslogdb_default`.`syslog`");
+			syslog_db_execute("DROP TABLE IF EXISTS `$syslogdb_default`.`syslog_removed`");
 
 			// do the settings tables last
-			syslog_db_execute('DROP TABLE IF EXISTS `' . $syslogdb_default . '`.`syslog_incoming`');
-			syslog_db_execute('DROP TABLE IF EXISTS `' . $syslogdb_default . '`.`syslog_alert`');
-			syslog_db_execute('DROP TABLE IF EXISTS `' . $syslogdb_default . '`.`syslog_remove`');
-			syslog_db_execute('DROP TABLE IF EXISTS `' . $syslogdb_default . '`.`syslog_reports`');
-			syslog_db_execute('DROP TABLE IF EXISTS `' . $syslogdb_default . '`.`syslog_facilities`');
-			syslog_db_execute('DROP TABLE IF EXISTS `' . $syslogdb_default . '`.`syslog_statistics`');
-			syslog_db_execute('DROP TABLE IF EXISTS `' . $syslogdb_default . '`.`syslog_host_facilities`');
-			syslog_db_execute('DROP TABLE IF EXISTS `' . $syslogdb_default . '`.`syslog_priorities`');
-			syslog_db_execute('DROP TABLE IF EXISTS `' . $syslogdb_default . '`.`syslog_logs`');
-			syslog_db_execute('DROP TABLE IF EXISTS `' . $syslogdb_default . '`.`syslog_hosts`');
+			syslog_db_execute("DROP TABLE IF EXISTS `$syslogdb_default`.`syslog_incoming`");
+			syslog_db_execute("DROP TABLE IF EXISTS `$syslogdb_default`.`syslog_alert`");
+			syslog_db_execute("DROP TABLE IF EXISTS `$syslogdb_default`.`syslog_remove`");
+			syslog_db_execute("DROP TABLE IF EXISTS `$syslogdb_default`.`syslog_reports`");
+			syslog_db_execute("DROP TABLE IF EXISTS `$syslogdb_default`.`syslog_facilities`");
+			syslog_db_execute("DROP TABLE IF EXISTS `$syslogdb_default`.`syslog_statistics`");
+			syslog_db_execute("DROP TABLE IF EXISTS `$syslogdb_default`.`syslog_host_facilities`");
+			syslog_db_execute("DROP TABLE IF EXISTS `$syslogdb_default`.`syslog_priorities`");
+			syslog_db_execute("DROP TABLE IF EXISTS `$syslogdb_default`.`syslog_logs`");
+			syslog_db_execute("DROP TABLE IF EXISTS `$syslogdb_default`.`syslog_hosts`");
 		} else {
-			syslog_db_execute('DROP TABLE IF EXISTS `' . $syslogdb_default . '`.`syslog`');
-			syslog_db_execute('DROP TABLE IF EXISTS `' . $syslogdb_default . '`.`syslog_removed`');
+			syslog_db_execute("DROP TABLE IF EXISTS `$syslogdb_default`.`syslog`");
+			syslog_db_execute("DROP TABLE IF EXISTS `$syslogdb_default`.`syslog_removed`");
 		}
 	} elseif (function_exists('syslog_uninstall_advisor')) {
 		syslog_uninstall_advisor();
@@ -440,12 +440,12 @@ function syslog_create_partitioned_syslog_table($engine = 'InnoDB', $days = 30) 
 		$row_format = 'ROW_FORMAT=Dynamic';
 	}
 
-	$sql = 'CREATE TABLE IF NOT EXISTS `' . $syslogdb_default . "`.`syslog` (
+	$sql = "CREATE TABLE IF NOT EXISTS `$syslogdb_default`.`syslog` (
 		facility_id int(10) unsigned default NULL,
 		priority_id int(10) unsigned default NULL,
 		program_id int(10) unsigned default NULL,
 		host_id int(10) unsigned default NULL,
-		logtime DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00',
+		logtime timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
 		message varchar(1024) NOT NULL default '',
 		seq bigint unsigned NOT NULL auto_increment,
 		PRIMARY KEY(seq, logtime),
@@ -457,7 +457,7 @@ function syslog_create_partitioned_syslog_table($engine = 'InnoDB', $days = 30) 
 		INDEX facility_id (facility_id))
 		ENGINE=$engine
 		$row_format
-		PARTITION BY RANGE (TO_DAYS(logtime))\n";
+		PARTITION BY RANGE (UNIX_TIMESTAMP(logtime))\n";
 
 	$now = time();
 
@@ -465,11 +465,15 @@ function syslog_create_partitioned_syslog_table($engine = 'InnoDB', $days = 30) 
 
 	for ($i = $days; $i >= -1; $i--) {
 		$timestamp = $now - ($i * 86400);
-		$date      = date('Y-m-d', $timestamp);
-		$format    = date('Ymd', $timestamp - 86400);
-		$parts .= ($parts != '' ? ",\n" : '(') . ' PARTITION d' . $format . " VALUES LESS THAN (TO_DAYS('" . $date . "'))";
+		$date      = gmdate('Y-m-d', $timestamp);
+		$format    = gmdate('Ymd', strtotime('- 1 day', $timestamp));
+
+		$parts .= ($parts != '' ? ",\n" : '(') . ' PARTITION d' . $format . " VALUES LESS THAN (UNIX_TIMESTAMP('" . $date . "'))";
 	}
+
 	$parts .= ",\nPARTITION dMaxValue VALUES LESS THAN MAXVALUE);";
+
+	//cacti_log($sql . $parts);
 
 	syslog_db_execute($sql . $parts);
 }
@@ -521,7 +525,7 @@ function syslog_setup_table_new($options) {
 	$truncate     = isset($options['upgrade_type']) && $options['upgrade_type'] == 'truncate' ? true : false;
 	$engine       = isset($options['engine']) && $options['engine'] == 'innodb' ? 'InnoDB' : $options['engine'];
 	$partitioned  = isset($options['db_type']) && $options['db_type'] == 'part' ? true : false;
-	$syslogexists = sizeof(syslog_db_fetch_row('SHOW TABLES FROM `' . $syslogdb_default . "` LIKE 'syslog'"));
+	$syslogexists = sizeof(syslog_db_fetch_row("SHOW TABLES FROM `$syslogdb_default` LIKE 'syslog'"));
 
 	// set table construction settings for the remote pollers
 	set_config_option('syslog_install_upgrade_type', empty($options['upgrade_type']) ? '' : $options['upgrade_type'], true);
@@ -530,7 +534,7 @@ function syslog_setup_table_new($options) {
 	set_config_option('syslog_install_days',         empty($options['days']) ? '' : $options['days'], true);
 
 	if ($truncate) {
-		syslog_db_execute('DROP TABLE IF EXISTS `' . $syslogdb_default . '`.`syslog`');
+		syslog_db_execute("DROP TABLE IF EXISTS `$syslogdb_default`.`syslog`");
 	}
 
 	if (stripos($engine, 'aria') !== false) {
@@ -540,7 +544,7 @@ function syslog_setup_table_new($options) {
 	}
 
 	if (!$partitioned) {
-		syslog_db_execute('CREATE TABLE IF NOT EXISTS `' . $syslogdb_default . "`.`syslog` (
+		syslog_db_execute("CREATE TABLE IF NOT EXISTS `$syslogdb_default`.`syslog` (
 			facility_id int(10) unsigned default NULL,
 			priority_id int(10) unsigned default NULL,
 			program_id int(10) unsigned default NULL,
@@ -562,10 +566,10 @@ function syslog_setup_table_new($options) {
 	}
 
 	if ($truncate) {
-		syslog_db_execute('DROP TABLE IF EXISTS `' . $syslogdb_default . '`.`syslog_alert`');
+		syslog_db_execute("DROP TABLE IF EXISTS `$syslogdb_default`.`syslog_alert`");
 	}
 
-	syslog_db_execute('CREATE TABLE IF NOT EXISTS `' . $syslogdb_default . "`.`syslog_alert` (
+	syslog_db_execute("CREATE TABLE IF NOT EXISTS `$syslogdb_default`.`syslog_alert` (
 		`id` int(10) NOT NULL auto_increment,
 		`hash` varchar(32) NOT NULL default '',
 		`name` varchar(255) NOT NULL default '',
@@ -589,10 +593,10 @@ function syslog_setup_table_new($options) {
 		ENGINE=InnoDB");
 
 	if ($truncate) {
-		syslog_db_execute('DROP TABLE IF EXISTS `' . $syslogdb_default . '`.`syslog_incoming`');
+		syslog_db_execute("DROP TABLE IF EXISTS `$syslogdb_default`.`syslog_incoming`");
 	}
 
-	syslog_db_execute('CREATE TABLE IF NOT EXISTS `' . $syslogdb_default . "`.`syslog_incoming` (
+	syslog_db_execute("CREATE TABLE IF NOT EXISTS `$syslogdb_default`.`syslog_incoming` (
 		facility_id int(10) unsigned default NULL,
 		priority_id int(10) unsigned default NULL,
 		program varchar(40) default NULL,
@@ -608,10 +612,10 @@ function syslog_setup_table_new($options) {
 		ROW_FORMAT=Dynamic");
 
 	if ($truncate) {
-		syslog_db_execute('DROP TABLE IF EXISTS `' . $syslogdb_default . '`.`syslog_remove`');
+		syslog_db_execute("DROP TABLE IF EXISTS `$syslogdb_default`.`syslog_remove`");
 	}
 
-	syslog_db_execute('CREATE TABLE IF NOT EXISTS `' . $syslogdb_default . "`.`syslog_remove` (
+	syslog_db_execute("CREATE TABLE IF NOT EXISTS `$syslogdb_default`.`syslog_remove` (
 		id int(10) NOT NULL auto_increment,
 		`hash` varchar(32) NOT NULL default '',
 		name varchar(255) NOT NULL default '',
@@ -626,19 +630,19 @@ function syslog_setup_table_new($options) {
 		ENGINE=$engine
 		$row_format");
 
-	$present = syslog_db_fetch_row('SHOW TABLES FROM `' . $syslogdb_default . "` LIKE 'syslog_reports'");
+	$present = syslog_db_fetch_row("SHOW TABLES FROM `$syslogdb_default` LIKE 'syslog_reports'");
 
 	if (cacti_sizeof($present)) {
-		$newreport = sizeof(syslog_db_fetch_row('SHOW COLUMNS FROM `' . $syslogdb_default . "`.`syslog_reports` LIKE 'body'"));
+		$newreport = sizeof(syslog_db_fetch_row("SHOW COLUMNS FROM `$syslogdb_default`.`syslog_reports` LIKE 'body'"));
 	} else {
 		$newreport = true;
 	}
 
 	if ($truncate || !$newreport) {
-		syslog_db_execute('DROP TABLE IF EXISTS `' . $syslogdb_default . '`.`syslog_reports`');
+		syslog_db_execute("DROP TABLE IF EXISTS `$syslogdb_default`.`syslog_reports`");
 	}
 
-	syslog_db_execute('CREATE TABLE IF NOT EXISTS `' . $syslogdb_default . "`.`syslog_reports` (
+	syslog_db_execute("CREATE TABLE IF NOT EXISTS `$syslogdb_default`.`syslog_reports` (
 		id int(10) NOT NULL auto_increment,
 		`hash` varchar(32) NOT NULL default '',
 		name varchar(255) NOT NULL default '',
@@ -659,10 +663,10 @@ function syslog_setup_table_new($options) {
 		ROW_FORMAT=Dynamic");
 
 	if ($truncate) {
-		syslog_db_execute('DROP TABLE IF EXISTS `' . $syslogdb_default . '`.`syslog_hosts`');
+		syslog_db_execute("DROP TABLE IF EXISTS `$syslogdb_default`.`syslog_hosts`");
 	}
 
-	syslog_db_execute('CREATE TABLE IF NOT EXISTS `' . $syslogdb_default . "`.`syslog_programs` (
+	syslog_db_execute("CREATE TABLE IF NOT EXISTS `$syslogdb_default`.`syslog_programs` (
 		`program_id` int(10) unsigned NOT NULL auto_increment,
 		`program` VARCHAR(40) NOT NULL,
 		`last_updated` TIMESTAMP NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
@@ -673,7 +677,7 @@ function syslog_setup_table_new($options) {
 		ROW_FORMAT=Dynamic
 		COMMENT='Contains all programs currently in the syslog table'");
 
-	syslog_db_execute('CREATE TABLE IF NOT EXISTS `' . $syslogdb_default . "`.`syslog_hosts` (
+	syslog_db_execute("CREATE TABLE IF NOT EXISTS `$syslogdb_default`.`syslog_hosts` (
 		`host_id` int(10) unsigned NOT NULL auto_increment,
 		`host` VARCHAR(64) NOT NULL,
 		`last_updated` TIMESTAMP NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
@@ -684,52 +688,52 @@ function syslog_setup_table_new($options) {
 		ROW_FORMAT=Dynamic
 		COMMENT='Contains all hosts currently in the syslog table'");
 
-	syslog_db_execute('DROP TABLE IF EXISTS `' . $syslogdb_default . '`.`syslog_facilities`');
+	syslog_db_execute("DROP TABLE IF EXISTS `$syslogdb_default`.`syslog_facilities`");
 
-	syslog_db_execute('CREATE TABLE IF NOT EXISTS `' . $syslogdb_default . '`.`syslog_facilities` (
+	syslog_db_execute("CREATE TABLE IF NOT EXISTS `$syslogdb_default`.`syslog_facilities` (
 		`facility_id` int(10) unsigned NOT NULL,
 		`facility` varchar(10) NOT NULL,
 		`last_updated` TIMESTAMP NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
 		PRIMARY KEY  (`facility_id`),
 		INDEX last_updated (`last_updated`))
 		ENGINE=InnoDB
-		ROW_FORMAT=Dynamic');
+		ROW_FORMAT=Dynamic");
 
-	syslog_db_execute('INSERT INTO `' . $syslogdb_default . "`.`syslog_facilities` (facility_id, facility) VALUES
+	syslog_db_execute("INSERT INTO `$syslogdb_default`.`syslog_facilities` (facility_id, facility) VALUES
 		(0,'kern'), (1,'user'), (2,'mail'), (3,'daemon'), (4,'auth'), (5,'syslog'), (6,'lpd'), (7,'news'),
 		(8,'uucp'), (9,'crond'), (10,'authpriv'), (11,'ftpd'), (12,'ntpd'), (13,'logaudit'), (14,'logalert'),
 		(15,'crond'), (16,'local0'), (17,'local1'), (18,'local2'), (19,'local3'), (20,'local4'), (21,'local5'),
-		(22,'local6'), (23,'local7');");
+		(22,'local6'), (23,'local7')");
 
-	syslog_db_execute('DROP TABLE IF EXISTS `' . $syslogdb_default . '`.`syslog_priorities`');
+	syslog_db_execute("DROP TABLE IF EXISTS `$syslogdb_default`.`syslog_priorities`");
 
-	syslog_db_execute('CREATE TABLE IF NOT EXISTS `' . $syslogdb_default . '`.`syslog_priorities` (
+	syslog_db_execute("CREATE TABLE IF NOT EXISTS `$syslogdb_default`.`syslog_priorities` (
 		`priority_id` int(10) unsigned NOT NULL,
 		`priority` varchar(10) NOT NULL,
 		`last_updated` TIMESTAMP NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
 		PRIMARY KEY (`priority_id`),
 		INDEX last_updated (`last_updated`))
 		ENGINE=InnoDB
-		ROW_FORMAT=Dynamic');
+		ROW_FORMAT=Dynamic");
 
-	syslog_db_execute('INSERT INTO `' . $syslogdb_default . "`.`syslog_priorities` (priority_id, priority) VALUES
-		(0,'emerg'), (1,'alert'), (2,'crit'), (3,'err'), (4,'warning'), (5,'notice'), (6,'info'), (7,'debug'), (8,'other');");
+	syslog_db_execute("INSERT INTO `$syslogdb_default`.`syslog_priorities` (priority_id, priority) VALUES
+		(0,'emerg'), (1,'alert'), (2,'crit'), (3,'err'), (4,'warning'), (5,'notice'), (6,'info'), (7,'debug'), (8,'other')");
 
-	syslog_db_execute('CREATE TABLE IF NOT EXISTS `' . $syslogdb_default . '`.`syslog_host_facilities` (
+	syslog_db_execute("CREATE TABLE IF NOT EXISTS `$syslogdb_default`.`syslog_host_facilities` (
 		`host_id` int(10) unsigned NOT NULL,
 		`facility_id` int(10) unsigned NOT NULL,
 		`last_updated` TIMESTAMP NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
 		PRIMARY KEY  (`host_id`,`facility_id`))
 		ENGINE=InnoDB
-		ROW_FORMAT=Dynamic');
+		ROW_FORMAT=Dynamic");
 
 	if ($truncate) {
-		syslog_db_execute('DROP TABLE IF EXISTS `' . $syslogdb_default . '`.`syslog_removed`');
+		syslog_db_execute("DROP TABLE IF EXISTS `$syslogdb_default`.`syslog_removed`");
 	}
 
-	syslog_db_execute('CREATE TABLE IF NOT EXISTS `' . $syslogdb_default . '`.`syslog_removed` LIKE `' . $syslogdb_default . '`.`syslog`');
+	syslog_db_execute("CREATE TABLE IF NOT EXISTS `$syslogdb_default`.`syslog_removed` LIKE `$syslogdb_default`.`syslog`");
 
-	syslog_db_execute('CREATE TABLE IF NOT EXISTS `' . $syslogdb_default . "`.`syslog_logs` (
+	syslog_db_execute("CREATE TABLE IF NOT EXISTS `$syslogdb_default`.`syslog_logs` (
 		alert_id int(10) unsigned not null default '0',
 		logseq bigint unsigned NOT NULL,
 		logtime TIMESTAMP NOT NULL default '0000-00-00 00:00:00',
@@ -752,7 +756,7 @@ function syslog_setup_table_new($options) {
 		ENGINE=InnoDB
 		ROW_FORMAT=Dynamic");
 
-	syslog_db_execute('CREATE TABLE IF NOT EXISTS `' . $syslogdb_default . "`.`syslog_statistics` (
+	syslog_db_execute("CREATE TABLE IF NOT EXISTS `$syslogdb_default`.`syslog_statistics` (
 		`id` bigint UNSIGNED auto_increment,
 		`host_id` int(10) UNSIGNED NOT NULL,
 		`facility_id` int(10) UNSIGNED NOT NULL,
@@ -769,7 +773,7 @@ function syslog_setup_table_new($options) {
 		INDEX `insert_time`(`insert_time`))
 		ENGINE=InnoDB
 		ROW_FORMAT=Dynamic
-		COMMENT='Maintains High Level Statistics';");
+		COMMENT='Maintains High Level Statistics'");
 
 	if (!isset($settings['syslog'])) {
 		syslog_config_settings();
@@ -1023,7 +1027,7 @@ function syslog_uninstall_advisor() {
 
 	syslog_connect();
 
-	$syslog_exists = sizeof(syslog_db_fetch_row('SHOW TABLES FROM `' . $syslogdb_default . "` LIKE 'syslog'"));
+	$syslog_exists = sizeof(syslog_db_fetch_row("SHOW TABLES FROM `$syslogdb_default` LIKE 'syslog'"));
 
 	top_header();
 
