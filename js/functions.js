@@ -601,11 +601,15 @@ function syslogInvokeCallback(functionName) {
 
 	var trimmed = functionName.trim();
 
-	// Strip a trailing "()" if present; many callers historically pass "name()".
-	var parenStart = trimmed.indexOf('(');
+	// Only tolerate an exact trailing "()" for legacy callers; reject any arguments.
+	if (trimmed.endsWith('()')) {
+		trimmed = trimmed.substring(0, trimmed.length - 2).trim();
+	} else if (trimmed.indexOf('(') !== -1 || trimmed.indexOf(')') !== -1) {
+		if (window.console && console.warn) {
+			console.warn('syslog: refusing to invoke callback with arguments or invalid parentheses', functionName);
+		}
 
-	if (parenStart !== -1) {
-		trimmed = trimmed.substring(0, parenStart).trim();
+		return;
 	}
 
 	if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(trimmed)) {
