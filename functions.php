@@ -300,14 +300,20 @@ function syslog_partition_create($table, $time = null) {
 		return false;
 	}
 
+	if (!preg_match('/^[a-zA-Z0-9_]+$/', $syslogdb_default)) {
+		cacti_log("SYSLOG ERROR: Invalid database name; partition create aborted", false, 'SYSLOG');
+
+		return false;
+	}
+
 	if ($time === null) {
 		$time = time() + 3600;
 	}
 
-	// Reject non-numeric or pre-epoch timestamps; boundary math assumes a
-	// non-negative UTC epoch so negative or bogus inputs cannot underflow
-	// the (int)($time / 86400) + 1 computation below.
-	if (!is_numeric($time) || (int)$time < 0) {
+	// Reject non-numeric, negative, or far-future timestamps; boundary
+	// math assumes a non-negative UTC epoch within 64-bit safe range so
+	// extreme inputs cannot underflow or overflow to float.
+	if (!is_numeric($time) || (int)$time < 0 || (int)$time > 4102444800) {
 		cacti_log("SYSLOG ERROR: syslog_partition_create called with invalid time '$time' for table '$table'", false, 'SYSLOG');
 
 		return false;
@@ -386,7 +392,7 @@ function syslog_partition_create($table, $time = null) {
 			 * derive from integer arithmetic and gmdate(), so they contain
 			 * only digits, hyphens, and the letter 'd'.
 			 */
-			$create_syntax = syslog_db_fetch_row("SHOW CREATE TABLE `$syslogdb_default`.`$table`");
+			$create_syntax = syslog_db_fetch_row_prepared("SHOW CREATE TABLE `$syslogdb_default`.`$table`");
 
 			if (!cacti_sizeof($create_syntax) || empty($create_syntax['Create Table'])) {
 				cacti_log("SYSLOG ERROR: SHOW CREATE TABLE returned no rows for '$table'; partition rotation aborted", false, 'SYSLOG');
@@ -397,11 +403,11 @@ function syslog_partition_create($table, $time = null) {
 			$create_sql = $create_syntax['Create Table'];
 
 			if (stripos($create_sql, 'TO_DAYS') !== false) {
-				syslog_db_execute("ALTER TABLE `$syslogdb_default`.`$table` REORGANIZE PARTITION dMaxValue INTO (
+				syslog_db_execute_prepared("ALTER TABLE `$syslogdb_default`.`$table` REORGANIZE PARTITION dMaxValue INTO (
 					PARTITION $cformat VALUES LESS THAN (TO_DAYS('$boundary_date')),
 					PARTITION dMaxValue VALUES LESS THAN MAXVALUE)");
 			} elseif (stripos($create_sql, 'UNIX_TIMESTAMP') !== false) {
-				syslog_db_execute("ALTER TABLE `$syslogdb_default`.`$table` REORGANIZE PARTITION dMaxValue INTO (
+				syslog_db_execute_prepared("ALTER TABLE `$syslogdb_default`.`$table` REORGANIZE PARTITION dMaxValue INTO (
 					PARTITION $cformat VALUES LESS THAN ($boundary_epoch),
 					PARTITION dMaxValue VALUES LESS THAN MAXVALUE)");
 			} else {
@@ -429,6 +435,12 @@ function syslog_partition_remove($table) {
 
 	if (!syslog_partition_table_allowed($table)) {
 		cacti_log("SYSLOG: partition_remove called with disallowed table '$table'", false, 'SYSTEM');
+
+		return 0;
+	}
+
+	if (!preg_match('/^[a-zA-Z0-9_]+$/', $syslogdb_default)) {
+		cacti_log("SYSLOG ERROR: Invalid database name; partition remove aborted", false, 'SYSLOG');
 
 		return 0;
 	}
@@ -482,11 +494,11 @@ function syslog_partition_remove($table) {
 
 					syslog_debug("Removing partition '" . $part_name . "'");
 
-					/* $table passed syslog_partition_table_allowed() at function entry; $part_name is regex-validated above. */
-					$result = syslog_db_execute("ALTER TABLE `$syslogdb_default`.`$table` DROP PARTITION `$part_name`");
+					/* $table passed syslog_partition_table_allowed() at function entry; $part_name is regex-validated above. DDL identifiers cannot be parameterized. */
+					$result = syslog_db_execute_prepared("ALTER TABLE `$syslogdb_default`.`$table` DROP PARTITION `$part_name`");
 
 					if ($result === false) {
-						cacti_log("SYSLOG ERROR: Failed to drop partition '$part_name' from '$table'; aborting further drops", false, 'SYSLOG');
+						cacti_log("SYSLOG ERROR: Failed to drop partition '$part_name' from '$table' after $i successful drop(s); aborting further drops", false, 'SYSLOG');
 						break;
 					}
 
