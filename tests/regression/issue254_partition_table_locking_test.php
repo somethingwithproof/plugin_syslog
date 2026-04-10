@@ -145,17 +145,28 @@ if ($raw_partition_queries !== false && $raw_partition_queries > 0) {
 
 // ---- syslog_partition_remove must also use GET_LOCK / RELEASE_LOCK in a finally block ----
 
-if (!preg_match('/function\s+syslog_partition_remove\s*\(\s*\$table\s*\)\s*\{(.{0,2500})\n\}/s', $functions, $m_remove_lock)) {
-	fwrite(STDERR, "syslog_partition_remove function body not found for lock check.\n");
+$remove_start = strpos($functions, 'function syslog_partition_remove');
+
+if ($remove_start === false) {
+	fwrite(STDERR, "Could not locate syslog_partition_remove.\n");
 	exit(1);
 }
 
-if (!preg_match('/GET_LOCK/', $m_remove_lock[1])) {
+$remove_end = strpos($functions, 'function syslog_partition_check', $remove_start);
+
+if ($remove_end === false) {
+	fwrite(STDERR, "Could not bound syslog_partition_remove.\n");
+	exit(1);
+}
+
+$remove_body = substr($functions, $remove_start, $remove_end - $remove_start);
+
+if (!preg_match('/GET_LOCK/', $remove_body)) {
 	fwrite(STDERR, "syslog_partition_remove does not acquire a lock before ALTER TABLE.\n");
 	exit(1);
 }
 
-if (!preg_match('/finally\s*\{[^}]*RELEASE_LOCK/s', $m_remove_lock[1])) {
+if (!preg_match('/finally\s*\{[^}]*RELEASE_LOCK/s', $remove_body)) {
 	fwrite(STDERR, "syslog_partition_remove does not release its lock in a finally block.\n");
 	exit(1);
 }
