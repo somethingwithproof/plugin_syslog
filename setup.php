@@ -463,17 +463,21 @@ function syslog_create_partitioned_syslog_table($engine = 'InnoDB', $days = 30) 
 
 	$parts = '';
 
+	/*
+	 * Partition boundaries are integer epochs computed in PHP and injected
+	 * as numeric literals. This keeps both MySQL and PHP session time zones
+	 * out of the equation: the boundary is always the next UTC midnight
+	 * after the labeled day.
+	 */
 	for ($i = $days; $i >= -1; $i--) {
-		$timestamp = $now - ($i * 86400);
-		$date      = gmdate('Y-m-d', $timestamp);
-		$format    = gmdate('Ymd', strtotime('- 1 day', $timestamp));
+		$day_epoch      = $now - ($i * 86400);
+		$boundary_epoch = ((int)($day_epoch / 86400) + 1) * 86400;
+		$format         = gmdate('Ymd', $day_epoch);
 
-		$parts .= ($parts != '' ? ",\n" : '(') . ' PARTITION d' . $format . " VALUES LESS THAN (UNIX_TIMESTAMP('" . $date . "'))";
+		$parts .= ($parts != '' ? ",\n" : '(') . ' PARTITION d' . $format . ' VALUES LESS THAN (' . $boundary_epoch . ')';
 	}
 
 	$parts .= ",\nPARTITION dMaxValue VALUES LESS THAN MAXVALUE);";
-
-	//cacti_log($sql . $parts);
 
 	syslog_db_execute($sql . $parts);
 }
@@ -1259,6 +1263,16 @@ function syslog_config_settings() {
 		'syslog_remote_sync_rules' => [
 			'friendly_name' => __('Remote Data Collector Rules Sync', 'syslog'),
 			'description'   => __('If your Remote Data Collectors have their own Syslog databases and process thrie messages independently, check this checkbox if you wish the Main Cacti databases Alerts, Removal and Report rules to be sent to the Remote Cacti System.', 'syslog'),
+			'method'        => 'checkbox',
+			'default'       => ''
+		],
+		'syslog_security_header' => [
+			'friendly_name' => __('Security Settings', 'syslog'),
+			'method'        => 'spacer',
+		],
+		'syslog_allow_sql_rules' => [
+			'friendly_name' => __('Allow SQL-type Rules', 'syslog'),
+			'description'   => __('When enabled, Alert, Removal, and Report rules of type SQL will execute their raw SQL fragments as WHERE clauses. These rules are inlined into queries and cannot be parameterised, so a rule author can run arbitrary SQL against the Syslog database. Leave this disabled unless you understand the impact and trust every user who can edit rules.', 'syslog'),
 			'method'        => 'checkbox',
 			'default'       => ''
 		],
