@@ -281,6 +281,12 @@ function api_syslog_report_save($id, $name, $type, $message, $timespan, $timepar
 	$id = 0;
 
 	if (!is_error_message()) {
+		if ($save['type'] == 'sql' && read_config_option('syslog_allow_sql_rules') != 'on') {
+			raise_message('sql_disabled', __('SQL-type rules are disabled. Enable "Allow SQL-type Rules" under Console > Configuration > Settings > Syslog > Security Settings before saving this rule.', 'syslog'), MESSAGE_LEVEL_ERROR);
+
+			return false;
+		}
+
 		$sql = syslog_get_alert_sql($save, 100);
 
 		if (cacti_sizeof($sql)) {
