@@ -242,11 +242,10 @@ function syslog_partition_manage() {
 	$time = time() + 3600;
 
 	/*
-	 * Only run the retention prune when the new partition was created
-	 * successfully. Otherwise a hard failure in syslog_partition_create
-	 * (unknown partition expression, empty SHOW CREATE, invalid $time)
-	 * would combine with syslog_partition_remove to silently drop old
-	 * partitions on every poller cycle without adding a replacement.
+	 * Only run the retention prune when the next partition is ready.
+	 * If maintenance cannot safely create it, leave dMaxValue in place
+	 * as the write-path safety net and avoid dropping old partitions
+	 * without a replacement.
 	 */
 	if (syslog_partition_check('syslog', $time)) {
 		if (syslog_partition_create('syslog', $time)) {
@@ -357,7 +356,7 @@ function syslog_partition_create($table, $time = null) {
 		$boundary_epoch = ((int)($time / 86400) + 1) * 86400;
 
 		if ($boundary_epoch <= 0 || $boundary_epoch <= $time) {
-			cacti_log("SYSLOG ERROR: Boundary epoch computation overflow for '$table' (time=$time); rotation aborted", false, 'SYSLOG');
+			cacti_log("SYSLOG ERROR: Boundary epoch computation failed for '$table' (time=$time); leaving writes in dMaxValue until maintenance recovers", false, 'SYSLOG');
 
 			return false;
 		}
@@ -366,7 +365,7 @@ function syslog_partition_create($table, $time = null) {
 		$boundary_date  = gmdate('Y-m-d', $boundary_epoch);
 
 		if (!preg_match('/^d\d{8}$/', $cformat) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $boundary_date)) {
-			cacti_log("SYSLOG ERROR: Derived partition values failed format validation for '$table'; rotation aborted", false, 'SYSLOG');
+			cacti_log("SYSLOG ERROR: Derived partition values failed format validation for '$table'; leaving writes in dMaxValue until maintenance recovers", false, 'SYSLOG');
 
 			return false;
 		}
@@ -395,7 +394,7 @@ function syslog_partition_create($table, $time = null) {
 			$create_syntax = syslog_db_fetch_row_prepared("SHOW CREATE TABLE `$syslogdb_default`.`$table`");
 
 			if (!cacti_sizeof($create_syntax) || empty($create_syntax['Create Table'])) {
-				cacti_log("SYSLOG ERROR: SHOW CREATE TABLE returned no rows for '$table'; partition rotation aborted", false, 'SYSLOG');
+				cacti_log("SYSLOG ERROR: SHOW CREATE TABLE returned no rows for '$table'; leaving writes in dMaxValue until maintenance recovers", false, 'SYSLOG');
 
 				return false;
 			}
@@ -411,7 +410,7 @@ function syslog_partition_create($table, $time = null) {
 					PARTITION $cformat VALUES LESS THAN ($boundary_epoch),
 					PARTITION dMaxValue VALUES LESS THAN MAXVALUE)");
 			} else {
-				cacti_log("SYSLOG ERROR: Unable to determine partition expression (neither TO_DAYS nor UNIX_TIMESTAMP) for '$table'; rotation aborted", false, 'SYSLOG');
+				cacti_log("SYSLOG ERROR: Unable to determine partition expression (neither TO_DAYS nor UNIX_TIMESTAMP) for '$table'; leaving writes in dMaxValue until maintenance recovers", false, 'SYSLOG');
 
 				return false;
 			}

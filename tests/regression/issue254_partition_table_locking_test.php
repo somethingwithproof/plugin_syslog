@@ -234,10 +234,10 @@ if (!preg_match('/\(\(int\)\(\$time\s*\/\s*86400\)\s*\+\s*1\)\s*\*\s*86400/', $c
 	exit(1);
 }
 
-// ---- syslog_partition_create must hard-fail when the partition expression cannot be detected ----
+// ---- syslog_partition_create must fall back to dMaxValue when the expression cannot be detected ----
 
-if (!preg_match('/SHOW CREATE TABLE.*Unable to determine partition expression/s', $functions)) {
-	fwrite(STDERR, "syslog_partition_create does not hard-fail on unknown partition expression.\n");
+if (!preg_match('/SHOW CREATE TABLE.*Unable to determine partition expression.*dMaxValue/s', $functions)) {
+	fwrite(STDERR, "syslog_partition_create does not preserve dMaxValue fallback on unknown partition expression.\n");
 	exit(1);
 }
 
