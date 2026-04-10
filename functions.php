@@ -458,11 +458,18 @@ function syslog_partition_remove($table) {
 				while ($user_partitions > $days) {
 					$oldest = $number_of_partitions[$i];
 
-					cacti_log("SYSLOG: Removing old partition '" . $oldest['PARTITION_NAME'] . "'", false, 'SYSTEM');
+					$part_name = $oldest['PARTITION_NAME'];
 
-					syslog_debug("Removing partition '" . $oldest['PARTITION_NAME'] . "'");
+					if (!preg_match('/^[a-zA-Z0-9_]+$/', $part_name)) {
+						cacti_log("SYSLOG ERROR: Invalid partition name '$part_name' for '$table'; skipping drop", false, 'SYSLOG');
+						break;
+					}
 
-					syslog_db_execute("ALTER TABLE `$syslogdb_default`.`$table` DROP PARTITION " . $oldest['PARTITION_NAME']);
+					cacti_log("SYSLOG: Removing old partition '" . $part_name . "'", false, 'SYSTEM');
+
+					syslog_debug("Removing partition '" . $part_name . "'");
+
+					syslog_db_execute("ALTER TABLE `$syslogdb_default`.`$table` DROP PARTITION `$part_name`");
 
 					$i++;
 					$user_partitions--;
@@ -2358,7 +2365,7 @@ function syslog_process_reports() {
 					$sql .= ' ORDER BY logtime DESC';
 					$items = syslog_db_fetch_assoc_prepared($sql, [$date1, $date2]);
 
-					syslog_debug('We have ' . db_affected_rows($syslog_cnn) . ' items for the Report');
+					syslog_debug('We have ' . cacti_sizeof($items) . ' items for the Report');
 
 					$classes = ['even', 'odd'];
 
