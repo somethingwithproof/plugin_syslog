@@ -652,6 +652,12 @@ function syslog_remove_items($table, $max_seq) {
 					$params[]  = '%' . $remove['message'];
 				}
 			} elseif ($remove['type'] == 'sql') {
+				if (read_config_option('syslog_allow_sql_rules') != 'on') {
+					cacti_log("SYSLOG: Skipping SQL removal rule '" . $remove['name'] . "'; set 'Allow SQL-type rules' in Syslog settings to enable", false, 'SYSLOG');
+
+					continue;
+				}
+
 				if ($table == 'syslog_incoming') {
 					$sql_where = 'WHERE (' . $remove['message'] . ')
 						AND `status` = 1
