@@ -1364,11 +1364,13 @@ function syslog_filter($sql_where, $tab) {
 										print "<option class='$class' value='" . $host['host_id'] . "'";
 
 										if (cacti_sizeof($selected)) {
-											if (in_array[$host['host_id'], $selected]) {
+											if (in_array($host['host_id'], $selected)) {
 												print ' selected';
 											}
 										}
+
 										print '>';
+
 										print $host['host'] . '</option>';
 									}
 								}

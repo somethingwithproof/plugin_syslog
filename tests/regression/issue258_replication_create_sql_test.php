@@ -18,7 +18,7 @@ foreach ($existing_functions as $existing_function) {
 
 if (!function_exists('cacti_sizeof')) {
 	function cacti_sizeof($value) {
-		if (is_[$value] || $value instanceof Countable) {
+		if (is_array($value) || $value instanceof Countable) {
 			return count($value);
 		}
 
