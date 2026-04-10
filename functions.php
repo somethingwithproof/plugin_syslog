@@ -295,6 +295,17 @@ function syslog_partition_create($table, $time = null) {
 		$time = time() + 3600;
 	}
 
+	// Reject non-numeric or pre-epoch timestamps; boundary math assumes a
+	// non-negative UTC epoch so negative or bogus inputs cannot underflow
+	// the (int)($time / 86400) + 1 computation below.
+	if (!is_numeric($time) || (int)$time < 0) {
+		cacti_log("SYSLOG ERROR: syslog_partition_create called with invalid time '$time' for table '$table'", false, 'SYSLOG');
+
+		return false;
+	}
+
+	$time = (int)$time;
+
 	// Hash to guarantee the lock name stays within MySQL's 64-byte limit.
 	$lock_name = substr(hash('sha256', $syslogdb_default . '.syslog_partition_create.' . $table), 0, 60);
 
