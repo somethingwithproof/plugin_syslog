@@ -383,11 +383,11 @@ function syslog_partition_create($table, $time = null) {
 
 			$create_sql = $create_syntax['Create Table'];
 
-			if (strpos($create_sql, 'TO_DAYS') !== false) {
+			if (stripos($create_sql, 'TO_DAYS') !== false) {
 				syslog_db_execute("ALTER TABLE `$syslogdb_default`.`$table` REORGANIZE PARTITION dMaxValue INTO (
 					PARTITION $cformat VALUES LESS THAN (TO_DAYS('$boundary_date')),
 					PARTITION dMaxValue VALUES LESS THAN MAXVALUE)");
-			} elseif (strpos($create_sql, 'UNIX_TIMESTAMP') !== false) {
+			} elseif (stripos($create_sql, 'UNIX_TIMESTAMP') !== false) {
 				syslog_db_execute("ALTER TABLE `$syslogdb_default`.`$table` REORGANIZE PARTITION dMaxValue INTO (
 					PARTITION $cformat VALUES LESS THAN ($boundary_epoch),
 					PARTITION dMaxValue VALUES LESS THAN MAXVALUE)");
@@ -2356,7 +2356,7 @@ function syslog_process_reports() {
 					$date1 = date('Y-m-d H:i:s', $current_time - $time_span);
 					$sql .= ' AND logtime BETWEEN ? AND ?';
 					$sql .= ' ORDER BY logtime DESC';
-					$items = syslog_db_fetch_assoc_prepared($sql, [$data1, $date2]);
+					$items = syslog_db_fetch_assoc_prepared($sql, [$date1, $date2]);
 
 					syslog_debug('We have ' . db_affected_rows($syslog_cnn) . ' items for the Report');
 
