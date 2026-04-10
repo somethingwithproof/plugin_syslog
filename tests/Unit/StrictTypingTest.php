@@ -2,8 +2,7 @@
 
 declare(strict_types=1);
 
-
-require_once __DIR__ . '/../Helpers/CactiStubs.php';
+require_once('../../include/global.php');
 
 test('every php file in plugin_syslog has strict_types enabled', function () {
     $files = new RecursiveIteratorIterator(
