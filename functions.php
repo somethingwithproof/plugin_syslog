@@ -349,6 +349,13 @@ function syslog_partition_create($table, $time = null) {
 		 * and the source for the date string passed to TO_DAYS.
 		 */
 		$boundary_epoch = ((int)($time / 86400) + 1) * 86400;
+
+		if ($boundary_epoch <= 0 || $boundary_epoch <= $time) {
+			cacti_log("SYSLOG ERROR: Boundary epoch computation overflow for '$table' (time=$time); rotation aborted", false, 'SYSLOG');
+
+			return false;
+		}
+
 		$cformat        = 'd' . gmdate('Ymd', $time);
 		$boundary_date  = gmdate('Y-m-d', $boundary_epoch);
 
@@ -478,7 +485,7 @@ function syslog_partition_remove($table) {
 					/* $table passed syslog_partition_table_allowed() at function entry; $part_name is regex-validated above. */
 					$result = syslog_db_execute("ALTER TABLE `$syslogdb_default`.`$table` DROP PARTITION `$part_name`");
 
-					if ($result == 0) {
+					if ($result === false) {
 						cacti_log("SYSLOG ERROR: Failed to drop partition '$part_name' from '$table'; aborting further drops", false, 'SYSLOG');
 						break;
 					}
