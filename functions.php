@@ -352,6 +352,12 @@ function syslog_partition_create($table, $time = null) {
 		$cformat        = 'd' . gmdate('Ymd', $time);
 		$boundary_date  = gmdate('Y-m-d', $boundary_epoch);
 
+		if (!preg_match('/^d\d{8}$/', $cformat) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $boundary_date)) {
+			cacti_log("SYSLOG ERROR: Derived partition values failed format validation for '$table'; rotation aborted", false, 'SYSLOG');
+
+			return false;
+		}
+
 		$exists = syslog_db_fetch_row_prepared('SELECT *
 			FROM `information_schema`.`partitions`
 			WHERE table_schema = ?
