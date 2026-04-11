@@ -1184,11 +1184,11 @@ function syslog_filter($sql_where, $tab) {
 	?>
 	<script type='text/javascript'>
 	initSyslogMain({
-		pageTab: '<?php print get_request_var('tab'); ?>',
-		placeHolder: '<?php print __esc('Enter a search term', 'syslog'); ?>',
-		noneSelectedText: '<?php print __esc('Select Device(s)', 'syslog'); ?>',
-		devicesSelectedText: '<?php print __esc('Devices Selected', 'syslog'); ?>',
-		allDevicesText: '<?php print __esc('All Devices Selected', 'syslog'); ?>'
+		pageTab: <?php print json_encode(get_request_var('tab'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);?>,
+		placeHolder: <?php print json_encode(__('Enter a search term', 'syslog'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);?>,
+		noneSelectedText: <?php print json_encode(__('Select Device(s)', 'syslog'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);?>,
+		devicesSelectedText: <?php print json_encode(__('Devices Selected', 'syslog'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);?>,
+		allDevicesText: <?php print json_encode(__('All Devices Selected', 'syslog'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);?>
 	});
 	</script>
 	<?php
