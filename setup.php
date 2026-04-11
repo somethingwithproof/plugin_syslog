@@ -1609,20 +1609,25 @@ function syslog_utilities_action($action) {
 
 	if ($action == 'purge_syslog_hosts') {
 		if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-			raise_message('syslog_error', __('Invalid request. This action requires a CSRF protected POST.', 'syslog'), MESSAGE_LEVEL_ERROR);
+			cacti_log('WARNING: syslog purge blocked -- non-POST request', false, 'SYSLOG');
+			raise_message('syslog_method_error', __('Invalid request. This action requires a CSRF protected POST.', 'syslog'), MESSAGE_LEVEL_ERROR);
 			header('Location: utilities.php');
 			exit;
 		}
 
+		// csrf_check($fatal) returns bool; $fatal=false tells the helper not to
+		// die/exit on failure so we can log and redirect with a user-visible
+		// message ourselves.
 		if (function_exists('csrf_check')) {
 			if (!csrf_check(false)) {
-				raise_message('syslog_error', __('Invalid request. This action requires a CSRF protected POST.', 'syslog'), MESSAGE_LEVEL_ERROR);
+				cacti_log('WARNING: syslog purge blocked -- CSRF token validation failed', false, 'SYSLOG');
+				raise_message('syslog_csrf_error', __('Invalid request. This action requires a CSRF protected POST.', 'syslog'), MESSAGE_LEVEL_ERROR);
 				header('Location: utilities.php');
 				exit;
 			}
 		} else {
 			cacti_log('WARNING: syslog purge blocked -- CSRF validation unavailable', false, 'SYSLOG');
-			raise_message('syslog_error', __('Invalid request. Please try again.', 'syslog'), MESSAGE_LEVEL_ERROR);
+			raise_message('syslog_csrf_unavailable', __('Invalid request. Please try again.', 'syslog'), MESSAGE_LEVEL_ERROR);
 			header('Location: utilities.php');
 			exit;
 		}

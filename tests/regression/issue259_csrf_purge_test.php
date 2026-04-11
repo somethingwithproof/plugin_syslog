@@ -1,4 +1,18 @@
 <?php
+/*
+ * Source-scan lint for the #259 purge-syslog-hosts CSRF hardening.
+ *
+ * This is a lint, NOT a behavioral test. It asserts that the expected
+ * CSRF-enforcement snippets exist in setup.php so regressions that
+ * silently delete the POST/csrf_check/JS-post-flow are caught at CI
+ * time. A full behavioral test would require bootstrapping Cacti's
+ * session, CSRF token, and database, which this plugin's regression
+ * harness cannot currently provide.
+ *
+ * If the guard is refactored in a way that preserves the strings but
+ * breaks the logic, this lint will NOT catch it — follow-up issue for
+ * real behavioral coverage once a DB-backed test harness exists.
+ */
 
 $setup = file_get_contents(dirname(__DIR__, 2) . '/setup.php');
 
@@ -79,8 +93,8 @@ if (strpos($setup, 'JSON_HEX_QUOT') === false) {
 	exit(1);
 }
 
-// Verify user-facing message does not expose CSRF internals (log message may use "CSRF")
-if (strpos($setup, "raise_message('syslog_error', __('CSRF") !== false) {
+// Verify user-facing messages do not expose CSRF internals (log messages may use "CSRF")
+if (preg_match("/raise_message\\('syslog_[a-z_]*', __\\('CSRF/", $setup)) {
 	fwrite(STDERR, "User-facing raise_message must not expose CSRF internals to end users.\n");
 	exit(1);
 }
@@ -92,7 +106,7 @@ if (strpos($setup, "Invalid request. Please try again.") === false) {
 }
 
 // Verify fail-closed raise_message uses MESSAGE_LEVEL_ERROR severity
-if (strpos($setup, "raise_message('syslog_error', __('Invalid request. Please try again.', 'syslog'), MESSAGE_LEVEL_ERROR)") === false) {
+if (strpos($setup, "raise_message('syslog_csrf_unavailable', __('Invalid request. Please try again.', 'syslog'), MESSAGE_LEVEL_ERROR)") === false) {
 	fwrite(STDERR, "Fail-closed branch raise_message must use MESSAGE_LEVEL_ERROR severity.\n");
 	exit(1);
 }
