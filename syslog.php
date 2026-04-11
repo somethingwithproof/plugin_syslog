@@ -32,9 +32,9 @@ $guest_account = true;
 chdir('../../');
 include('./include/auth.php');
 include_once('./lib/html_tree.php');
-include_once('./plugins/syslog/setup.php');
-include_once('./plugins/syslog/functions.php');
-include_once('./plugins/syslog/database.php');
+include_once(__DIR__ . '/setup.php');
+include_once(__DIR__ . '/functions.php');
+include_once(__DIR__ . '/database.php');
 
 syslog_connect();
 
