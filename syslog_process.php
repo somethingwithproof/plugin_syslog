@@ -272,43 +272,56 @@ if (sizeof($query)) {
 		$smsalert = '';
 		$th_sql   = '';
 
+		$params = array();
 		if ($alert['type'] == 'facility') {
 			$sql = 'SELECT * FROM `' . $syslogdb_default . '`.`syslog_incoming`
-				WHERE ' . $syslog_incoming_config['facilityField'] . "='" . $alert['message'] . "'
-				AND status=" . $uniqueID;
+				WHERE ' . $syslog_incoming_config['facilityField'] . '=?
+				AND status=?';
+			$params[] = $alert['message'];
+			$params[] = $uniqueID;
 		} else if ($alert['type'] == 'messageb') {
 			$sql = 'SELECT * FROM `' . $syslogdb_default . '`.`syslog_incoming`
-				WHERE ' . $syslog_incoming_config['textField'] . "
-				LIKE '" . $alert['message'] . "%'
-				AND status=" . $uniqueID;
+				WHERE ' . $syslog_incoming_config['textField'] . '
+				LIKE ?
+				AND status=?';
+			$params[] = $alert['message'] . '%';
+			$params[] = $uniqueID;
 		} else if ($alert['type'] == 'messagec') {
 			$sql = 'SELECT * FROM `' . $syslogdb_default . '`.`syslog_incoming`
-				WHERE ' . $syslog_incoming_config['textField'] . "
-				LIKE '%" . $alert['message'] . "%'
-				AND status=" . $uniqueID;
+				WHERE ' . $syslog_incoming_config['textField'] . '
+				LIKE ?
+				AND status=?';
+			$params[] = '%' . $alert['message'] . '%';
+			$params[] = $uniqueID;
 		} else if ($alert['type'] == 'messagee') {
 			$sql = 'SELECT * FROM `' . $syslogdb_default . '`.`syslog_incoming`
-				WHERE ' . $syslog_incoming_config['textField'] . "
-				LIKE '%" . $alert['message'] . "'
-				AND status=" . $uniqueID;
+				WHERE ' . $syslog_incoming_config['textField'] . '
+				LIKE ?
+				AND status=?';
+			$params[] = '%' . $alert['message'];
+			$params[] = $uniqueID;
 		} else if ($alert['type'] == 'host') {
 			$sql = 'SELECT * FROM `' . $syslogdb_default . '`.`syslog_incoming`
-				WHERE ' . $syslog_incoming_config['hostField'] . "='" . $alert['message'] . "'
-				AND status=" . $uniqueID;
+				WHERE ' . $syslog_incoming_config['hostField'] . '=?
+				AND status=?';
+			$params[] = $alert['message'];
+			$params[] = $uniqueID;
 		} else if ($alert['type'] == 'sql') {
 			$sql = 'SELECT * FROM `' . $syslogdb_default . '`.`syslog_incoming`
-				WHERE (' . $alert['message'] . ')
-				AND status=' . $uniqueID;
+				WHERE (?)
+				AND status=?';
+			$params[] = $alert['message'];
+			$params[] = $uniqueID;
 		}
 
 		if ($sql != '') {
 			if ($alert['method'] == '1') {
 				$th_sql = str_replace('*', 'count(*)', $sql);
-				$count = syslog_db_fetch_cell($th_sql);
+				$count = syslog_db_fetch_cell_prepared($th_sql, $params);
 			}
 
 			if (($alert['method'] == '1' && $count >= $alert['num']) || ($alert['method'] == '0')) {
-				$at = syslog_db_fetch_assoc($sql);
+				$at = syslog_db_fetch_assoc_prepared($sql, $params);
 
 				/* get a date for the repeat alert */
 				if ($alert['repeat_alert']) {
