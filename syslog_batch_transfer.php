@@ -25,6 +25,7 @@
 chdir('../../');
 include('./include/cli_check.php');
 include_once('./lib/poller.php');
+include_once('./plugins/syslog/setup.php');
 include_once('./plugins/syslog/functions.php');
 include_once('./plugins/syslog/database.php');
 
