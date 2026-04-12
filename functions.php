@@ -187,86 +187,184 @@ function syslog_partition_manage() {
 }
 
 /**
- * This function will create a new partition for the specified table.
+ * Validate tables that support partition maintenance.
+ *
+ * Any value added to the allowlist MUST match ^[a-z_]+$ so it is safe
+ * for identifier interpolation in DDL statements (MySQL does not support
+ * parameter binding for identifiers).
+ */
+function syslog_partition_table_allowed($table) {
+	if (!in_array($table, array('syslog', 'syslog_removed'), true)) {
+		return false;
+	}
+
+	/* Defense-in-depth: reject values unsafe for identifier interpolation. */
+	if (!preg_match('/^[a-z_]+$/', $table)) {
+		return false;
+	}
+
+	return true;
+}
+
+/**
+ * Create a new partition for the specified table.
+ *
+ * @return bool true on success, false on lock failure or disallowed table.
  */
 function syslog_partition_create($table) {
 	global $syslogdb_default;
 
-	/* determine the format of the table name */
-	$time    = time();
-	$cformat = 'd' . date('Ymd', $time);
-	$lnow    = date('Y-m-d', $time+86400);
-
-	$exists = syslog_db_fetch_row("SELECT *
-		FROM `information_schema`.`partitions`
-        WHERE table_schema='" . $syslogdb_default . "'
-		AND partition_name='" . $cformat . "'
-		AND table_name='syslog'
-        ORDER BY partition_ordinal_position");
-
-	if (!cacti_sizeof($exists)) {
-		cacti_log("SYSLOG: Creating new partition '$cformat'", false, 'SYSTEM');
-
-		syslog_debug("Creating new partition '$cformat'");
-
-		syslog_db_execute("ALTER TABLE `" . $syslogdb_default . "`.`$table` REORGANIZE PARTITION dMaxValue INTO (
-			PARTITION $cformat VALUES LESS THAN (TO_DAYS('$lnow')),
-			PARTITION dMaxValue VALUES LESS THAN MAXVALUE)");
+	if (!syslog_partition_table_allowed($table)) {
+		return false;
 	}
+
+	/* Hash to guarantee the lock name stays within MySQL's 64-byte limit. */
+	$lock_name = substr(hash('sha256', $syslogdb_default . '.syslog_partition_create.' . $table), 0, 60);
+
+	/*
+	 * 10-second timeout is sufficient: partition maintenance runs once per
+	 * poller cycle (typically 5 minutes), so sustained contention is not
+	 * expected. A failure is logged so monitoring can detect repeated misses.
+	 */
+	$locked    = syslog_db_fetch_cell_prepared('SELECT GET_LOCK(?, 10)', array($lock_name));
+
+	if ($locked === null) {
+		/* NULL means the GET_LOCK call itself failed, not just contention. */
+		cacti_log("SYSLOG: GET_LOCK call failed for partition create on '$table'", false, 'SYSTEM');
+		return false;
+	}
+
+	if ((int)$locked !== 1) {
+		cacti_log("SYSLOG: Unable to acquire partition create lock for '$table'", false, 'SYSTEM');
+		return false;
+	}
+
+	try {
+		/* determine the format of the table name */
+		$time    = time();
+		$cformat = 'd' . date('Ymd', $time);
+		$lnow    = date('Y-m-d', $time+86400);
+
+		$exists = syslog_db_fetch_row_prepared("SELECT *
+			FROM `information_schema`.`partitions`
+			WHERE table_schema = ?
+			AND partition_name = ?
+			AND table_name = ?
+			ORDER BY partition_ordinal_position",
+			array($syslogdb_default, $cformat, $table));
+
+		if (!cacti_sizeof($exists)) {
+			cacti_log("SYSLOG: Creating new partition '$cformat'", false, 'SYSTEM');
+
+			syslog_debug("Creating new partition '$cformat'");
+
+			/*
+			 * MySQL does not support parameter binding for DDL identifiers
+			 * or partition definitions. $table is safe because it passed
+			 * syslog_partition_table_allowed() (two-value allowlist plus
+			 * regex guard). $cformat and $lnow derive from date() and
+			 * contain only digits, hyphens, and the letter 'd'.
+			 */
+			syslog_db_execute("ALTER TABLE `" . $syslogdb_default . "`.`$table` REORGANIZE PARTITION dMaxValue INTO (
+				PARTITION $cformat VALUES LESS THAN (TO_DAYS('$lnow')),
+				PARTITION dMaxValue VALUES LESS THAN MAXVALUE)");
+		}
+	} finally {
+		syslog_db_fetch_cell_prepared('SELECT RELEASE_LOCK(?)', array($lock_name));
+	}
+
+	return true;
 }
 
 /**
- * This function will remove all old partitions for the specified table.
+ * Remove old partitions for the specified table.
  */
 function syslog_partition_remove($table) {
 	global $syslogdb_default;
 
+	if (!syslog_partition_table_allowed($table)) {
+		cacti_log("SYSLOG: partition_remove called with disallowed table '$table'", false, 'SYSTEM');
+		return 0;
+	}
+
+	$lock_name = substr(hash('sha256', $syslogdb_default . '.syslog_partition_remove.' . $table), 0, 60);
+
+	$locked = syslog_db_fetch_cell_prepared('SELECT GET_LOCK(?, 10)', array($lock_name));
+
+	if ($locked === null) {
+		cacti_log("SYSLOG: GET_LOCK call failed for partition remove on '$table'", false, 'SYSTEM');
+		return 0;
+	}
+
+	if ((int)$locked !== 1) {
+		cacti_log("SYSLOG: Unable to acquire partition remove lock for '$table'", false, 'SYSTEM');
+		return 0;
+	}
+
 	$syslog_deleted = 0;
-	$number_of_partitions = syslog_db_fetch_assoc("SELECT *
-		FROM `information_schema`.`partitions`
-		WHERE table_schema='" . $syslogdb_default . "' AND table_name='syslog'
-		ORDER BY partition_ordinal_position");
 
-	$days = read_config_option('syslog_retention');
+	try {
+		$number_of_partitions = syslog_db_fetch_assoc_prepared("SELECT *
+			FROM `information_schema`.`partitions`
+			WHERE table_schema = ? AND table_name = ?
+			ORDER BY partition_ordinal_position",
+			array($syslogdb_default, $table));
 
-	syslog_debug("There are currently '" . sizeof($number_of_partitions) . "' Syslog Partitions, We will keep '$days' of them.");
+		$days = read_config_option('syslog_retention');
 
-	if ($days > 0) {
-		$user_partitions = sizeof($number_of_partitions) - 1;
-		if ($user_partitions >= $days) {
-			$i = 0;
-			while ($user_partitions > $days) {
-				$oldest = $number_of_partitions[$i];
+		syslog_debug("There are currently '" . sizeof($number_of_partitions) . "' Syslog Partitions, We will keep '$days' of them.");
 
-				cacti_log("SYSLOG: Removing old partition '" . $oldest['PARTITION_NAME'] . "'", false, 'SYSTEM');
+		if ($days > 0) {
+			$user_partitions = sizeof($number_of_partitions) - 1;
+			if ($user_partitions >= $days) {
+				$i = 0;
+				while ($user_partitions > $days) {
+					$oldest = $number_of_partitions[$i];
 
-				syslog_debug("Removing partition '" . $oldest['PARTITION_NAME'] . "'");
+					cacti_log("SYSLOG: Removing old partition '" . $oldest['PARTITION_NAME'] . "'", false, 'SYSTEM');
 
-				syslog_db_execute("ALTER TABLE `" . $syslogdb_default . "`.`$table` DROP PARTITION " . $oldest['PARTITION_NAME']);
+					syslog_debug("Removing partition '" . $oldest['PARTITION_NAME'] . "'");
 
-				$i++;
-				$user_partitions--;
-				$syslog_deleted++;
+					syslog_db_execute("ALTER TABLE `" . $syslogdb_default . "`.`$table` DROP PARTITION " . $oldest['PARTITION_NAME']);
+
+					$i++;
+					$user_partitions--;
+					$syslog_deleted++;
+				}
 			}
 		}
+	} finally {
+		syslog_db_fetch_cell_prepared('SELECT RELEASE_LOCK(?)', array($lock_name));
 	}
 
 	return $syslog_deleted;
 }
 
+/*
+ * syslog_partition_check is a read-only SELECT against information_schema.
+ * It does not execute DDL, so it does not need the named lock that
+ * syslog_partition_create and syslog_partition_remove acquire. External
+ * serialization is provided by the poller cycle calling
+ * syslog_partition_manage().
+ */
 function syslog_partition_check($table) {
 	global $syslogdb_default;
+
+	if (!syslog_partition_table_allowed($table)) {
+		return false;
+	}
 
 	if (defined('SYSLOG_CONFIG')) {
 		include(SYSLOG_CONFIG);
 	}
 
 	/* find date of last partition */
-	$last_part = syslog_db_fetch_cell("SELECT PARTITION_NAME
+	$last_part = syslog_db_fetch_cell_prepared("SELECT PARTITION_NAME
 		FROM `information_schema`.`partitions`
-		WHERE table_schema='" . $syslogdb_default . "' AND table_name='syslog'
+		WHERE table_schema = ? AND table_name = ?
 		ORDER BY partition_ordinal_position DESC
-		LIMIT 1,1;");
+		LIMIT 1,1",
+		array($syslogdb_default, $table));
 
 	$lformat   = str_replace('d', '', $last_part);
 	$cformat   = date('Ymd');
@@ -2421,4 +2519,3 @@ function alert_replace_variables($alert, $results, $hostname = '') {
 
 	return $command;
 }
-
