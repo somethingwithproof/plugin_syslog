@@ -1,14 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
 $GLOBALS['syslogdb_default'] = 'syslogdb';
-$GLOBALS['syslog_incoming_config'] = [
+$GLOBALS['syslog_incoming_config'] = array(
 	'hostField'    => 'host',
 	'programField' => 'program',
 	'facilityField'=> 'facility',
 	'textField'    => 'message'
-];
+);
 
 require_once dirname(__DIR__, 2) . '/functions.php';
 
@@ -19,15 +17,15 @@ function issue253_assert($condition, $message) {
 	}
 }
 
-$hostAlert = [
+$hostAlert = array(
 	'type'    => 'host',
 	'message' => 'router1'
-];
+);
 
-$programAlert = [
+$programAlert = array(
 	'type'    => 'program',
 	'message' => 'sshd'
-];
+);
 
 $hostSql = syslog_get_alert_sql($hostAlert, 55);
 $progSql = syslog_get_alert_sql($programAlert, 66);
@@ -42,4 +40,4 @@ issue253_assert(strpos($progSql['sql'], '?66') === false, 'Program alert SQL mus
 issue253_assert(count($progSql['params']) === 2, 'Program alert SQL must pass two prepared parameters.');
 issue253_assert($progSql['params'][1] === 66, 'Program alert status param should be the uniqueID.');
 
-print "issue253_alert_sql_placeholder_test passed\n";
+echo "issue253_alert_sql_placeholder_test passed\n";
