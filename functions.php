@@ -926,54 +926,54 @@ function syslog_manage_items($from_table, $to_table) {
 
 			if ($remove['type'] == 'facility') {
 				if ($remove['method'] != 'del') {
-					$sql_sel = "SELECT seq FROM `" . $syslogdb_default . "`. $from_table
+					$sql_sel = 'SELECT seq FROM `' . $syslogdb_default . '`. ' . $from_table . '
 						WHERE facility_id IN
-							(SELECT distinct facility_id FROM `". $syslogdb_default . "`syslog_facilities
-							WHERE facility ='". $remove['message']."')";
+							(SELECT distinct facility_id FROM `' . $syslogdb_default . '`syslog_facilities
+							WHERE facility = ' . db_qstr($remove['message']) . ')';
 				} else {
-					$sql_dlt = "DELETE FROM `" . $syslogdb_default . "`. $from_table
+					$sql_dlt = 'DELETE FROM `' . $syslogdb_default . '`. ' . $from_table . '
 						WHERE facility_id IN
-							(SELECT distinct facility_id FROM `". $syslogdb_default . "`syslog_facilities
-							WHERE facility ='". $remove['message']."')";
+							(SELECT distinct facility_id FROM `' . $syslogdb_default . '`syslog_facilities
+							WHERE facility = ' . db_qstr($remove['message']) . ')';
 				}
 
 			} elseif ($remove['type'] == 'host') {
 				if ($remove['method'] != 'del') {
-					$sql_sel = "SELECT seq
-						FROM `" . $syslogdb_default . "`. $from_table
+					$sql_sel = 'SELECT seq
+						FROM `' . $syslogdb_default . '`. ' . $from_table . '
 						WHERE host_id in
-							(SELECT distinct host_id FROM `". $syslogdb_default . "`syslog_hosts
-							WHERE host ='". $remove['message']."')";
+							(SELECT distinct host_id FROM `' . $syslogdb_default . '`syslog_hosts
+							WHERE host = ' . db_qstr($remove['message']) . ')';
 				} else {
-					$sql_dlt = "DELETE FROM `" . $syslogdb_default . "`. $from_table
+					$sql_dlt = 'DELETE FROM `' . $syslogdb_default . '`. ' . $from_table . '
 						WHERE host_id in
-							(SELECT distinct host_id FROM `". $syslogdb_default . "`syslog_hosts
-							WHERE host ='". $remove['message']."')";
+							(SELECT distinct host_id FROM `' . $syslogdb_default . '`syslog_hosts
+							WHERE host = ' . db_qstr($remove['message']) . ')';
 				}
 			} elseif ($remove['type'] == 'messageb') {
 				if ($remove['method'] != 'del') {
-					$sql_sel = "SELECT seq FROM `" . $syslogdb_default . "`. $from_table
-						WHERE message LIKE '" . $remove['message'] . "%' ";
+					$sql_sel = 'SELECT seq FROM `' . $syslogdb_default . '`. ' . $from_table . '
+						WHERE message LIKE ' . db_qstr($remove['message'] . '%');
 				} else {
-					$sql_dlt = "DELETE FROM `" . $syslogdb_default . "`. $from_table
-						WHERE message LIKE '" . $remove['message'] . "%' ";
+					$sql_dlt = 'DELETE FROM `' . $syslogdb_default . '`. ' . $from_table . '
+						WHERE message LIKE ' . db_qstr($remove['message'] . '%');
 				}
 
 			} elseif ($remove['type'] == 'messagec') {
 				if ($remove['method'] != 'del') {
-					$sql_sel = "SELECT seq FROM `" . $syslogdb_default . "`. $from_table
-						WHERE message LIKE '%" . $remove['message'] . "%' ";
+					$sql_sel = 'SELECT seq FROM `' . $syslogdb_default . '`. ' . $from_table . '
+						WHERE message LIKE ' . db_qstr('%' . $remove['message'] . '%');
 				} else {
-					$sql_dlt = "DELETE FROM `" . $syslogdb_default . "`. $from_table
-						WHERE message LIKE '%" . $remove['message'] . "%' ";
+					$sql_dlt = 'DELETE FROM `' . $syslogdb_default . '`. ' . $from_table . '
+						WHERE message LIKE ' . db_qstr('%' . $remove['message'] . '%');
 				}
 			} elseif ($remove['type'] == 'messagee') {
 				if ($remove['method'] != 'del') {
-					$sql_sel = "SELECT seq FROM `" . $syslogdb_default . "`. $from_table
-						WHERE message LIKE '%" . $remove['message'] . "' ";
+					$sql_sel = 'SELECT seq FROM `' . $syslogdb_default . '`. ' . $from_table . '
+						WHERE message LIKE ' . db_qstr('%' . $remove['message']);
 				} else {
-					$sql_dlt = "DELETE FROM `" . $syslogdb_default . "`. $from_table
-						WHERE message LIKE '%" . $remove['message'] . "' ";
+					$sql_dlt = 'DELETE FROM `' . $syslogdb_default . '`. ' . $from_table . '
+						WHERE message LIKE ' . db_qstr('%' . $remove['message']);
 				}
 			} elseif ($remove['type'] == 'sql') {
 				if ($remove['method'] != 'del') {
