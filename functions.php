@@ -126,25 +126,50 @@ function syslog_sendemail($to, $from, $subject, $message, $smsmessage = '') {
 	}
 }
 
-function syslog_apply_selected_items_action($selected_items, $drp_action, $action_map, $export_action = '', $export_items = '') {
-	if ($selected_items != false) {
-		if (isset($action_map[$drp_action])) {
-			$action_function = $action_map[$drp_action];
-
-			if (function_exists($action_function)) {
-				foreach($selected_items as $selected_item) {
-					$action_function($selected_item);
-				}
-			} else {
-				cacti_log("SYSLOG ERROR: Bulk action function '$action_function' not found.", false, 'SYSTEM');
-			}
-		} elseif ($export_action != '' && $drp_action == $export_action) {
-			/* Re-serialize the sanitized array and URL-encode so the value is
-			 * safe to embed in a JS document.location string (avoids injection
-			 * via the raw request value that $export_items carries). */
-			$_SESSION['exporter'] = rawurlencode(serialize($selected_items));
-		}
+function syslog_get_import_xml_payload($redirect_url) {
+	if (trim(get_nfilter_request_var('import_text')) != '') {
+		/* textbox input */
+		return get_nfilter_request_var('import_text');
 	}
+
+	if (isset($_FILES['import_file']['tmp_name']) &&
+		$_FILES['import_file']['tmp_name'] != 'none' &&
+		$_FILES['import_file']['tmp_name'] != '') {
+		/* file upload */
+		$tmp_name = $_FILES['import_file']['tmp_name'];
+
+		if (!isset($_FILES['import_file']['error']) || $_FILES['import_file']['error'] !== UPLOAD_ERR_OK) {
+			header('Location: ' . $redirect_url);
+			exit;
+		}
+
+		if (!is_uploaded_file($tmp_name)) {
+			header('Location: ' . $redirect_url);
+			exit;
+		}
+
+		$fp = fopen($tmp_name, 'rb');
+
+		if ($fp === false) {
+			cacti_log('SYSLOG ERROR: Failed to open uploaded import file', false, 'SYSTEM');
+			header('Location: ' . $redirect_url);
+			exit;
+		}
+
+		$xml_data = fread($fp, filesize($tmp_name));
+		fclose($fp);
+
+		if ($xml_data === false) {
+			cacti_log('SYSLOG ERROR: Failed to read uploaded import file', false, 'SYSTEM');
+			header('Location: ' . $redirect_url);
+			exit;
+		}
+
+		return $xml_data;
+	}
+
+	header('Location: ' . $redirect_url);
+	exit;
 }
 
 function syslog_is_partitioned() {
@@ -1103,93 +1128,6 @@ function syslog_array2xml($array, $tag = 'template') {
 }
 
 /**
- * syslog_execute_ticket_command - run the configured ticketing command for an alert
- *
- * @param  array  $alert          The alert row from syslog_alert table
- * @param  array  $hostlist       Hostnames matched by the alert
- * @param  string $error_message  sprintf template used if exec() returns non-zero
- *
- * @return void
- */
-function syslog_execute_ticket_command($alert, $hostlist, $error_message) {
-	$command = read_config_option('syslog_ticket_command');
-
-	if ($command != '') {
-		$command = trim($command);
-	}
-
-	if ($alert['open_ticket'] == 'on' && $command != '') {
-		/* trim surrounding quotes so paths like "/usr/bin/cmd" resolve correctly */
-		$cparts     = preg_split('/\s+/', trim($command));
-		$executable = trim($cparts[0], '"\'');
-
-		if (cacti_sizeof($cparts) && is_executable($executable)) {
-			$command = $command .
-				' --alert-name=' . cacti_escapeshellarg(clean_up_name($alert['name'])) .
-				' --severity='   . cacti_escapeshellarg($alert['severity']) .
-				' --hostlist='   . cacti_escapeshellarg(implode(',', $hostlist)) .
-				' --message='    . cacti_escapeshellarg($alert['message']);
-
-			$output = array();
-			$return = 0;
-
-			exec($command, $output, $return);
-
-			if ($return !== 0) {
-				cacti_log(sprintf($error_message, $alert['name'], $return, implode(', ', $output)), false, 'SYSLOG');
-			}
-		} else {
-			$reason = (strpos($executable, DIRECTORY_SEPARATOR) === false)
-				? 'PATH-based lookups are not supported; use an absolute path'
-				: 'file not found or not marked executable';
-			cacti_log("SYSLOG ERROR: Ticket command is not executable: '$command' -- $reason", false, 'SYSTEM');
-		}
-	}
-}
-
-/**
- * syslog_execute_alert_command - run the per-alert shell command for a matched result
- *
- * @param  array  $alert     The alert row from syslog_alert table
- * @param  array  $results   The matched syslog result row
- * @param  string $hostname  Resolved hostname for the source device
- *
- * @return void
- */
-function syslog_execute_alert_command($alert, $results, $hostname) {
-	/* alert_replace_variables() escapes each substituted token (<ALERTID>,
-	 * <HOSTNAME>, <PRIORITY>, <FACILITY>, <MESSAGE>, <SEVERITY>) with
-	 * cacti_escapeshellarg(). The command template itself comes from admin
-	 * configuration ($alert['command']) and is trusted at that boundary.
-	 * Do not introduce additional substitution paths that bypass this escaping. */
-	$command = alert_replace_variables($alert, $results, $hostname);
-
-	/* trim surrounding quotes so paths like "/usr/bin/cmd" resolve correctly */
-	$cparts     = preg_split('/\s+/', trim($command));
-	$executable = trim($cparts[0], '"\'');
-
-	$output = array();
-	$return = 0;
-
-	if (cacti_sizeof($cparts) && is_executable($executable)) {
-		exec($command, $output, $return);
-
-		if ($return !== 0 && !empty($output)) {
-			cacti_log('SYSLOG NOTICE: Alert command output: ' . implode(', ', $output), true, 'SYSTEM');
-		}
-
-		if ($return !== 0) {
-			cacti_log(sprintf('ERROR: Alert command failed.  Alert:%s, Exit:%s, Output:%s', $alert['name'], $return, implode(', ', $output)), false, 'SYSLOG');
-		}
-	} else {
-		$reason = (strpos($executable, DIRECTORY_SEPARATOR) === false)
-			? 'PATH-based lookups are not supported; use an absolute path'
-			: 'file not found or not marked executable';
-		cacti_log("SYSLOG ERROR: Alert command is not executable: '$command' -- $reason", false, 'SYSTEM');
-	}
-}
-
-/**
  * syslog_process_alerts - Process each of the Syslog Alerts
  *
  * Syslog Alerts come in essentially 4 types
@@ -1603,10 +1541,49 @@ function syslog_process_alert($alert, $sql, $params, $count, $hostname = '') {
 					/**
 					 * Open a ticket if this options have been selected.
 					 */
-					syslog_execute_ticket_command($alert, $hostlist, 'ERROR: Ticket Command Failed.  Alert:%s, Exit:%s, Output:%s');
+					 $command = read_config_option('syslog_ticket_command');
+
+					if ($command != '') {
+						$command = trim($command);
+					}
+
+					if ($alert['open_ticket'] == 'on' && $command != '') {
+						if (is_executable($command)) {
+							$command = $command .
+								' --alert-name=' . cacti_escapeshellarg(clean_up_name($alert['name'])) .
+								' --severity='   . cacti_escapeshellarg($alert['severity']) .
+								' --hostlist='   . cacti_escapeshellarg(implode(',',$hostlist)) .
+								' --message='    . cacti_escapeshellarg($alert['message']);
+
+							$output = array();
+							$return = 0;
+
+							exec($command, $output, $return);
+
+							if ($return != 0) {
+								cacti_log(sprintf('ERROR: Ticket Command Failed.  Alert:%s, Exit:%s, Output:%s', $alert['name'], $return, implode(', ', $output)), false, 'SYSLOG');
+							}
+						}
+					}
 
 					if (trim($alert['command']) != '' && !$found) {
-						syslog_execute_alert_command($alert, $results, $hostname);
+						$command = alert_replace_variables($alert, $results, $hostname);
+
+						$logMessage = "SYSLOG NOTICE: Executing '$command'";
+
+						$cparts = explode(' ', $command);
+
+						if (is_executable($cparts[0])) {
+							exec($command, $output, $returnCode);
+						} else {
+							exec('/bin/sh ' . $command, $output, $returnCode);
+						}
+
+						// Append the return code to the log message without the dot
+						$logMessage .= " Command return code: $returnCode";
+
+						// Log the combined message
+						cacti_log($logMessage, true, 'SYSTEM');
 					}
 
 				}
@@ -1624,10 +1601,49 @@ function syslog_process_alert($alert, $sql, $params, $count, $hostname = '') {
 
 					alert_setup_environment($alert, $results, $hostlist, $hostname);
 
-					syslog_execute_ticket_command($alert, $hostlist, 'ERROR: Command Failed.  Alert:%s, Exit:%s, Output:%s');
+					$command = read_config_option('syslog_ticket_command');
+
+					if ($command != '') {
+						$command = trim($command);
+					}
+
+					if ($alert['open_ticket'] == 'on' && $command != '') {
+						if (is_executable($command)) {
+							$command = $command .
+								' --alert-name=' . cacti_escapeshellarg(clean_up_name($alert['name'])) .
+								' --severity='   . cacti_escapeshellarg($alert['severity']) .
+								' --hostlist='   . cacti_escapeshellarg(implode(',',$hostlist)) .
+								' --message='    . cacti_escapeshellarg($alert['message']);
+
+							$output = array();
+							$return = 0;
+
+							exec($command, $output, $return);
+
+							if ($return != 0) {
+								cacti_log(sprintf('ERROR: Command Failed.  Alert:%s, Exit:%s, Output:%s', $alert['name'], $return, implode(', ', $output)), false, 'SYSLOG');
+							}
+						}
+					}
 
 					if (trim($alert['command']) != '' && !$found) {
-						syslog_execute_alert_command($alert, $results, $hostname);
+						$command = alert_replace_variables($alert, $results, $hostname);
+
+						$logMessage = "SYSLOG NOTICE: Executing '$command'";
+
+						$cparts = explode(' ', $command);
+
+						if (is_executable($cparts[0])) {
+							exec($command, $output, $returnCode);
+						} else {
+							exec('/bin/sh ' . $command, $output, $returnCode);
+						}
+
+						// Append the return code to the log message without the dot
+						$logMessage .= " Command return code: $returnCode";
+
+						// Log the combined message
+						cacti_log($logMessage, true, 'SYSTEM');
 					}
 				}
 			}
