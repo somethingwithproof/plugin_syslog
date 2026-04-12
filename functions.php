@@ -1071,16 +1071,38 @@ function syslog_array2xml($array, $tag = 'template') {
 }
 
 /**
+ * syslog_sanitize_hostlist - sanitize and validate a list of hostnames
+ *
+ * Trims whitespace, drops empty entries, and rejects entries containing
+ * characters outside the hostname/IPv6 safe set or exceeding 253 chars.
+ *
+ * @param  array  $hostlist  Raw hostnames from alert processing
+ *
+ * @return array  Sanitized hostnames with invalid entries removed
+ */
+function syslog_sanitize_hostlist($hostlist) {
+	/* trim whitespace and drop empty entries */
+	$hostlist = array_values(array_filter(array_map('trim', $hostlist)));
+
+	/* validate entries: only allow characters valid in hostnames and IPv6 addresses */
+	$hostlist = array_values(array_filter($hostlist, function($h) {
+		return preg_match('/^[a-zA-Z0-9.\-_:]+$/', $h) && strlen($h) <= 253;
+	}));
+
+	return $hostlist;
+}
+
+/**
  * syslog_execute_ticket_command - run the configured ticketing command for an alert
  *
  * @param  array  $alert          The alert row from syslog_alert table
  * @param  array  $hostlist       Hostnames matched by the alert
- * @param  string $error_message  sprintf template used if exec() returns non-zero
  *
  * @return void
  */
-function syslog_execute_ticket_command($alert, $hostlist, $error_message) {
-	$command = read_config_option('syslog_ticket_command');
+function syslog_execute_ticket_command($alert, $hostlist) {
+	$raw_option = read_config_option('syslog_ticket_command');
+	$command    = ($raw_option !== false && $raw_option !== null) ? (string) $raw_option : '';
 
 	if ($command != '') {
 		$command = trim($command);
@@ -1091,9 +1113,24 @@ function syslog_execute_ticket_command($alert, $hostlist, $error_message) {
 		$cparts     = preg_split('/\s+/', trim($command));
 		$executable = trim($cparts[0], '"\'');
 
-		if (cacti_sizeof($cparts) && is_executable($executable)) {
+		/* resolve symlinks and relative segments; realpath returns false for non-existent paths */
+		$resolved = realpath($executable);
+
+		if (cacti_sizeof($cparts) && $resolved !== false && is_executable($resolved)) {
+			$hostlist = syslog_sanitize_hostlist($hostlist);
+
+			cacti_log('DEBUG: Ticket command hostlist after sanitization: ' . implode(',', $hostlist), false, 'SYSLOG', POLLER_VERBOSITY_DEBUG);
+
+			/* validate alert name produces a non-empty result after cleanup */
+			$clean_name = clean_up_name($alert['name']);
+
+			if ($clean_name == '') {
+				cacti_log(sprintf('SYSLOG ERROR: Alert name is empty after sanitization for Alert ID:%s', $alert['id']), false, 'SYSTEM');
+				return;
+			}
+
 			$command = $command .
-				' --alert-name=' . cacti_escapeshellarg(clean_up_name($alert['name'])) .
+				' --alert-name=' . cacti_escapeshellarg($clean_name) .
 				' --severity='   . cacti_escapeshellarg($alert['severity']) .
 				' --hostlist='   . cacti_escapeshellarg(implode(',', $hostlist)) .
 				' --message='    . cacti_escapeshellarg($alert['message']);
@@ -1104,7 +1141,10 @@ function syslog_execute_ticket_command($alert, $hostlist, $error_message) {
 			exec($command, $output, $return);
 
 			if ($return !== 0) {
-				cacti_log(sprintf($error_message, $alert['name'], $return, implode(', ', $output)), false, 'SYSLOG');
+				cacti_log(sprintf('ERROR: Ticket Command Failed.  Alert:%s, Exit:%s, Output:%s, Command:%s', $alert['name'], $return, implode(', ', $output), $command), false, 'SYSLOG');
+			} else {
+				cacti_log(sprintf('SYSLOG NOTICE: Ticket command succeeded.  Alert:%s', $alert['name']), false, 'SYSLOG');
+				cacti_log(sprintf('DEBUG: Ticket command succeeded.  Alert:%s, Command:%s', $alert['name'], $command), false, 'SYSLOG', POLLER_VERBOSITY_DEBUG);
 			}
 		} else {
 			$reason = (strpos($executable, DIRECTORY_SEPARATOR) === false)
@@ -1129,17 +1169,31 @@ function syslog_execute_alert_command($alert, $results, $hostname) {
 	 * <HOSTNAME>, <PRIORITY>, <FACILITY>, <MESSAGE>, <SEVERITY>) with
 	 * cacti_escapeshellarg(). The command template itself comes from admin
 	 * configuration ($alert['command']) and is trusted at that boundary.
-	 * Do not introduce additional substitution paths that bypass this escaping. */
+	 * Do not introduce additional substitution paths that bypass this escaping.
+	 *
+	 * The /bin/sh fallback for non-executable commands was removed as a
+	 * security hardening measure. Commands must use absolute paths with
+	 * the execute bit set. Command templates should prefer the
+	 * $ALERT_MESSAGES environment variable over the <MESSAGE> token
+	 * for syslog content to avoid command-line injection surface. */
 	$command = alert_replace_variables($alert, $results, $hostname);
+
+	if (trim($command) == '') {
+		cacti_log(sprintf('SYSLOG ERROR: Alert command resolved to empty string for Alert:%s', $alert['name']), false, 'SYSTEM');
+		return;
+	}
 
 	/* trim surrounding quotes so paths like "/usr/bin/cmd" resolve correctly */
 	$cparts     = preg_split('/\s+/', trim($command));
 	$executable = trim($cparts[0], '"\'');
 
+	/* resolve symlinks and relative segments; realpath returns false for non-existent paths */
+	$resolved = realpath($executable);
+
 	$output = array();
 	$return = 0;
 
-	if (cacti_sizeof($cparts) && is_executable($executable)) {
+	if (cacti_sizeof($cparts) && $resolved !== false && is_executable($resolved)) {
 		exec($command, $output, $return);
 
 		if ($return !== 0 && !empty($output)) {
@@ -1147,7 +1201,10 @@ function syslog_execute_alert_command($alert, $results, $hostname) {
 		}
 
 		if ($return !== 0) {
-			cacti_log(sprintf('ERROR: Alert command failed.  Alert:%s, Exit:%s, Output:%s', $alert['name'], $return, implode(', ', $output)), false, 'SYSLOG');
+			cacti_log(sprintf('ERROR: Alert Command Failed.  Alert:%s, Exit:%s, Output:%s, Command:%s', $alert['name'], $return, implode(', ', $output), $command), false, 'SYSLOG');
+		} else {
+			cacti_log(sprintf('SYSLOG NOTICE: Alert command succeeded.  Alert:%s', $alert['name']), false, 'SYSLOG');
+			cacti_log(sprintf('DEBUG: Alert command succeeded.  Alert:%s, Command:%s', $alert['name'], $command), false, 'SYSLOG', POLLER_VERBOSITY_DEBUG);
 		}
 	} else {
 		$reason = (strpos($executable, DIRECTORY_SEPARATOR) === false)
@@ -1553,7 +1610,7 @@ function syslog_process_alert($alert, $sql, $params, $count, $hostname = '') {
 					/**
 					 * Open a ticket if this options have been selected.
 					 */
-					syslog_execute_ticket_command($alert, $hostlist, 'ERROR: Ticket Command Failed.  Alert:%s, Exit:%s, Output:%s');
+					syslog_execute_ticket_command($alert, $hostlist);
 
 					if (trim($alert['command']) != '' && !$found) {
 						syslog_execute_alert_command($alert, $results, $hostname);
@@ -1574,7 +1631,7 @@ function syslog_process_alert($alert, $sql, $params, $count, $hostname = '') {
 
 					alert_setup_environment($alert, $results, $hostlist, $hostname);
 
-					syslog_execute_ticket_command($alert, $hostlist, 'ERROR: Command Failed.  Alert:%s, Exit:%s, Output:%s');
+					syslog_execute_ticket_command($alert, $hostlist);
 
 					if (trim($alert['command']) != '' && !$found) {
 						syslog_execute_alert_command($alert, $results, $hostname);
@@ -2383,6 +2440,8 @@ function alert_setup_environment(&$alert, $results, $hostlist = array(), $hostna
 	putenv('ALERT_PRIORITY='      . cacti_escapeshellarg($syslog_levels[$results['priority_id']]));
 	putenv('ALERT_FACILITY='      . cacti_escapeshellarg($syslog_facilities[$results['facility_id']]));
 
+	$hostlist = syslog_sanitize_hostlist($hostlist);
+
 	putenv('ALERT_HOSTLIST='      . cacti_escapeshellarg(implode(',', $hostlist)));
 	putenv('ALERT_HOSTNAME='      . cacti_escapeshellarg($hostname));
 
@@ -2404,11 +2463,17 @@ function alert_replace_variables($alert, $results, $hostname = '') {
 
 	$command = $alert['command'];
 
+	/* cap hostname to RFC 1035 maximum length */
+	$hostname = substr((string) $hostname, 0, 253);
+
+	/* strip null bytes and cap message to 64 KB to avoid oversized command lines */
+	$message = substr(str_replace("\0", ' ', (string) $results['message']), 0, 65536);
+
 	$command = str_replace('<ALERTID>',  cacti_escapeshellarg($alert['id']), $command);
 	$command = str_replace('<HOSTNAME>', cacti_escapeshellarg($hostname), $command);
 	$command = str_replace('<PRIORITY>', cacti_escapeshellarg($syslog_levels[$results['priority_id']]), $command);
 	$command = str_replace('<FACILITY>', cacti_escapeshellarg($syslog_facilities[$results['facility_id']]), $command);
-	$command = str_replace('<MESSAGE>',  cacti_escapeshellarg($results['message']), $command);
+	$command = str_replace('<MESSAGE>',  cacti_escapeshellarg($message), $command);
 	$command = str_replace('<SEVERITY>', cacti_escapeshellarg($severities[$alert['severity']]), $command);
 
 	return $command;

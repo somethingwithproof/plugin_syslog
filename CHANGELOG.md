@@ -3,7 +3,11 @@
 --- develop ---
 
 * issue#250: Fix date filter persistence by validating before shift_span detection
-* issue#257: Remove /bin/sh fallback from alert command execution path
+* issue#258: Execute CREATE TABLE SQL correctly during replication sync
+* issue#278: Extract duplicated alert command execution paths in syslog_process_alerts
+* issue#278: Extract alert command execution into shared helper in functions.php; command tokenization now uses preg_split (handles tabs and consecutive spaces); /bin/sh fallback for non-executable command templates removed (use absolute paths with execute bit set)
+* issue#278: Harden command execution helpers with empty-command validation, standardized error logging, and success observability
+* issue#278: Add path traversal guard to command execution helpers; reject executable paths containing '..' sequences
 * issue: Making changes to support Cacti 1.3
 * issue: Don't use MyISAM for non-analytical tables
 * issue: The install advisor for Syslog was broken in current Cacti releases
