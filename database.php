@@ -247,6 +247,6 @@ function syslog_db_add_column($table, $column, $log = true) {
  */
 function syslog_db_affected_rows() {
 	global $syslog_cnn;
-	return db_affected_rows($syslog_cnn);;
+	return db_affected_rows($syslog_cnn);
 }
 

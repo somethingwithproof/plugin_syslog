@@ -85,9 +85,13 @@ function applyFilter() {
 	strURL += '&removal='+$('#removal').val();
 	strURL += '&refresh='+$('#refresh').val();
 	strURL += '&grouping=' + ($('#grouping').length ? $('#grouping').val() : '0');
-	strURL += '&predefined_timespan='+$('#predefined_timespan').val();
-	strURL += '&date1='+$('#date1').val();
-	strURL += '&date2='+$('#date2').val();
+
+	if ($('#predefined_timespan').val() == 0) {
+		strURL += '&date1='+$('#date1').val();
+		strURL += '&date2='+$('#date2').val();
+	} else {
+		strURL += '&predefined_timespan='+$('#predefined_timespan').val();
+	}
 
 	loadPageNoHeader(strURL);
 }
@@ -170,8 +174,6 @@ function initSyslogMain(config) {
 	var pageTab   = config.pageTab || '';
 	var hostTerm  = '';
 	var placeHolder = config.placeHolder || '';
-	var origDate1 = $('#date1').val();
-	var origDate2 = $('#date2').val();
 
 	// Make pageTab global for other functions
 	window.pageTab = pageTab;
@@ -224,13 +226,8 @@ function initSyslogMain(config) {
 							});
 
 							$.each(data, function(index, hostData) {
-								if ($('#host').find('option').filter(function() { return $(this).val() === String(index); }).length == 0) {
-									// jQuery attr/text handle escaping; string concat + DOMPurify leaves attribute quotes unescaped.
-									$('<option>')
-										.attr('value', index)
-										.attr('class', hostData.class)
-										.text(hostData.host)
-										.appendTo('#host');
+								if ($('#host option[value="'+index+'"]').length == 0) {
+									$('#host').append('<option class="'+DOMPurify.sanitize(hostData.class)+'" value="'+DOMPurify.sanitize(index)+'">'+DOMPurify.sanitize(hostData.host)+'</option>');
 								}
 							});
 
@@ -325,13 +322,9 @@ function initSyslogMain(config) {
 			stepMinute: 1,
 			showAnim: 'slideDown',
 			numberOfMonths: 1,
-			timeFormat: 'HH:mm:ss',
+			timeFormat: 'HH:mm',
 			dateFormat: 'yy-mm-dd',
 			showButtonPanel: false
-		}).on('change', function() {
-			if ($('#date1').val() != origDate1) {
-				$('#predefined_timespan').val(0).selectmenu('refresh');
-			}
 		});
 
 		$('#date2').datetimepicker({
@@ -339,14 +332,10 @@ function initSyslogMain(config) {
 			stepMinute: 1,
 			showAnim: 'slideDown',
 			numberOfMonths: 1,
-			timeFormat: 'HH:mm:ss',
+			timeFormat: 'HH:mm',
 			dateFormat: 'yy-mm-dd',
 			showButtonPanel: false
-		}).on('change', function() {
-			if ($('#date2').val() != origDate2) {
-				$('#predefined_timespan').val(0).selectmenu('refresh');
-			}
-		});;
+		});
 	});
 }
 
@@ -586,54 +575,6 @@ function initSyslogReports() {
  * ======================================================================== */
 
 /**
- * Invoke a whitelisted callback by bare identifier.
- *
- * Only accepts a simple identifier ([A-Za-z_$][A-Za-z0-9_$]*). Dotted
- * paths, arguments, and non-identifier characters are rejected so an
- * attacker who controls an onChange string cannot reach arbitrary
- * globals (eval, Function, fetch, ...). If the callback is unknown or
- * not a function, the call is skipped with a console warning.
- */
-function syslogInvokeCallback(functionName) {
-	if (typeof functionName !== 'string') {
-		return;
-	}
-
-	var trimmed = functionName.trim();
-
-	// Only tolerate an exact trailing "()" for legacy callers; reject any arguments.
-	if (trimmed.endsWith('()')) {
-		trimmed = trimmed.substring(0, trimmed.length - 2).trim();
-	} else if (trimmed.indexOf('(') !== -1 || trimmed.indexOf(')') !== -1) {
-		if (window.console && console.warn) {
-			console.warn('syslog: refusing to invoke callback with arguments or invalid parentheses', functionName);
-		}
-
-		return;
-	}
-
-	if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(trimmed)) {
-		if (window.console && console.warn) {
-			console.warn('syslog: refusing to invoke non-identifier callback', functionName);
-		}
-
-		return;
-	}
-
-	var fn = window[trimmed];
-
-	if (typeof fn !== 'function') {
-		if (window.console && console.warn) {
-			console.warn('syslog: callback is not a function', trimmed);
-		}
-
-		return;
-	}
-
-	return fn();
-}
-
-/**
  * Initialize autocomplete for form dropdown fields
  * @param {string} formName - The name of the form field
  * @param {string} callback - The AJAX callback action
@@ -651,16 +592,13 @@ function initSyslogAutocomplete(formName, callback, onChange) {
 			minLength: 0,
 			select: function(event, ui) {
 				$('#' + formName + '_input').val(ui.item.label);
-
 				if (ui.item.id) {
 					$('#' + formName).val(ui.item.id);
 				} else {
 					$('#' + formName).val(ui.item.value);
 				}
-
 				if (onChange) {
-					$(this).autocomplete('close');
-					syslogInvokeCallback(onChange);
+					eval(onChange);
 				}
 			}
 		}).css('border', 'none').css('background-color', 'transparent');
