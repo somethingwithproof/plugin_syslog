@@ -618,13 +618,7 @@ function syslog_removal() {
 
 	$sql_where = '';
 
-	if (get_request_var('rows') == -1) {
-		$rows = read_config_option('num_rows_table');
-	} elseif (get_request_var('rows') == -2) {
-		$rows = 999999;
-	} else {
-		$rows = get_request_var('rows');
-	}
+	$rows = plugin_get_rows_per_page();
 
 	$removals = syslog_get_removal_records($sql_where, $rows);
 
