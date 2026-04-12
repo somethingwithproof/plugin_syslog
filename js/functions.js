@@ -73,8 +73,9 @@ function applyTimespan() {
  */
 function applyFilter() {
 	var strURL  = 'syslog.php?tab='+(window.pageTab || '');
-
 	strURL += '&header=false';
+	strURL += '&date1='+$('#date1').val();
+	strURL += '&date2='+$('#date2').val();
 	strURL += '&host='+$('#host').val();
 	strURL += '&rfilter='+base64_encode($('#rfilter').val());
 	strURL += '&efacility='+$('#efacility').val();
@@ -85,14 +86,6 @@ function applyFilter() {
 	strURL += '&removal='+$('#removal').val();
 	strURL += '&refresh='+$('#refresh').val();
 	strURL += '&grouping=' + ($('#grouping').length ? $('#grouping').val() : '0');
-
-	if ($('#predefined_timespan').val() == 0) {
-		strURL += '&date1='+$('#date1').val();
-		strURL += '&date2='+$('#date2').val();
-	} else {
-		strURL += '&predefined_timespan='+$('#predefined_timespan').val();
-	}
-
 	loadPageNoHeader(strURL);
 }
 
@@ -227,7 +220,11 @@ function initSyslogMain(config) {
 
 							$.each(data, function(index, hostData) {
 								if ($('#host option[value="'+index+'"]').length == 0) {
-									$('#host').append('<option class="'+DOMPurify.sanitize(hostData.class)+'" value="'+DOMPurify.sanitize(index)+'">'+DOMPurify.sanitize(hostData.host)+'</option>');
+									var option = $('<option>')
+										.addClass(hostData.class || '')
+										.val(index)
+										.text(hostData.host);
+									$('#host').append(option);
 								}
 							});
 
@@ -575,25 +572,6 @@ function initSyslogReports() {
  * ======================================================================== */
 
 /**
- * Validate and invoke a named callback function specified as a string
- * @param {string} onChange - Name of the global function to call (e.g. 'myCallback')
- */
-function runSyslogAutocompleteOnChange(onChange) {
-	if (typeof onChange !== 'string') {
-		return;
-	}
-
-	var callbackName = onChange.trim().replace(/\(\)\s*$/, '');
-	if (!callbackName.match(/^[A-Za-z_$][A-Za-z0-9_$]*$/)) {
-		return;
-	}
-
-	if (typeof window[callbackName] === 'function') {
-		window[callbackName]();
-	}
-}
-
-/**
  * Initialize autocomplete for form dropdown fields
  * @param {string} formName - The name of the form field
  * @param {string} callback - The AJAX callback action
@@ -603,7 +581,7 @@ function initSyslogAutocomplete(formName, callback, onChange) {
 	var formNameTimer;
 	var formNameClickTimer;
 	var formNameOpen = false;
-
+	
 	$(function() {
 		$('#' + formName + '_input').autocomplete({
 			source: window.location.pathname + '?action=' + callback,
@@ -617,7 +595,7 @@ function initSyslogAutocomplete(formName, callback, onChange) {
 					$('#' + formName).val(ui.item.value);
 				}
 				if (onChange) {
-					runSyslogAutocompleteOnChange(onChange);
+					eval(onChange);
 				}
 			}
 		}).css('border', 'none').css('background-color', 'transparent');
@@ -640,8 +618,8 @@ function initSyslogAutocomplete(formName, callback, onChange) {
 				}, 200);
 			}
 		}).on('mouseleave', function() {
-			formNameTimer = setTimeout(function() {
-				$('#' + formName + '_input').autocomplete('close');
+			formNameTimer = setTimeout(function() { 
+				$('#' + formName + '_input').autocomplete('close'); 
 			}, 800);
 		});
 
@@ -656,8 +634,8 @@ function initSyslogAutocomplete(formName, callback, onChange) {
 		$('ul[id^="ui-id"]').on('mouseenter', function() {
 			clearTimeout(formNameTimer);
 		}).on('mouseleave', function() {
-			formNameTimer = setTimeout(function() {
-				$('#' + formName + '_input').autocomplete('close');
+			formNameTimer = setTimeout(function() { 
+				$('#' + formName + '_input').autocomplete('close'); 
 			}, 800);
 		});
 
