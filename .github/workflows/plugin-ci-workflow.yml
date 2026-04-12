@@ -58,7 +58,7 @@ jobs:
       run: |
         cd cacti/plugins/syslog
         if find . -name '*.php' -not -path './vendor/*' -exec php -l {} 2>&1 \; | grep -iv 'no syntax errors detected'; then
-          echo "Syntax errors found!"
+          print "Syntax errors found!"
           exit 1
         fi
 
@@ -138,6 +138,7 @@ jobs:
     
     - name: Check PHP version
       run: php -v
+    
     
     - name: Run apt-get update
       run: sudo apt-get update
@@ -236,12 +237,23 @@ jobs:
         cd ${{ github.workspace }}/cacti
         sudo php cli/plugin_manage.php --plugin=syslog --install --enable
 
+    - name: Run Plugin Regression Tests
+      run: |
+        cd ${{ github.workspace }}/cacti/plugins/syslog
+        if [ -d tests/regression ]; then
+          for test in tests/regression/*.php; do
+            [ -f "$test" ] || continue
+            php "$test"
+          done
+        fi
+    
+    
     - name: Run Cacti Poller
       run: |
         cd ${{ github.workspace }}/cacti
         sudo php poller.php --poller=1 --force --debug
         if ! grep -q "SYSTEM STATS" log/cacti.log; then
-          echo "Cacti poller did not finish successfully"
+          print "Cacti poller did not finish successfully"
           cat log/cacti.log
           exit 1
         fi
@@ -252,20 +264,22 @@ jobs:
         cd ${{ github.workspace }}/cacti/plugins/syslog/.github/workflows
         sudo ./populate_syslog_incoming.sh
 
+
     - name: force Syslog Plugin Poller
       run: |
         cd ${{ github.workspace }}/cacti
         sudo php plugins/syslog/syslog_process.php  --debug
         if ! grep -q "SYSTEM SYSLOG STATS" log/cacti.log; then
-          echo "Syslog plugin poller did not finish successfully"
+          print "Syslog plugin poller did not finish successfully"
           cat log/cacti.log
           exit 1
         fi
+
     
     - name: View Cacti Logs
       if: always()
       run: |
         if [ -f ${{ github.workspace }}/cacti/log/cacti.log ]; then
-          echo "=== Cacti Log ==="
+          print "=== Cacti Log ==="
           sudo cat ${{ github.workspace }}/cacti/log/cacti.log
         fi

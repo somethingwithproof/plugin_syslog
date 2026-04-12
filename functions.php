@@ -22,25 +22,6 @@
  +-------------------------------------------------------------------------+
 */
 
-
-/**
- * plugin_get_rows_per_page - resolve rows-per-page from request vars
- *
- * @return int
- */
-function plugin_get_rows_per_page() {
-	$rows = get_request_var('rows');
-
-	if ($rows == -1) {
-		return read_config_option('num_rows_table');
-	} elseif ($rows == -2) {
-		return 999999;
-	}
-
-	return $rows;
-}
-
-
 function syslog_apply_selected_items_action($selected_items, $drp_action, $action_map, $export_action = '', $export_items = '') {
 	if ($selected_items != false) {
 		if (isset($action_map[$drp_action])) {
