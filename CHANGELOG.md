@@ -3,7 +3,6 @@
 --- develop ---
 
 * issue#250: Fix date filter persistence by validating before shift_span detection
-* issue#258: Execute CREATE TABLE SQL correctly during replication sync
 * issue: Making changes to support Cacti 1.3
 * issue: Don't use MyISAM for non-analytical tables
 * issue: The install advisor for Syslog was broken in current Cacti releases
