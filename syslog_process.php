@@ -1,4 +1,5 @@
 <?php
+
 /*
  +-------------------------------------------------------------------------+
  | Copyright (C) 2004-2026 The Cacti Group                                 |
@@ -22,9 +23,9 @@
  +-------------------------------------------------------------------------+
 */
 
-include(dirname(__FILE__) . '/../../include/cli_check.php');
-include_once(dirname(__FILE__) . '/functions.php');
-include_once(dirname(__FILE__) . '/database.php');
+include dirname(__FILE__) . '/../../include/cli_check.php';
+include_once dirname(__FILE__) . '/functions.php';
+include_once dirname(__FILE__) . '/database.php';
 
 syslog_connect();
 
@@ -37,7 +38,7 @@ ini_set('memory_limit', '-1');
 
 global $debug, $syslog_facilities, $syslog_levels;
 
-$debug  = false;
+$debug = false;
 $forcer = false;
 
 /* process calling arguments */
@@ -45,7 +46,7 @@ $parms = $_SERVER['argv'];
 array_shift($parms);
 
 if (cacti_sizeof($parms)) {
-	foreach($parms as $parameter) {
+	foreach ($parms as $parameter) {
 		if (strpos($parameter, '=')) {
 			list($arg, $value) = explode('=', $parameter);
 		} else {
@@ -125,7 +126,7 @@ if ($config['poller_id'] > 1) {
  * running exit until such time as the syslog process times out.
  */
 if (!register_process_start('syslog', 'master', $config['poller_id'], 1200)) {
-    exit(0);
+	exit(0);
 }
 
 /**
@@ -151,13 +152,13 @@ if (!syslog_is_partitioned()) {
 syslog_debug('-------------------------------------------------------------------------------------');
 
 /**
- * pre-processing includes marking a max_seq to be used
+ * pre-processing includes marking a uniqueID to be used
  * in the processesing of alerts and stripping domains
  * from hostnames in the case that the administrator
  * chooses to strip them.
  */
-$results  = syslog_preprocess_incoming_records();
-$max_seq = $results['max_seq'];
+$results = syslog_preprocess_incoming_records();
+$uniqueID = $results['uniqueID'];
 $incoming = $results['incoming'];
 
 /**
@@ -173,7 +174,7 @@ $incoming = $results['incoming'];
  * time and to speed up searching for these various
  * columns in the database.
  */
-syslog_update_reference_tables($max_seq);
+syslog_update_reference_tables($uniqueID);
 
 /**
  * The statistics process allows the Cacti
@@ -181,21 +182,21 @@ syslog_update_reference_tables($max_seq);
  * into the syslog table and what message types are flowing
  * into it.
  */
-syslog_update_statistics($max_seq);
+syslog_update_statistics($uniqueID);
 
 /**
  * remove records that don't need to to be transferred
  */
-$results = syslog_remove_items('syslog_incoming', $max_seq);
+$results = syslog_remove_items('syslog_incoming', $uniqueID);
 $removed = $results['removed'];
 $xferred = $results['xferred'];
 
 /**
  * process the syslog rules and generate alerts
  */
-$results = syslog_process_alerts($max_seq);
-$alerts  = $results['syslog_alerts'];
-$alarms  = $results['syslog_alarms'];
+$results = syslog_process_alerts($uniqueID);
+$alerts = $results['syslog_alerts'];
+$alarms = $results['syslog_alarms'];
 
 /**
  * Perform any plugin specific actions.  Syslog itself does not use
@@ -209,16 +210,16 @@ api_plugin_hook('plugin_syslog_after_processing');
  * move records from incoming to syslog table and remove
  * any stale records to to a poller crash
  */
-$results = syslog_incoming_to_syslog($max_seq);
-$moved   = $results['moved'];
-$stale   = $results['stale'];
+$results = syslog_incoming_to_syslog($uniqueID);
+$moved = $results['moved'];
+$stale = $results['stale'];
 
 /**
  * process any syslog reports that are due to be
  * sent.
  */
-$results  = syslog_process_reports();
-$reports  = $results['total_reports'];
+$results = syslog_process_reports();
+$reports = $results['total_reports'];
 $sentrpts = $results['sent_reports'];
 
 /**
@@ -246,11 +247,12 @@ exit(0);
  *
  * @return (void)
  */
-function display_version() {
+function display_version()
+{
 	global $config;
 
 	if (!function_exists('plugin_syslog_version')) {
-		include_once($config['base_path'] . '/plugins/syslog/setup.php');
+		include_once $config['base_path'] . '/plugins/syslog/setup.php';
 	}
 
 	$version = plugin_syslog_version();
@@ -262,7 +264,8 @@ function display_version() {
  *
  * @return (void)
  */
-function display_help() {
+function display_help()
+{
 	display_version();
 
 	print 'The main Syslog poller process script for Cacti Syslogging.' . PHP_EOL . PHP_EOL;
@@ -271,4 +274,3 @@ function display_help() {
 	print '    --force-report   Send email reports now.' . PHP_EOL;
 	print '    --debug          Provide more verbose debug output.' . PHP_EOL . PHP_EOL;
 }
-

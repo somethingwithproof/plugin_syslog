@@ -1,6 +1,5 @@
 <?php
 
-declare(strict_types=1);
 /*
  +-------------------------------------------------------------------------+
  | Copyright (C) 2004-2026 The Cacti Group                                 |
@@ -25,11 +24,10 @@ declare(strict_types=1);
 */
 
 chdir('../../');
-include('./include/cli_check.php');
-include_once('./lib/poller.php');
-include_once(__DIR__ . '/setup.php');
-include_once(__DIR__ . '/functions.php');
-include_once(__DIR__ . '/database.php');
+include './include/cli_check.php';
+include_once './lib/poller.php';
+include_once './plugins/syslog/functions.php';
+include_once './plugins/syslog/database.php';
 
 syslog_connect();
 
@@ -43,17 +41,16 @@ global $debug;
 
 $debug = true;
 
-// process calling arguments
+/* process calling arguments */
 $parms = $_SERVER['argv'];
 
 array_shift($parms);
-
 if (cacti_sizeof($parms)) {
 	foreach ($parms as $parameter) {
 		if (strpos($parameter, '=')) {
-			[$arg, $value] = explode('=', $parameter);
+			list($arg, $value) = explode('=', $parameter);
 		} else {
-			$arg   = $parameter;
+			$arg = $parameter;
 			$value = '';
 		}
 
@@ -74,23 +71,22 @@ if (cacti_sizeof($parms)) {
 				display_help();
 				exit(0);
 			default:
-				print "ERROR: Invalid Argument: ($arg)\n\n";
+				echo "ERROR: Invalid Argument: ($arg)\n\n";
 				display_help();
 				exit(1);
 		}
 	}
 }
 
-// record the start time
+/* record the start time */
 $start_time = microtime(true);
 
-// Connect to the Syslog Database
+/* Connect to the Syslog Database */
 global $syslog_cnn, $cnn_id, $database_default;
-
 if (empty($syslog_cnn)) {
 	if ((strtolower($database_hostname) == strtolower($syslogdb_hostname)) &&
 		($database_default == $syslogdb_default)) {
-		// move on, using Cacti
+		/* move on, using Cacti */
 		$syslog_cnn = $cnn_id;
 	} else {
 		if (!isset($syslogdb_port)) {
@@ -121,15 +117,15 @@ if (empty($syslog_cnn)) {
 	}
 }
 
-// If Syslog Collection is Disabled, Exit Here
+/* If Syslog Collection is Disabled, Exit Here */
 if (read_config_option('syslog_enabled') == '') {
 	print "NOTE: Syslog record transferral and alerting/reporting is disabled.  Exiting\n";
 	exit -1;
 }
 
-// remove records that don't need to to be transferred
+/* remove records that don't need to to be transferred */
 syslog_debug('Syslog Batch Transfer / Remove Process started ...... ');
-$syslog_items   = syslog_manage_items('syslog', 'syslog_removed');
+$syslog_items = syslog_manage_items('syslog', 'syslog_removed');
 $syslog_removed = $syslog_items['removed'];
 $syslog_xferred = $syslog_items['xferred'];
 syslog_debug('Removed     ' . $syslog_removed . ",  Message(s) from the 'syslog' table");
@@ -137,21 +133,23 @@ syslog_debug('Xferred     ' . $syslog_xferred . ",  Message(s) to the 'syslog_re
 
 syslog_debug('Finished processing...');
 
-function display_version() {
+function display_version()
+{
 	global $config;
 
 	if (!function_exists('plugin_syslog_version')) {
-		include_once($config['base_path'] . '/plugins/syslog/setup.php');
+		include_once $config['base_path'] . '/plugins/syslog/setup.php';
 	}
 
 	$info = plugin_syslog_version();
-	print 'Syslog Batch Process, Version ' . $info['version'] . ', ' . COPYRIGHT_YEARS . "\n";
+	echo 'Syslog Batch Process, Version ' . $info['version'] . ', ' . COPYRIGHT_YEARS . "\n";
 }
 
-function display_help() {
+function display_help()
+{
 	display_version();
 
-	print "\nusage: syslog_batch_transfer.php [--debug|-d]\n\n";
-	print "The Syslog batch process script for Cacti Syslogging.\n";
-	print "This script removes old messages from main view.\n";
+	echo "\nusage: syslog_batch_transfer.php [--debug|-d]\n\n";
+	echo "The Syslog batch process script for Cacti Syslogging.\n";
+	echo "This script removes old messages from main view.\n";
 }

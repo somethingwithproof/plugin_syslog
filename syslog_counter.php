@@ -1,6 +1,5 @@
 <?php
 
-declare(strict_types=1);
 /*
  +-------------------------------------------------------------------------+
  | Copyright (C) 2004-2026 The Cacti Group                                 |
@@ -24,15 +23,15 @@ declare(strict_types=1);
  +-------------------------------------------------------------------------+
 */
 
-include(__DIR__ . '/../../include/cli_check.php');
+include __DIR__ . '/../../include/cli_check.php';
 
 $sli = read_config_option('syslog_last_incoming');
 $slt = read_config_option('syslog_last_total');
 
-$line   = syslog_db_fetch_row("SHOW TABLE STATUS LIKE 'syslog_incoming'");
+$line = syslog_db_fetch_row("SHOW TABLE STATUS LIKE 'syslog_incoming'");
 $i_rows = $line['Auto_increment'];
 
-$line       = syslog_db_fetch_row("SHOW TABLE STATUS LIKE 'syslog'");
+$line = syslog_db_fetch_row("SHOW TABLE STATUS LIKE 'syslog'");
 $total_rows = $line['Auto_increment'];
 
 if ($sli == '') {
@@ -52,7 +51,6 @@ db_execute($sql);
 if ($sli == '') {
 	$sli = 0;
 }
-
 if ($slt == '') {
 	$slt = 0;
 }
