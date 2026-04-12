@@ -1,6 +1,4 @@
 <?php
-
-declare(strict_types=1);
 /*
  +-------------------------------------------------------------------------+
  | Copyright (C) 2004-2026 The Cacti Group                                 |
@@ -27,9 +25,8 @@ declare(strict_types=1);
 chdir('../../');
 include('./include/auth.php');
 include_once('./lib/xml.php');
-include_once(__DIR__ . '/setup.php');
-include_once(__DIR__ . '/functions.php');
-include_once(__DIR__ . '/database.php');
+include_once('./plugins/syslog/functions.php');
+include_once('./plugins/syslog/database.php');
 
 syslog_connect();
 
@@ -124,11 +121,11 @@ function form_actions() {
 		syslog_apply_selected_items_action(
 			$selected_items,
 			$drp_action,
-			[
+			array(
 				'1' => 'api_syslog_alert_remove',
 				'2' => 'api_syslog_alert_disable',
 				'3' => 'api_syslog_alert_enable'
-			],
+			),
 			'4',
 			get_nfilter_request_var('selected_items')
 		);
@@ -145,7 +142,7 @@ function form_actions() {
 	html_start_box($syslog_actions[get_request_var('drp_action')], '60%', '', '3', 'center', '');
 
 	/* setup some variables */
-	$alert_array = []; $alert_list = '';
+	$alert_array = array(); $alert_list = '';
 
 	/* loop through each of the clusters selected on the previous page and get more info about them */
 	foreach ($_POST as $var => $val) {
@@ -214,7 +211,7 @@ function form_actions() {
 		<td align='right' class='saveRow'>
 			<input type='hidden' name='action' value='actions'>
 			<input type='hidden' name='selected_items' value='" . (isset($alert_array) ? serialize($alert_array) : '') . "'>
-			<input type='hidden' name='drp_action' value='" . html_escape(get_request_var('drp_action')) . "'>
+			<input type='hidden' name='drp_action' value='" . get_request_var('drp_action') . "'>
 			$save_html
 		</td>
 	</tr>";
@@ -240,7 +237,7 @@ function alert_export() {
 					$data = syslog_db_fetch_row_prepared('SELECT *
 						FROM `' . $syslogdb_default . '`.`syslog_alert`
 						WHERE id = ?',
-						[$id]);
+						array($id));
 
 					if (cacti_sizeof($data)) {
 						unset($data['id']);
@@ -324,17 +321,17 @@ function api_syslog_alert_save($id, $name, $method, $level, $num, $type, $messag
 
 function api_syslog_alert_remove($id) {
 	global $syslogdb_default;
-	syslog_db_execute_prepared("DELETE FROM `" . $syslogdb_default . "`.`syslog_alert` WHERE id = ?", array(intval($id)));
+	syslog_db_execute("DELETE FROM `" . $syslogdb_default . "`.`syslog_alert` WHERE id='" . $id . "'");
 }
 
 function api_syslog_alert_disable($id) {
 	global $syslogdb_default;
-	syslog_db_execute_prepared("UPDATE `" . $syslogdb_default . "`.`syslog_alert` SET enabled='' WHERE id = ?", array(intval($id)));
+	syslog_db_execute("UPDATE `" . $syslogdb_default . "`.`syslog_alert` SET enabled='' WHERE id='" . $id . "'");
 }
 
 function api_syslog_alert_enable($id) {
 	global $syslogdb_default;
-	syslog_db_execute_prepared("UPDATE `" . $syslogdb_default . "`.`syslog_alert` SET enabled='on' WHERE id = ?", array(intval($id)));
+	syslog_db_execute("UPDATE `" . $syslogdb_default . "`.`syslog_alert` SET enabled='on' WHERE id='" . $id . "'");
 }
 
 /* ---------------------
@@ -374,7 +371,7 @@ function syslog_get_alert_records(&$sql_where, $rows) {
 	return syslog_db_fetch_assoc($query_string);
 }
 
-function get_repeat_[] {
+function get_repeat_array() {
 	$poller_interval = read_config_option('poller_interval');
 
 	$multiplier = 300 / $poller_interval;
@@ -474,7 +471,7 @@ function syslog_action_edit() {
 		$lists = array('0' => __('N/A', 'syslog'));
 	}
 
-	$repeatarray = get_repeat_[];
+	$repeatarray = get_repeat_array();
 
 	$fields_syslog_alert_edit = array(
 		'spacer0' => array(
@@ -622,18 +619,18 @@ function syslog_action_edit() {
 			'value' => '|arg1:command|',
 			'default' => '',
 		),
-		'id' => [
+		'id' => array(
 			'method' => 'hidden_zero',
 			'value' => '|arg1:id|'
-		],
-		'_id' => [
+		),
+		'_id' => array(
 			'method' => 'hidden_zero',
 			'value' => '|arg1:id|'
-		],
-		'save_component_alert' => [
+		),
+		'save_component_alert' => array(
 			'method' => 'hidden',
 			'value' => '1'
-		]
+		)
 	);
 
 	form_start('syslog_alerts.php', 'syslog_edit');
@@ -642,8 +639,8 @@ function syslog_action_edit() {
 
 	draw_edit_form(
 		array(
-			'config' => ['no_form_tag' => true],
-			'fields' => inject_form_variables($fields_syslog_alert_edit, (cacti_sizeof($alert) ? $alert : []))
+			'config' => array('no_form_tag' => true),
+			'fields' => inject_form_variables($fields_syslog_alert_edit, (cacti_sizeof($alert) ? $alert : array()))
 		)
 	);
 
@@ -763,38 +760,38 @@ function syslog_alerts() {
 
     /* ================= input validation and session storage ================= */
     $filters = array(
-        'rows' => [
+        'rows' => array(
             'filter' => FILTER_VALIDATE_INT,
             'pageset' => true,
             'default' => '-1',
-            ],
-        'page' => [
+            ),
+        'page' => array(
             'filter' => FILTER_VALIDATE_INT,
             'default' => '1'
-            ],
-        'id' => [
+            ),
+        'id' => array(
             'filter' => FILTER_VALIDATE_INT,
             'default' => '1'
-            ],
-        'enabled' => [
+            ),
+        'enabled' => array(
             'filter' => FILTER_VALIDATE_INT,
 			'pageset' => true,
             'default' => '-1'
-			],
-        'filter' => [
+			),
+        'filter' => array(
             'filter' => FILTER_DEFAULT,
             'pageset' => true,
             'default' => ''
-            ],
+            ),
         'sort_column' => array(
             'filter' => FILTER_CALLBACK,
             'default' => 'name',
-            'options' => ['options' => 'sanitize_search_string']
+            'options' => array('options' => 'sanitize_search_string')
             ),
         'sort_direction' => array(
             'filter' => FILTER_CALLBACK,
             'default' => 'ASC',
-            'options' => ['options' => 'sanitize_search_string']
+            'options' => array('options' => 'sanitize_search_string')
             )
     );
 
@@ -844,7 +841,7 @@ function syslog_alerts() {
 		'user'     => array(__('By User', 'syslog'), 'DESC')
 	);
 
-	$nav = html_nav_bar('syslog_alerts.php?filter=' . rawurlencode(get_request_var('filter')), MAX_DISPLAY_PAGES, get_request_var('page'), $rows, $total_rows, cacti_sizeof($display_text) + 1, __('Alerts', 'syslog'), 'page', 'main');
+	$nav = html_nav_bar('syslog_alerts.php?filter=' . get_request_var('filter'), MAX_DISPLAY_PAGES, get_request_var('page'), $rows, $total_rows, cacti_sizeof($display_text) + 1, __('Alerts', 'syslog'), 'page', 'main');
 
 	form_start('syslog_alerts.php', 'chk');
 
@@ -924,7 +921,7 @@ function import() {
 
 	draw_edit_form(
 		array(
-			'config' => ['no_form_tag' => true],
+			'config' => array('no_form_tag' => true),
 			'fields' => $form_data
 		)
 	);
@@ -939,14 +936,14 @@ function import() {
 function alert_import() {
 	$xml_data = syslog_get_import_xml_payload('syslog_alerts.php?header=false');
 
-	$xml_array = xml2[$xml_data];
+	$xml_array = xml2array($xml_data);
 
-	$debug_data = [];
+	$debug_data = array();
 
 	if (cacti_sizeof($xml_array)) {
 		foreach ($xml_array as $template => $contents) {
 			$error = false;
-			$save  = [];
+			$save  = array();
 
 			if (cacti_sizeof($contents)) {
 				foreach ($contents as $name => $value) {
@@ -956,7 +953,7 @@ function alert_import() {
 						$found = db_fetch_cell_prepared('SELECT id
 							FROM syslog_alert
 							WHERE hash = ?',
-							[$value]);
+							array($value));
 
 						if (!empty($found)) {
 							$save['hash'] = $value;
