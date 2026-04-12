@@ -1,6 +1,8 @@
 <?php
 
-$root    = dirname(__DIR__, 2);
+declare(strict_types=1);
+
+$root = dirname(__DIR__, 2);
 $targets = [
 	$root . '/syslog_alerts.php',
 	$root . '/syslog_reports.php',
@@ -23,7 +25,6 @@ foreach ($targets as $target) {
 	}
 
 	$fixedPattern = '/trim\s*\(\s*\$import_text\s*\)\s*!=\s*\'\'/';
-
 	if (!preg_match($fixedPattern, $content)) {
 		fwrite(STDERR, "Fixed import_text trim/comparison check missing in $target\n");
 		exit(1);
@@ -32,12 +33,10 @@ foreach ($targets as $target) {
 	/* After the local $import_text assignment, there must be no second
 	   get_nfilter_request_var('import_text') call.  A duplicate call
 	   would bypass the cached local variable. */
-	$needle    = "\$import_text = get_nfilter_request_var('import_text')";
+	$needle = "\$import_text = get_nfilter_request_var('import_text')";
 	$assignPos = strpos($content, $needle);
-
 	if ($assignPos !== false) {
 		$afterAssign = substr($content, $assignPos + strlen($needle));
-
 		if (preg_match('/get_nfilter_request_var\s*\(\s*\'import_text\'\s*\)/', $afterAssign)) {
 			fwrite(STDERR, "Redundant get_nfilter_request_var('import_text') call after local assignment in $target\n");
 			exit(1);
@@ -45,4 +44,4 @@ foreach ($targets as $target) {
 	}
 }
 
-print "issue269_import_text_trim_check_test passed\n";
+echo "issue269_import_text_trim_check_test passed\n";

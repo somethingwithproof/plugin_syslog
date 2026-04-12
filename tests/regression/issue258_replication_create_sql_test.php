@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 $existing_functions = [
 	'db_fetch_row',
 	'syslog_db_table_exists',
@@ -24,10 +26,10 @@ if (!function_exists('cacti_sizeof')) {
 	}
 }
 
-$GLOBALS['syslog_replace_data_execute_calls']  = [];
+$GLOBALS['syslog_replace_data_execute_calls'] = [];
 $GLOBALS['syslog_replace_data_prepared_calls'] = [];
-$GLOBALS['issue258_logs']                      = [];
-$GLOBALS['issue258_show_create']               = ['Create Table' => 'CREATE TABLE `syslog_alert` (`id` INT NOT NULL)'];
+$GLOBALS['issue258_logs'] = [];
+$GLOBALS['issue258_show_create'] = array('Create Table' => 'CREATE TABLE `syslog_alert` (`id` INT NOT NULL)');
 
 if (!function_exists('db_fetch_row')) {
 	function db_fetch_row($sql) {
@@ -68,13 +70,13 @@ if (!function_exists('cacti_log')) {
 
 require_once dirname(__DIR__, 2) . '/setup.php';
 
-$data = [
+$data = array(
 	[
 		'id'   => 1,
 		'hash' => 'abc123',
 		'name' => 'sample'
 	]
-];
+);
 
 syslog_replace_data('syslog_alert', $data);
 
@@ -104,7 +106,7 @@ if (cacti_sizeof($prepared) !== 1) {
 
 $GLOBALS['syslog_replace_data_execute_calls']  = [];
 $GLOBALS['syslog_replace_data_prepared_calls'] = [];
-$GLOBALS['issue258_show_create']               = false;
+$GLOBALS['issue258_show_create'] = false;
 
 syslog_replace_data('syslog_alert', $data);
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * Regression test for issue #269 -- branch-logic invariants.
  *
@@ -10,7 +12,7 @@
  * called in isolation because they depend on the Cacti runtime.
  */
 
-$root    = dirname(__DIR__, 2);
+$root = dirname(__DIR__, 2);
 $targets = [
 	'alert_import'   => $root . '/syslog_alerts.php',
 	'removal_import' => $root . '/syslog_removal.php',
@@ -65,4 +67,4 @@ foreach ($targets as $func => $target) {
 	}
 }
 
-print "issue269_import_text_branch_logic_test passed\n";
+echo "issue269_import_text_branch_logic_test passed\n";
