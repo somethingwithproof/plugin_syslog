@@ -1800,7 +1800,7 @@ msgstr "导入报告数据"
 #: syslog_reports.php:903
 #, php-format
 msgid "NOTE: Report Rule '%s' %s!"
-msgstr ""
+msgstr "NOTE: Report Rule '%s' %s!"
 
 #: syslog_reports.php:905
 #, php-format

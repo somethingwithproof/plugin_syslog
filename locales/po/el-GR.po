@@ -483,18 +483,18 @@ msgstr "%d Εβδομάδες"
 #: setup.php:1304 setup.php:1323
 #, php-format
 msgid "%d Month"
-msgstr "% d Μήνα"
+msgstr "%d Month"
 
 #: setup.php:1305 setup.php:1306 setup.php:1307 setup.php:1308 setup.php:1309
 #: setup.php:1324 setup.php:1325 setup.php:1326 setup.php:1327 setup.php:1328
 #, php-format
 msgid "%d Months"
-msgstr "% d Μήνας"
+msgstr "%d Months"
 
 #: setup.php:1310 setup.php:1329
 #, php-format
 msgid "%d Year"
-msgstr "% d Έτος"
+msgstr "%d Year"
 
 #: setup.php:1333 syslog_reports.php:769
 msgid "Never"
