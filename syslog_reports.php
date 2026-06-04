@@ -704,7 +704,7 @@ function syslog_report() {
 		'user'     => [__('By User', 'syslog'), 'DESC']
 	];
 
-	$nav = html_nav_bar('syslog_reports.php?filter=' . rawurlencode(get_request_var('filter')), MAX_DISPLAY_PAGES, get_request_var('page'), $rows, $total_rows, cacti_sizeof($display_text) + 1, __('Reports', 'syslog'), 'page', 'main');
+	$nav = html_nav_bar('syslog_reports.php', MAX_DISPLAY_PAGES, get_request_var('page'), $rows, $total_rows, cacti_sizeof($display_text) + 1, __('Reports', 'syslog'), 'page', 'main');
 
 	form_start('syslog_reports.php', 'chk');
 
