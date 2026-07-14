@@ -1,4 +1,23 @@
 <?php
+
+/**
+ * Prefix values that spreadsheet applications could interpret as formulas.
+ * Non-string values are returned unchanged for callers that preserve types.
+ *
+ * @param mixed $value Value destined for CSV output.
+ * @return mixed Sanitized CSV value.
+ */
+function syslog_csv_safe($value) {
+	if (!is_string($value) || $value === '') {
+		return $value;
+	}
+
+	if (preg_match('/^\s*[=+\-@]/', $value) && substr($value, 0, 1) !== "'") {
+		return "'" . $value;
+	}
+
+	return $value;
+}
 /*
  +-------------------------------------------------------------------------+
  | Copyright (C) 2004-2026 The Cacti Group                                 |
