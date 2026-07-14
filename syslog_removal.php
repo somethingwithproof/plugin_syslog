@@ -667,7 +667,7 @@ function syslog_removal() {
 
 	form_start('syslog_removal.php', 'chk');
 
-	$nav = html_nav_bar('syslog_removal.php', MAX_DISPLAY_PAGES, get_request_var('page'), $rows, $total_rows, cacti_sizeof($display_text) + 1, __('Rules', 'syslog'), 'page', 'main');
+	$nav = html_nav_bar('syslog_removal.php?filter=' . rawurlencode(get_request_var('filter')), MAX_DISPLAY_PAGES, get_request_var('page'), $rows, $total_rows, cacti_sizeof($display_text) + 1, __('Rules', 'syslog'), 'page', 'main');
 
 	print $nav;
 
