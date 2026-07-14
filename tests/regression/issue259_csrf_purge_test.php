@@ -94,7 +94,7 @@ if (strpos($setup, 'JSON_HEX_QUOT') === false) {
 }
 
 // Verify user-facing messages do not expose CSRF internals (log messages may use "CSRF")
-if (preg_match("/raise_message\\('syslog_[a-z_]*', __\\('CSRF/", $setup)) {
+if (preg_match('/raise_message\\s*\\(\\s*[^,]+,\\s*__\\(\\s*([\'\"])[^\'\"]*CSRF[^\'\"]*\\1/si', $setup)) {
 	fwrite(STDERR, "User-facing raise_message must not expose CSRF internals to end users.\n");
 	exit(1);
 }
