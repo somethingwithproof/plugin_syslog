@@ -1184,11 +1184,11 @@ function syslog_filter($sql_where, $tab) {
 	?>
 	<script type='text/javascript'>
 	initSyslogMain({
-		pageTab: <?php print json_encode(get_request_var('tab'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);?>,
-		placeHolder: <?php print json_encode(__('Enter a search term', 'syslog'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);?>,
-		noneSelectedText: <?php print json_encode(__('Select Device(s)', 'syslog'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);?>,
-		devicesSelectedText: <?php print json_encode(__('Devices Selected', 'syslog'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);?>,
-		allDevicesText: <?php print json_encode(__('All Devices Selected', 'syslog'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);?>
+		pageTab: <?php print syslog_json_encode_for_script(get_request_var('tab'));?>,
+		placeHolder: <?php print syslog_json_encode_for_script(__('Enter a search term', 'syslog'));?>,
+		noneSelectedText: <?php print syslog_json_encode_for_script(__('Select Device(s)', 'syslog'));?>,
+		devicesSelectedText: <?php print syslog_json_encode_for_script(__('Devices Selected', 'syslog'));?>,
+		allDevicesText: <?php print syslog_json_encode_for_script(__('All Devices Selected', 'syslog'));?>
 	});
 	</script>
 	<?php

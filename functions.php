@@ -47,6 +47,10 @@ function syslog_include_js() {
 	<?php
 }
 
+function syslog_json_encode_for_script($value) {
+	return json_encode($value, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+}
+
 function syslog_allow_edits() {
 	global $config;
 
