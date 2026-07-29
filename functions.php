@@ -4,6 +4,10 @@
  * Prefix values that spreadsheet applications could interpret as formulas.
  * Non-string values are returned unchanged for callers that preserve types.
  *
+ * Only literal spaces are stripped before the check; a leading tab or CR is
+ * itself a formula trigger in some importers and must stay detectable as
+ * the first character rather than being treated as skippable whitespace.
+ *
  * @param mixed $value Value destined for CSV output.
  * @return mixed Sanitized CSV value.
  */
@@ -12,7 +16,17 @@ function syslog_csv_safe($value) {
 		return $value;
 	}
 
-	if (preg_match('/^\s*[=+\-@]/', $value) && substr($value, 0, 1) !== "'") {
+	if (substr($value, 0, 1) === "'") {
+		return $value;
+	}
+
+	$stripped = ltrim($value, ' ');
+
+	if ($stripped === '') {
+		return $value;
+	}
+
+	if (preg_match('/^[=+\-@\t\r]/', $stripped)) {
 		return "'" . $value;
 	}
 
