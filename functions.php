@@ -884,20 +884,20 @@ function syslog_export($tab) {
 				}
 
 				if (isset($hosts[$message['host_id']])) {
-					$host = trim($hosts[$message['host_id']], ' =+-@');
+					$host = $hosts[$message['host_id']];
 				} else {
 					$host = 'Unknown';
 				}
 
-				$logmsg = trim($message[$syslog_incoming_config['textField']], ' =+-@');
+				$logmsg = $message[$syslog_incoming_config['textField']];
 
 				$line = [
-					$host,
-					ucfirst($facility),
-					ucfirst($priority),
-					ucfirst($program),
+					syslog_csv_safe($host),
+					syslog_csv_safe(ucfirst($facility)),
+					syslog_csv_safe(ucfirst($priority)),
+					syslog_csv_safe(ucfirst($program)),
 					$message['logtime'],
-					$logmsg
+					syslog_csv_safe($logmsg)
 				];
 
 				fputcsv($fp, $line);
@@ -927,17 +927,14 @@ function syslog_export($tab) {
 					$severity = 'Unknown';
 				}
 
-				$host   = trim($message['host'], ' =+-@');
-				$logmsg = trim($message['logmsg'], ' =+-@');
-
 				$line = [
-					$message['name'],
-					$severity,
+					syslog_csv_safe($message['name']),
+					syslog_csv_safe($severity),
 					$message['logtime'],
-					$logmsg,
-					$host,
-					ucfirst($message['facility']),
-					ucfirst($message['priority']),
+					syslog_csv_safe($message['logmsg']),
+					syslog_csv_safe($message['host']),
+					syslog_csv_safe(ucfirst($message['facility'])),
+					syslog_csv_safe(ucfirst($message['priority'])),
 					$message['count']
 				];
 
