@@ -14,10 +14,11 @@
  * real behavioral coverage once a DB-backed test harness exists.
  */
 
-$setup = file_get_contents(dirname(__DIR__, 2) . '/setup.php');
+$setup     = file_get_contents(dirname(__DIR__, 2) . '/setup.php');
+$functions = file_get_contents(dirname(__DIR__, 2) . '/functions.php');
 
-if ($setup === false) {
-	fwrite(STDERR, "Failed to read setup.php\n");
+if ($setup === false || $functions === false) {
+	fwrite(STDERR, "Failed to read setup.php or functions.php\n");
 	exit(1);
 }
 
@@ -67,28 +68,34 @@ if (preg_match("/confirm\(\s*'/", $setup)) {
 	exit(1);
 }
 
-if (strpos($setup, 'json_encode(__(') === false) {
-	fwrite(STDERR, "Expected json_encode(__(...)) for JS-safe encoding of confirm message.\n");
+if (strpos($setup, "syslog_json_encode_for_script(__('Confirm Purge', 'syslog'))") === false) {
+	fwrite(STDERR, "Expected syslog_json_encode_for_script() for JS-safe dialog title encoding.\n");
+	exit(1);
+}
+
+if (strpos($setup, "syslog_json_encode_for_script(__('Cancel', 'syslog'))") === false ||
+	strpos($setup, "syslog_json_encode_for_script(__('Continue', 'syslog'))") === false) {
+	fwrite(STDERR, "Expected syslog_json_encode_for_script() for JS-safe button text encoding.\n");
 	exit(1);
 }
 
 // Verify json_encode uses JSON_HEX_TAG to prevent </script> breakout in HTML script context
-if (strpos($setup, 'JSON_HEX_TAG') === false) {
+if (strpos($functions, 'JSON_HEX_TAG') === false) {
 	fwrite(STDERR, "json_encode() must use JSON_HEX_TAG to prevent script-context breakout.\n");
 	exit(1);
 }
 
-if (strpos($setup, 'JSON_HEX_AMP') === false) {
+if (strpos($functions, 'JSON_HEX_AMP') === false) {
 	fwrite(STDERR, "json_encode() must use JSON_HEX_AMP to escape ampersands in script context.\n");
 	exit(1);
 }
 
-if (strpos($setup, 'JSON_HEX_APOS') === false) {
+if (strpos($functions, 'JSON_HEX_APOS') === false) {
 	fwrite(STDERR, "json_encode() must use JSON_HEX_APOS.\n");
 	exit(1);
 }
 
-if (strpos($setup, 'JSON_HEX_QUOT') === false) {
+if (strpos($functions, 'JSON_HEX_QUOT') === false) {
 	fwrite(STDERR, "json_encode() must use JSON_HEX_QUOT.\n");
 	exit(1);
 }

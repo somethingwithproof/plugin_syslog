@@ -1692,21 +1692,21 @@ function syslog_utilities_list() {
 			$(function() {
 				$('#syslog_purge_hosts').on('click', function() {
 					$('#syslog_purge_dialog').dialog({
-						title: <?php print json_encode(__('Confirm Purge', 'syslog'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);?>,
+						title: <?php print syslog_json_encode_for_script(__('Confirm Purge', 'syslog'));?>,
 						minHeight: 80,
 						minWidth: 400,
 						resizable: false,
 						draggable: true,
 						buttons: {
 							'Cancel': {
-								text: <?php print json_encode(__('Cancel', 'syslog'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);?>,
+								text: <?php print syslog_json_encode_for_script(__('Cancel', 'syslog'));?>,
 								id: 'btnPurgeCancel',
 								click: function() {
 									$(this).dialog('close');
 								}
 							},
 							'Continue': {
-								text: <?php print json_encode(__('Continue', 'syslog'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);?>,
+								text: <?php print syslog_json_encode_for_script(__('Continue', 'syslog'));?>,
 								id: 'btnPurgeContinue',
 								click: function() {
 									$(this).dialog('close');
