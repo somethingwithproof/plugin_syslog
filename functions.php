@@ -47,8 +47,8 @@ function syslog_include_js() {
 	<?php
 }
 
-function syslog_json_encode_for_script($value) {
-	return json_encode($value, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+function syslog_json_encode_for_script(mixed $value): string {
+	return json_encode($value, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR);
 }
 
 function syslog_allow_edits() {

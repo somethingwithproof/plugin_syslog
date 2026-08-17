@@ -1607,7 +1607,7 @@ function syslog_utilities_action($action) {
 		return;
 	}
 
-	if ($action == 'purge_syslog_hosts') {
+	if ($action === 'purge_syslog_hosts') {
 		if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 			cacti_log('WARNING: syslog purge blocked -- non-POST request', false, 'SYSLOG');
 			raise_message('syslog_method_error', __('Invalid request. Please try again.', 'syslog'), MESSAGE_LEVEL_ERROR);
@@ -1618,16 +1618,16 @@ function syslog_utilities_action($action) {
 		// csrf_check($fatal) returns bool; $fatal=false tells the helper not to
 		// die/exit on failure so we can log and redirect with a user-visible
 		// message ourselves.
-		if (function_exists('csrf_check')) {
-			if (!csrf_check(false)) {
-				cacti_log('WARNING: syslog purge blocked -- CSRF token validation failed', false, 'SYSLOG');
-				raise_message('syslog_csrf_error', __('Invalid request. Please try again.', 'syslog'), MESSAGE_LEVEL_ERROR);
-				header('Location: utilities.php');
-				exit;
-			}
-		} else {
+		if (!function_exists('csrf_check')) {
 			cacti_log('WARNING: syslog purge blocked -- CSRF validation unavailable', false, 'SYSLOG');
 			raise_message('syslog_csrf_unavailable', __('Invalid request. Please try again.', 'syslog'), MESSAGE_LEVEL_ERROR);
+			header('Location: utilities.php');
+			exit;
+		}
+
+		if (!csrf_check(false)) {
+			cacti_log('WARNING: syslog purge blocked -- CSRF token validation failed', false, 'SYSLOG');
+			raise_message('syslog_csrf_error', __('Invalid request. Please try again.', 'syslog'), MESSAGE_LEVEL_ERROR);
 			header('Location: utilities.php');
 			exit;
 		}
@@ -1711,12 +1711,12 @@ function syslog_utilities_list() {
 								click: function() {
 									$(this).dialog('close');
 
-									var postData = {
+									const postData = {
 										action: 'purge_syslog_hosts',
 										__csrf_magic: csrfMagicToken
 									};
 
-									if (typeof postUrl == 'function') {
+									if (typeof postUrl === 'function') {
 										postUrl({url: 'utilities.php', noState: true}, postData);
 									} else {
 										loadPageUsingPost('utilities.php', postData);
