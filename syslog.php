@@ -291,10 +291,10 @@ function syslog_statistics() {
 			$time = date($date_format, strtotime($r['insert_time']));
 
 			form_alternate_row();
-			echo '<td>' . (get_request_var('host') != '-2' ? htmlspecialchars($r['host'], ENT_QUOTES, 'UTF-8'):'-') . '</td>';
+			echo '<td>' . (get_request_var('host') !== '-2' ? html_escape($r['host']):'-') . '</td>';
 			echo '<td>' . (get_request_var('facility') != '-2' ? ucfirst($r['facility']):'-') . '</td>';
 			echo '<td>' . (get_request_var('priority') != '-2' ? ucfirst($r['priority']):'-') . '</td>';
-			echo '<td>' . (get_request_var('program') != '-2' ? htmlspecialchars(ucfirst($r['program']), ENT_QUOTES, 'UTF-8'):'-') . '</td>';
+			echo '<td>' . (get_request_var('program') !== '-2' ? html_escape(ucfirst($r['program'])):'-') . '</td>';
 			//echo '<td class="right">' . $r['insert_time'] . '</td>';
 			echo '<td class="right">' . $time . '</td>';
 			echo '<td class="right">' . number_format_i18n($r['records'], -1)     . '</td>';

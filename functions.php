@@ -228,7 +228,7 @@ function syslog_remove_items($table, $uniqueID) {
 	foreach($rows as $remove) {
 		/* SQL expressions are legacy, untrusted input and cannot be safely bound
 		 * as prepared-statement values. Ignore them rather than executing raw SQL. */
-		if ($remove['type'] == 'sql') {
+		if ($remove['type'] === 'sql') {
 			cacti_log('Syslog SQL removal rules are disabled for safety.', false, 'SYSTEM');
 			continue;
 		}
@@ -630,7 +630,7 @@ function syslog_debug($message) {
 	}
 }
 
-function syslog_log_alert($alert_id, $alert_name, $severity, $msg, $count = 1, $html) {
+function syslog_log_alert($alert_id, $alert_name, $severity, $msg, $count = 1, $html = '') {
 	global $config, $severities;
 
 	include(dirname(__FILE__) . '/config.php');

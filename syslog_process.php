@@ -272,55 +272,52 @@ if (sizeof($query)) {
 		$smsalert = '';
 		$th_sql   = '';
 
-		$params = array();
-		if ($alert['type'] == 'facility') {
+		$params = [];
+		if ($alert['type'] === 'facility') {
 			$sql = 'SELECT * FROM `' . $syslogdb_default . '`.`syslog_incoming`
 				WHERE ' . $syslog_incoming_config['facilityField'] . '=?
 				AND status=?';
 			$params[] = $alert['message'];
 			$params[] = $uniqueID;
-		} else if ($alert['type'] == 'messageb') {
+		} elseif ($alert['type'] === 'messageb') {
 			$sql = 'SELECT * FROM `' . $syslogdb_default . '`.`syslog_incoming`
 				WHERE ' . $syslog_incoming_config['textField'] . '
 				LIKE ?
 				AND status=?';
 			$params[] = $alert['message'] . '%';
 			$params[] = $uniqueID;
-		} else if ($alert['type'] == 'messagec') {
+		} elseif ($alert['type'] === 'messagec') {
 			$sql = 'SELECT * FROM `' . $syslogdb_default . '`.`syslog_incoming`
 				WHERE ' . $syslog_incoming_config['textField'] . '
 				LIKE ?
 				AND status=?';
 			$params[] = '%' . $alert['message'] . '%';
 			$params[] = $uniqueID;
-		} else if ($alert['type'] == 'messagee') {
+		} elseif ($alert['type'] === 'messagee') {
 			$sql = 'SELECT * FROM `' . $syslogdb_default . '`.`syslog_incoming`
 				WHERE ' . $syslog_incoming_config['textField'] . '
 				LIKE ?
 				AND status=?';
 			$params[] = '%' . $alert['message'];
 			$params[] = $uniqueID;
-		} else if ($alert['type'] == 'host') {
+		} elseif ($alert['type'] === 'host') {
 			$sql = 'SELECT * FROM `' . $syslogdb_default . '`.`syslog_incoming`
 				WHERE ' . $syslog_incoming_config['hostField'] . '=?
 				AND status=?';
 			$params[] = $alert['message'];
 			$params[] = $uniqueID;
-		} else if ($alert['type'] == 'sql') {
-			$sql = 'SELECT * FROM `' . $syslogdb_default . '`.`syslog_incoming`
-				WHERE (?)
-				AND status=?';
-			$params[] = $alert['message'];
-			$params[] = $uniqueID;
+		} elseif ($alert['type'] === 'sql') {
+			cacti_log('Syslog SQL alert rules are disabled for safety.', false, 'SYSTEM');
+			continue;
 		}
 
-		if ($sql != '') {
-			if ($alert['method'] == '1') {
+		if ($sql !== '') {
+			if ($alert['method'] === '1') {
 				$th_sql = str_replace('*', 'count(*)', $sql);
 				$count = syslog_db_fetch_cell_prepared($th_sql, $params);
 			}
 
-			if (($alert['method'] == '1' && $count >= $alert['num']) || ($alert['method'] == '0')) {
+			if (($alert['method'] === '1' && $count >= $alert['num']) || $alert['method'] === '0') {
 				$at = syslog_db_fetch_assoc_prepared($sql, $params);
 
 				/* get a date for the repeat alert */

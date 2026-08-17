@@ -77,7 +77,7 @@ function syslog_db_fetch_cell($sql, $col_name = '', $log = TRUE) {
    @arg $params - the parameters to bind to the query
    @arg $log - whether or not to log the query to the cacti log
    @returns - the complete result set as an associative array */
-function syslog_db_fetch_assoc_prepared($sql, $params = array(), $log = TRUE) {
+function syslog_db_fetch_assoc_prepared(string $sql, array $params = [], bool $log = true) {
 	global $syslog_cnn;
 
 	return db_fetch_assoc_prepared($sql, $params, $log, $syslog_cnn);
