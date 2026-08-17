@@ -11,12 +11,12 @@
  * @param mixed $value Value destined for CSV output.
  * @return mixed Sanitized CSV value.
  */
-function syslog_csv_safe($value) {
+function syslog_csv_safe(mixed $value): mixed {
 	if (!is_string($value) || $value === '') {
 		return $value;
 	}
 
-	if (substr($value, 0, 1) === "'") {
+	if (str_starts_with($value, "'")) {
 		return $value;
 	}
 
@@ -26,7 +26,7 @@ function syslog_csv_safe($value) {
 		return $value;
 	}
 
-	if (preg_match('/^[=+\-@\t\r]/', $stripped)) {
+	if (preg_match('/^[=+\-@\t\r]/', $stripped) === 1) {
 		return "'" . $value;
 	}
 
