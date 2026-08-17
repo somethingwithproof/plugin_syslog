@@ -299,7 +299,7 @@ function syslog_partition_create($table, $time = null) {
 		return false;
 	}
 
-	if (!preg_match('/^[a-zA-Z0-9_]+$/', $syslogdb_default)) {
+	if (preg_match('/^[a-zA-Z0-9_]+$/', $syslogdb_default) !== 1) {
 		cacti_log("SYSLOG ERROR: Invalid database name; partition create aborted", false, 'SYSLOG');
 
 		return false;
@@ -312,13 +312,13 @@ function syslog_partition_create($table, $time = null) {
 	// Reject non-numeric, negative, or far-future timestamps; boundary
 	// math assumes a non-negative UTC epoch within 64-bit safe range so
 	// extreme inputs cannot underflow or overflow to float.
-	if (!is_numeric($time) || (int)$time < 0 || (int)$time > 4102444800) {
+	if (!is_numeric($time) || (int) $time < 0 || (int) $time > 4102444800) {
 		cacti_log("SYSLOG ERROR: syslog_partition_create called with invalid time '$time' for table '$table'", false, 'SYSLOG');
 
 		return false;
 	}
 
-	$time = (int)$time;
+	$time = (int) $time;
 
 	// Hash to guarantee the lock name stays within MySQL's 64-byte limit.
 	$lock_name = substr(hash('sha256', $syslogdb_default . '.syslog_partition_create.' . $table), 0, 60);
@@ -353,7 +353,7 @@ function syslog_partition_create($table, $time = null) {
 		 * becomes the VALUES LESS THAN literal for UNIX_TIMESTAMP partitions
 		 * and the source for the date string passed to TO_DAYS.
 		 */
-		$boundary_epoch = ((int)($time / 86400) + 1) * 86400;
+		$boundary_epoch = (intdiv($time, 86400) + 1) * 86400;
 
 		if ($boundary_epoch <= 0 || $boundary_epoch <= $time) {
 			cacti_log("SYSLOG ERROR: Boundary epoch computation failed for '$table' (time=$time); leaving writes in dMaxValue until maintenance recovers", false, 'SYSLOG');
@@ -364,7 +364,7 @@ function syslog_partition_create($table, $time = null) {
 		$cformat        = 'd' . gmdate('Ymd', $time);
 		$boundary_date  = gmdate('Y-m-d', $boundary_epoch);
 
-		if (!preg_match('/^d\d{8}$/', $cformat) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $boundary_date)) {
+		if (preg_match('/^d\d{8}$/', $cformat) !== 1 || preg_match('/^\d{4}-\d{2}-\d{2}$/', $boundary_date) !== 1) {
 			cacti_log("SYSLOG ERROR: Derived partition values failed format validation for '$table'; leaving writes in dMaxValue until maintenance recovers", false, 'SYSLOG');
 
 			return false;
@@ -438,7 +438,7 @@ function syslog_partition_remove($table) {
 		return 0;
 	}
 
-	if (!preg_match('/^[a-zA-Z0-9_]+$/', $syslogdb_default)) {
+	if (preg_match('/^[a-zA-Z0-9_]+$/', $syslogdb_default) !== 1) {
 		cacti_log("SYSLOG ERROR: Invalid database name; partition remove aborted", false, 'SYSLOG');
 
 		return 0;
@@ -484,7 +484,7 @@ function syslog_partition_remove($table) {
 
 					$part_name = $oldest['PARTITION_NAME'];
 
-					if (!preg_match('/^[a-zA-Z0-9_]+$/', $part_name)) {
+					if (preg_match('/^[a-zA-Z0-9_]+$/', $part_name) !== 1) {
 						cacti_log("SYSLOG ERROR: Invalid partition name '$part_name' for '$table'; skipping drop", false, 'SYSLOG');
 						break;
 					}
@@ -873,7 +873,7 @@ function sql_hosts_where($tab) {
  *
  * See OWASP CSV Injection Prevention Cheat Sheet.
  */
-function syslog_csv_safe($value) {
+function syslog_csv_safe(mixed $value): mixed {
 	if (!is_string($value) || $value === '') {
 		return $value;
 	}
@@ -888,9 +888,7 @@ function syslog_csv_safe($value) {
 		return $value;
 	}
 
-	$first = $stripped[0];
-
-	if ($first === '=' || $first === '+' || $first === '-' || $first === '@' || $first === "\t" || $first === "\r") {
+	if (in_array($stripped[0], ['=', '+', '-', '@', "\t", "\r"], true)) {
 		return "'" . $value;
 	}
 
@@ -1173,8 +1171,8 @@ function syslog_manage_items($from_table, $to_table) {
 					$sql_dlt = "DELETE FROM `$syslogdb_default`.`$from_table`
 						WHERE message LIKE " . db_qstr('%' . $remove['message']);
 				}
-			} elseif ($remove['type'] == 'sql') {
-				if ($remove['method'] != 'del') {
+			} elseif ($remove['type'] === 'sql') {
+				if ($remove['method'] !== 'del') {
 					$sql_sel = "SELECT seq FROM `$syslogdb_default`.`$from_table`
 						WHERE (" . $remove['message'] . ')';
 				} else {

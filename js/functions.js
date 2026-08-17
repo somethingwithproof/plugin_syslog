@@ -224,7 +224,7 @@ function initSyslogMain(config) {
 							});
 
 							$.each(data, function(index, hostData) {
-								if ($('#host').find('option').filter(function() { return $(this).val() === String(index); }).length == 0) {
+								if ($('#host').find('option').filter(function() { return $(this).val() === String(index); }).length === 0) {
 									// jQuery attr/text handle escaping; string concat + DOMPurify leaves attribute quotes unescaped.
 									$('<option>')
 										.attr('value', index)
@@ -599,7 +599,7 @@ function syslogInvokeCallback(functionName) {
 		return;
 	}
 
-	var trimmed = functionName.trim();
+	let trimmed = functionName.trim();
 
 	// Only tolerate an exact trailing "()" for legacy callers; reject any arguments.
 	if (trimmed.endsWith('()')) {
@@ -620,7 +620,7 @@ function syslogInvokeCallback(functionName) {
 		return;
 	}
 
-	var fn = window[trimmed];
+	const fn = window[trimmed];
 
 	if (typeof fn !== 'function') {
 		if (window.console && console.warn) {

@@ -240,7 +240,7 @@ if (preg_match("/UNIX_TIMESTAMP\s*\(\s*'/", $create_body)) {
 }
 
 // The boundary computation must be explicit (next UTC midnight).
-if (!preg_match('/\(\(int\)\(\$time\s*\/\s*86400\)\s*\+\s*1\)\s*\*\s*86400/', $create_body)) {
+if (!preg_match('/\(intdiv\(\$time\s*,\s*86400\)\s*\+\s*1\)\s*\*\s*86400/', $create_body)) {
 	fwrite(STDERR, "syslog_partition_create is missing the UTC-midnight boundary epoch computation.\n");
 	exit(1);
 }

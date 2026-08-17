@@ -14,7 +14,7 @@ if ($functions === false) {
 	exit(1);
 }
 
-if (!preg_match('/function\s+syslog_csv_safe\s*\([^)]*\)\s*\{.*?\n\}/s', $functions, $m)) {
+if (!preg_match('/function\s+syslog_csv_safe\s*\([^)]*\)\s*(?::\s*mixed\s*)?\{.*?\n\}/s', $functions, $m)) {
 	fwrite(STDERR, "Could not extract syslog_csv_safe from functions.php\n");
 	exit(1);
 }
@@ -45,7 +45,7 @@ $cases = [
 $failures = 0;
 
 foreach ($cases as $idx => $case) {
-	list($input, $expected, $label) = $case;
+	[$input, $expected, $label] = $case;
 
 	$actual = issue315_csv_safe($input);
 

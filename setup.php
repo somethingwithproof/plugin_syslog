@@ -471,10 +471,10 @@ function syslog_create_partitioned_syslog_table($engine = 'InnoDB', $days = 30) 
 	 */
 	for ($i = $days; $i >= -1; $i--) {
 		$day_epoch      = $now - ($i * 86400);
-		$boundary_epoch = ((int)($day_epoch / 86400) + 1) * 86400;
+		$boundary_epoch = (intdiv($day_epoch, 86400) + 1) * 86400;
 		$format         = gmdate('Ymd', $day_epoch);
 
-		$parts .= ($parts != '' ? ",\n" : '(') . ' PARTITION d' . $format . ' VALUES LESS THAN (' . $boundary_epoch . ')';
+		$parts .= ($parts !== '' ? ",\n" : '(') . ' PARTITION d' . $format . ' VALUES LESS THAN (' . $boundary_epoch . ')';
 	}
 
 	$parts .= ",\nPARTITION dMaxValue VALUES LESS THAN MAXVALUE);";
