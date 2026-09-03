@@ -33,16 +33,16 @@ foreach (['syslog_removal.php', 'syslog_alerts.php', 'syslog_reports.php'] as $f
 
 $syslog = $targets['syslog.php'];
 
-if (!str_contains($syslog, "pageTab: <?php print syslog_json_encode_for_script(get_request_var('tab'));?>,")) {
+if (!str_contains($syslog, "pageTab: <?php print syslog_json_safe(get_request_var('tab'));?>,")) {
 	fwrite(STDERR, "Expected JSON-encoded syslog pageTab value\n");
 	exit(1);
 }
 
 foreach ([
-	"syslog_json_encode_for_script(__('Enter a search term', 'syslog'))",
-	"syslog_json_encode_for_script(__('Select Device(s)', 'syslog'))",
-	"syslog_json_encode_for_script(__('Devices Selected', 'syslog'))",
-	"syslog_json_encode_for_script(__('All Devices Selected', 'syslog'))",
+	"syslog_json_safe(__('Enter a search term', 'syslog'))",
+	"syslog_json_safe(__('Select Device(s)', 'syslog'))",
+	"syslog_json_safe(__('Devices Selected', 'syslog'))",
+	"syslog_json_safe(__('All Devices Selected', 'syslog'))",
 ] as $needle) {
 	if (!str_contains($syslog, $needle)) {
 		fwrite(STDERR, "Expected JS-safe initSyslogMain text encoding\n");

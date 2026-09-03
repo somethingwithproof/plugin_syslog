@@ -1184,11 +1184,11 @@ function syslog_filter($sql_where, $tab) {
 	?>
 	<script type='text/javascript'>
 	initSyslogMain({
-		pageTab: <?php print syslog_json_encode_for_script(get_request_var('tab'));?>,
-		placeHolder: <?php print syslog_json_encode_for_script(__('Enter a search term', 'syslog'));?>,
-		noneSelectedText: <?php print syslog_json_encode_for_script(__('Select Device(s)', 'syslog'));?>,
-		devicesSelectedText: <?php print syslog_json_encode_for_script(__('Devices Selected', 'syslog'));?>,
-		allDevicesText: <?php print syslog_json_encode_for_script(__('All Devices Selected', 'syslog'));?>
+		pageTab: <?php print syslog_json_safe(get_request_var('tab'));?>,
+		placeHolder: <?php print syslog_json_safe(__('Enter a search term', 'syslog'));?>,
+		noneSelectedText: <?php print syslog_json_safe(__('Select Device(s)', 'syslog'));?>,
+		devicesSelectedText: <?php print syslog_json_safe(__('Devices Selected', 'syslog'));?>,
+		allDevicesText: <?php print syslog_json_safe(__('All Devices Selected', 'syslog'));?>
 	});
 	</script>
 	<?php

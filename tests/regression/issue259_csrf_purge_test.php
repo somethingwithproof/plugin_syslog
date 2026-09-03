@@ -68,14 +68,14 @@ if (preg_match("/confirm\(\s*'/", $setup)) {
 	exit(1);
 }
 
-if (!str_contains($setup, "syslog_json_encode_for_script(__('Confirm Purge', 'syslog'))")) {
-	fwrite(STDERR, "Expected syslog_json_encode_for_script() for JS-safe dialog title encoding.\n");
+if (!str_contains($setup, "syslog_json_safe(__('Confirm Purge', 'syslog'))")) {
+	fwrite(STDERR, "Expected syslog_json_safe() for JS-safe dialog title encoding.\n");
 	exit(1);
 }
 
-if (!str_contains($setup, "syslog_json_encode_for_script(__('Cancel', 'syslog'))") ||
-	!str_contains($setup, "syslog_json_encode_for_script(__('Continue', 'syslog'))")) {
-	fwrite(STDERR, "Expected syslog_json_encode_for_script() for JS-safe button text encoding.\n");
+if (!str_contains($setup, "syslog_json_safe(__('Cancel', 'syslog'))") ||
+	!str_contains($setup, "syslog_json_safe(__('Continue', 'syslog'))")) {
+	fwrite(STDERR, "Expected syslog_json_safe() for JS-safe button text encoding.\n");
 	exit(1);
 }
 
