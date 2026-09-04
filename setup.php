@@ -1611,7 +1611,7 @@ function syslog_utilities_action($action) {
 		if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 			cacti_log('WARNING: syslog purge blocked -- non-POST request', false, 'SYSLOG');
 			raise_message('syslog_method_error', __('Invalid request. Please try again.', 'syslog'), MESSAGE_LEVEL_ERROR);
-			header('Location: utilities.php');
+			header('Location: utilities.php?header=false');
 			exit;
 		}
 
@@ -1621,14 +1621,14 @@ function syslog_utilities_action($action) {
 		if (!function_exists('csrf_check')) {
 			cacti_log('WARNING: syslog purge blocked -- CSRF validation unavailable', false, 'SYSLOG');
 			raise_message('syslog_csrf_unavailable', __('Invalid request. Please try again.', 'syslog'), MESSAGE_LEVEL_ERROR);
-			header('Location: utilities.php');
+			header('Location: utilities.php?header=false');
 			exit;
 		}
 
 		if (!csrf_check(false)) {
 			cacti_log('WARNING: syslog purge blocked -- CSRF token validation failed', false, 'SYSLOG');
 			raise_message('syslog_csrf_error', __('Invalid request. Please try again.', 'syslog'), MESSAGE_LEVEL_ERROR);
-			header('Location: utilities.php');
+			header('Location: utilities.php?header=false');
 			exit;
 		}
 
@@ -1666,7 +1666,7 @@ function syslog_utilities_action($action) {
 
 		raise_message('syslog_info', __('There were %s Device records removed from the Syslog database', $records, 'syslog'), MESSAGE_LEVEL_INFO);
 
-		header('Location: utilities.php');
+		header('Location: utilities.php?header=false');
 		exit;
 	}
 
@@ -1711,15 +1711,17 @@ function syslog_utilities_list() {
 								click: function() {
 									$(this).dialog('close');
 
-									const postData = {
-										action: 'purge_syslog_hosts',
-										__csrf_magic: csrfMagicToken
-									};
+									/* set the URL */
+									var strURL = 'utilities.php?header=false';
 
-									if (typeof postUrl === 'function') {
-										postUrl({url: 'utilities.php', noState: true}, postData);
+									/* ensure that the csrf magic is appended */
+									var json = {action: 'purge_syslog_hosts'};
+									json.__csrf_magic = csrfMagicToken;
+
+									if (typeof postUrl == 'function') {
+										postUrl({url: strURL}, json);
 									} else {
-										loadPageUsingPost('utilities.php', postData);
+										loadPageUsingPost(strURL, json);
 									}
 								}
 							}
