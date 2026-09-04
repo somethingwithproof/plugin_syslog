@@ -255,7 +255,7 @@ if ($syslog === false) {
 }
 
 foreach ([
-    "pageTab: <?php print syslog_json_safe(get_request_var('tab'));?>,",
+    "pageTab: <?php print syslog_json_safe(get_request_var('tab')); ?>,",
     "syslog_json_safe(__('Enter a search term', 'syslog'))",
     "syslog_json_safe(__('Select Device(s)', 'syslog'))",
     "syslog_json_safe(__('Devices Selected', 'syslog'))",
