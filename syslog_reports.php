@@ -206,7 +206,7 @@ function form_actions() {
 		<td align='right' class='saveRow'>
 			<input type='hidden' name='action' value='actions'>
 			<input type='hidden' name='selected_items' value='" . (isset($report_array) ? serialize($report_array) : '') . "'>
-			<input type='hidden' name='drp_action' value='" . html_escape(get_request_var('drp_action')) . "'>
+			<input type='hidden' name='drp_action' value='" . get_request_var('drp_action') . "'>
 			$save_html
 		</td>
 	</tr>\n";
@@ -704,7 +704,7 @@ function syslog_report() {
 		'user'     => [__('By User', 'syslog'), 'DESC']
 	];
 
-	$nav = html_nav_bar('syslog_reports.php?filter=' . rawurlencode(get_request_var('filter')), MAX_DISPLAY_PAGES, get_request_var('page'), $rows, $total_rows, cacti_sizeof($display_text) + 1, __('Reports', 'syslog'), 'page', 'main');
+	$nav = html_nav_bar('syslog_reports.php?filter=' . get_request_var('filter'), MAX_DISPLAY_PAGES, get_request_var('page'), $rows, $total_rows, cacti_sizeof($display_text) + 1, __('Reports', 'syslog'), 'page', 'main');
 
 	form_start('syslog_reports.php', 'chk');
 

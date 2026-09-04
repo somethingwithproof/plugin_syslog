@@ -234,7 +234,7 @@ function form_actions() {
 		<td class='saveRow'>
 			<input type='hidden' name='action' value='actions'>
 			<input type='hidden' name='selected_items' value='" . (isset($removal_array) ? serialize($removal_array) : '') . "'>
-			<input type='hidden' name='drp_action' value='" . html_escape(get_request_var('drp_action')) . "'>
+			<input type='hidden' name='drp_action' value='" . get_request_var('drp_action') . "'>
 			$save_html
 		</td>
 	</tr>";
@@ -667,7 +667,7 @@ function syslog_removal() {
 
 	form_start('syslog_removal.php', 'chk');
 
-	$nav = html_nav_bar('syslog_removal.php?filter=' . rawurlencode(get_request_var('filter')), MAX_DISPLAY_PAGES, get_request_var('page'), $rows, $total_rows, cacti_sizeof($display_text) + 1, __('Rules', 'syslog'), 'page', 'main');
+	$nav = html_nav_bar('syslog_removal.php?filter=' . get_request_var('filter'), MAX_DISPLAY_PAGES, get_request_var('page'), $rows, $total_rows, cacti_sizeof($display_text) + 1, __('Rules', 'syslog'), 'page', 'main');
 
 	print $nav;
 
